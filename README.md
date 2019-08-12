@@ -1,2 +1,3 @@
-# gel-app
-Initial app/ui for gel POC
+# GEL POC
+
+Frontend app for GEL datasource
