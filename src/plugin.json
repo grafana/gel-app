@@ -1,7 +1,7 @@
 {
   "type": "app",
   "name": "Plugin Exploration",
-  "id": "plugin-ci-app",
+  "id": "gel-app",
 
   "info": {
     "author": {

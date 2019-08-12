@@ -1,6 +1,6 @@
 {
   "type": "datasource",
-  "name": "Plugin CI",
+  "name": "GEL Data",
   "id": "gel-datasource",
   "metrics": true,
 
