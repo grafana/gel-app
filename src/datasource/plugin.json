@@ -1,0 +1,13 @@
+{
+  "type": "datasource",
+  "name": "Plugin CI",
+  "id": "gel-datasource",
+  "metrics": true,
+
+  "info": {
+    "logos": {
+      "small": "img/pipeline.svg",
+      "large": "img/pipeline.svg"
+    }
+  }
+}

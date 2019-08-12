@@ -1,0 +1,18 @@
+{
+  "type": "app",
+  "name": "Plugin Exploration",
+  "id": "plugin-ci-app",
+
+  "info": {
+    "author": {
+      "name": "Grafana Project",
+      "url": "https://grafana.com"
+    },
+    "logos": {
+      "small": "img/icon.svg",
+      "large": "img/icon.svg"
+    },
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  }
+}
