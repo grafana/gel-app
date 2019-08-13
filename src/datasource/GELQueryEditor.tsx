@@ -35,23 +35,25 @@ export class GELQueryEditor extends PureComponent<Props, State> {
 
   onSelectDataDource = (item: SelectableValue<number>) => {
     const { query, onChange } = this.props;
-    if(!query.queries) {
+    if (!query.queries) {
       query.queries = [];
     }
 
     query.queries.push({
       refId: 'A',
-      datasource:item.label,
+      datasource: item.label,
     });
 
     onChange(query);
     console.log('SELECT', item);
   };
 
-  renderQuery(query:DataQuery) {
-    return <div>
-      <pre>{JSON.stringify(query)}</pre>
-    </div>
+  renderQuery(query: DataQuery) {
+    return (
+      <div>
+        <pre>{JSON.stringify(query)}</pre>
+      </div>
+    );
   }
 
   render() {
@@ -66,10 +68,9 @@ export class GELQueryEditor extends PureComponent<Props, State> {
       <div>
         TODO... query....
         <pre>{JSON.stringify(query)}</pre>
-        {query.queries.map( q => {
+        {query.queries.map(q => {
           return this.renderQuery(q);
         })}
-
         <div className="form-field">
           <FormLabel width={6}>Add Query</FormLabel>
           <Select options={datasources} value={selected} onChange={this.onSelectDataDource} />
