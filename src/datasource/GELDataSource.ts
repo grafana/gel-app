@@ -22,12 +22,13 @@ export class GELDataSource extends DataSourceApi<GELQuery, GELDataSourceOptions>
       .post(url!, {
         options,
       })
-      .then(res => {
+      .then( res => {
+        console.log( 'RESPONSE', res );
         return { data: [] };
       })
       .catch(err => {
         err.isHandled = true;
-        console.log('XXX', err);
+        console.error('Error', err);
         return { data: [] };
       });
   }
