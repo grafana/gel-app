@@ -1,6 +1,6 @@
 {
   "type": "app",
-  "name": "Plugin Exploration",
+  "name": "GEL App POC",
   "id": "gel-app",
 
   "info": {
@@ -9,8 +9,8 @@
       "url": "https://grafana.com"
     },
     "logos": {
-      "small": "img/icon.svg",
-      "large": "img/icon.svg"
+      "small": "img/pipeline.svg",
+      "large": "img/pipeline.svg"
     },
     "version": "%VERSION%",
     "updated": "%TODAY%"
