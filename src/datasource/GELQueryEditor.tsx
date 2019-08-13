@@ -15,6 +15,8 @@ interface State {
   datasources: Array<SelectableValue<number>>;
 }
 
+let x = 1;
+
 export class GELQueryEditor extends PureComponent<Props, State> {
   state: State = {
     datasources: [],
@@ -40,7 +42,7 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     }
 
     query.queries.push({
-      refId: 'A',
+      refId: (x++).toString(),
       datasource: item.label,
     });
 
@@ -48,10 +50,37 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     console.log('SELECT', item);
   };
 
-  renderQuery(query: DataQuery) {
+  onRemoveQuery = (remove: DataQuery) => {
+    const { query, onChange } = this.props;
+    const queries = query.queries.filter(q => {
+      return q.refId !== remove.refId;
+    });
+    onChange({ ...query, queries });
+  };
+
+  renderQuery(query: DataQuery, index: number) {
     return (
-      <div>
-        <pre>{JSON.stringify(query)}</pre>
+      <div key={index}>
+        <div className="query-editor-row__header">
+          <div className="query-editor-row__ref-id">
+            <span>{query.refId}</span>
+          </div>
+          <div className="query-editor-row__collapsed-text"></div>
+          <div className="query-editor-row__actions">
+            <button
+              className="query-editor-row__action"
+              title="Remove query"
+              onClick={() => {
+                this.onRemoveQuery(query);
+              }}
+            >
+              <i className="fa fa-fw fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        <div>
+          <pre>{JSON.stringify(query)}</pre>
+        </div>
       </div>
     );
   }
@@ -63,13 +92,14 @@ export class GELQueryEditor extends PureComponent<Props, State> {
       label: '   ',
       value: undefined,
     };
+    if (!query.queries) {
+      query.queries = [];
+    }
 
     return (
       <div>
-        TODO... query....
-        <pre>{JSON.stringify(query)}</pre>
-        {query.queries.map(q => {
-          return this.renderQuery(q);
+        {query.queries.map((q, index) => {
+          return this.renderQuery(q, index);
         })}
         <div className="form-field">
           <FormLabel width={6}>Add Query</FormLabel>

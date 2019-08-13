@@ -1,11 +1,11 @@
 // Types
 import { DataQueryRequest, DataQueryResponse, DataSourceApi, DataSourceInstanceSettings } from '@grafana/ui';
-import { DataFrame } from '@grafana/data';
+import { getBackendSrv } from '@grafana/runtime';
 
 import { GELQuery, GELDataSourceOptions } from './types';
 
 export class GELDataSource extends DataSourceApi<GELQuery, GELDataSourceOptions> {
-  constructor(instanceSettings: DataSourceInstanceSettings<GELDataSourceOptions>) {
+  constructor(private instanceSettings: DataSourceInstanceSettings<GELDataSourceOptions>) {
     super(instanceSettings);
   }
 
@@ -13,16 +13,23 @@ export class GELDataSource extends DataSourceApi<GELQuery, GELDataSourceOptions>
    * Convert a query to a simple text string
    */
   getQueryDisplayText(query: GELQuery): string {
-    return 'Plugin: ' + query;
+    return 'GEL: ' + query;
   }
 
   async query(options: DataQueryRequest<GELQuery>): Promise<DataQueryResponse> {
-    const results: DataFrame[] = [];
-    for (const query of options.targets) {
-      console.log('QUERY: ', query);
-    }
-    console.log('RETURN empty results: ', results);
-    return Promise.resolve({ data: results });
+    const { url } = this.instanceSettings;
+    return getBackendSrv()
+      .post(url!, {
+        options,
+      })
+      .then(res => {
+        return { data: [] };
+      })
+      .catch(err => {
+        err.isHandled = true;
+        console.log('XXX', err);
+        return { data: [] };
+      });
   }
 
   async testDatasource() {
