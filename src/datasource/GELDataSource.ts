@@ -22,8 +22,8 @@ export class GELDataSource extends DataSourceApi<GELQuery, GELDataSourceOptions>
       .post(url!, {
         options,
       })
-      .then( res => {
-        console.log( 'RESPONSE', res );
+      .then(res => {
+        console.log('RESPONSE', res);
         return { data: [] };
       })
       .catch(err => {
