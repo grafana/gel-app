@@ -9,6 +9,7 @@ import { getBackendSrv } from '@grafana/runtime';
 
 import { QueryEditorProps, Select, FormLabel, DataQuery } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
+import { QueryEditorRow } from './QueryEditorRow';
 type Props = QueryEditorProps<GELDataSource, GELQuery, GELDataSourceOptions>;
 
 interface State {
@@ -58,35 +59,8 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     onChange({ ...query, queries });
   };
 
-  renderQuery(query: DataQuery, index: number) {
-    return (
-      <div key={index}>
-        <div className="query-editor-row__header">
-          <div className="query-editor-row__ref-id">
-            <span>{query.refId}</span>
-          </div>
-          <div className="query-editor-row__collapsed-text"></div>
-          <div className="query-editor-row__actions">
-            <button
-              className="query-editor-row__action"
-              title="Remove query"
-              onClick={() => {
-                this.onRemoveQuery(query);
-              }}
-            >
-              <i className="fa fa-fw fa-trash"></i>
-            </button>
-          </div>
-        </div>
-        <div>
-          <pre>{JSON.stringify(query)}</pre>
-        </div>
-      </div>
-    );
-  }
-
   render() {
-    const { query } = this.props;
+    const { query, panelData, onChange } = this.props;
     const { datasources } = this.state;
     const selected = {
       label: '   ',
@@ -99,8 +73,17 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     return (
       <div>
         {query.queries.map((q, index) => {
-          return this.renderQuery(q, index);
+          return (
+            <QueryEditorRow
+              key={index}
+              query={query}
+              data={panelData}
+              onRemoveQuery={this.onRemoveQuery}
+              onChange={onChange as (query: DataQuery) => void}
+            />
+          );
         })}
+
         <div className="form-field">
           <FormLabel width={6}>Add Query</FormLabel>
           <Select options={datasources} value={selected} onChange={this.onSelectDataDource} />
