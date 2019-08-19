@@ -19,6 +19,10 @@ interface State {
   queryResponse?: PanelData;
 }
 
+interface PretendPanelModel {
+  targets: DataQuery[];
+}
+
 export class QueryEditorRow extends PureComponent<Props, State> {
   element?: HTMLElement | null;
   angularScope?: AngularQueryComponentScope;
@@ -46,6 +50,9 @@ export class QueryEditorRow extends PureComponent<Props, State> {
     return {
       datasource: datasource!,
       target: query,
+      panel: {
+        targets: [query],
+      },
       refresh: () => {},
       render: () => {},
     };
@@ -55,7 +62,6 @@ export class QueryEditorRow extends PureComponent<Props, State> {
     const { query } = this.props;
     const ds = query.datasource ? query.datasource : undefined;
     const datasource = await getDataSourceSrv().get(ds);
-    console.log('LOAD', datasource);
 
     this.setState({
       datasource,
@@ -66,7 +72,6 @@ export class QueryEditorRow extends PureComponent<Props, State> {
   componentDidUpdate(prevProps: Props) {
     const { loadedDataSourceValue, datasource } = this.state;
     const { data, query } = this.props;
-    console.log('componentDidUpdate', this.angularScope);
 
     if (data !== prevProps.data) {
       this.setState({ queryResponse: filterPanelDataToQuery(data, query.refId) });
@@ -101,8 +106,6 @@ export class QueryEditorRow extends PureComponent<Props, State> {
     const scopeProps = { ctrl: this.getAngularQueryComponentScope() };
     this.angularQueryEditor = loader.load(this.element, scopeProps, template);
     this.angularScope = scopeProps.ctrl;
-
-    console.log('componentDidUpdate', this.angularScope);
   }
 
   renderPluginEditor() {
@@ -114,7 +117,6 @@ export class QueryEditorRow extends PureComponent<Props, State> {
     }
 
     if (datasource.components.QueryCtrl) {
-      console.log('QueryCtrl', datasource);
       return <div ref={element => (this.element = element)} />;
     }
 
@@ -166,9 +168,9 @@ export class QueryEditorRow extends PureComponent<Props, State> {
           </div>
         </div>
         <div>
-          <pre>{JSON.stringify(query)}</pre>
           <div>{this.renderPluginEditor()}</div>
         </div>
+        <br/>
       </div>
     );
   }
@@ -176,7 +178,7 @@ export class QueryEditorRow extends PureComponent<Props, State> {
 
 export interface AngularQueryComponentScope {
   target: DataQuery;
-  // panel: PanelModel;
+  panel: PretendPanelModel;
   // dashboard: DashboardModel;
   // events: Emitter;
   refresh: () => void;

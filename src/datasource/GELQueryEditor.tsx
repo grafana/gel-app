@@ -76,7 +76,7 @@ export class GELQueryEditor extends PureComponent<Props, State> {
           return (
             <QueryEditorRow
               key={index}
-              query={query}
+              query={q}
               data={panelData}
               onRemoveQuery={this.onRemoveQuery}
               onChange={onChange as (query: DataQuery) => void}
