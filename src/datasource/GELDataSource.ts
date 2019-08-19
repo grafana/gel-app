@@ -18,9 +18,18 @@ export class GELDataSource extends DataSourceApi<GELQuery, GELDataSourceOptions>
 
   async query(options: DataQueryRequest<GELQuery>): Promise<DataQueryResponse> {
     const { url } = this.instanceSettings;
+    const { targets, startTime, ...opts } = options;
+    if (targets.length > 1) {
+      return Promise.reject('Only query supported right now');
+    }
+    if (targets.length < 1) {
+      return Promise.resolve({ data: [] });
+    }
+
     return getBackendSrv()
       .post(url!, {
-        options,
+        options: opts,
+        gel: targets[0],
       })
       .then(res => {
         console.log('RESPONSE', res);

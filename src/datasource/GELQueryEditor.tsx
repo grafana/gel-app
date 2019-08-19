@@ -10,13 +10,13 @@ import { getBackendSrv } from '@grafana/runtime';
 import { QueryEditorProps, Select, FormLabel, DataQuery } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { QueryEditorRow } from './QueryEditorRow';
+import { getNextQueryID } from './util';
+
 type Props = QueryEditorProps<GELDataSource, GELQuery, GELDataSourceOptions>;
 
 interface State {
   datasources: Array<SelectableValue<number>>;
 }
-
-let x = 1;
 
 export class GELQueryEditor extends PureComponent<Props, State> {
   state: State = {
@@ -43,7 +43,7 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     }
 
     query.queries.push({
-      refId: (x++).toString(),
+      refId: getNextQueryID(query),
       datasource: item.label,
     });
 

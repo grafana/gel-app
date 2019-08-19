@@ -160,7 +160,9 @@ export class QueryEditorRow extends PureComponent<Props, State> {
           <div className="query-editor-row__ref-id">
             <span>{query.refId}</span>
           </div>
-          <div className="query-editor-row__collapsed-text"></div>
+          <div className="query-editor-row__collapsed-text">
+            <span>{query.datasource}</span>
+          </div>
           <div className="query-editor-row__actions">
             <button className="query-editor-row__action" title="Remove query" onClick={this.onRemoveQuery}>
               <i className="fa fa-fw fa-trash"></i>
