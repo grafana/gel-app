@@ -170,7 +170,7 @@ export class QueryEditorRow extends PureComponent<Props, State> {
         <div>
           <div>{this.renderPluginEditor()}</div>
         </div>
-        <br/>
+        <br />
       </div>
     );
   }

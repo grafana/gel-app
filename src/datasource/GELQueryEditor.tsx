@@ -1,5 +1,5 @@
 // Libraries
-import React, { PureComponent } from 'react';
+import React, { PureComponent, ChangeEvent } from 'react';
 
 // Types
 import { GELDataSource } from './GELDataSource';
@@ -59,6 +59,14 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     onChange({ ...query, queries });
   };
 
+  onExpressionChange = (evt: ChangeEvent<HTMLTextAreaElement>) => {
+    const { query, onChange } = this.props;
+    onChange({
+      ...query,
+      expression: evt.target.value,
+    });
+  };
+
   render() {
     const { query, panelData, onChange } = this.props;
     const { datasources } = this.state;
@@ -87,6 +95,20 @@ export class GELQueryEditor extends PureComponent<Props, State> {
         <div className="form-field">
           <FormLabel width={6}>Add Query</FormLabel>
           <Select options={datasources} value={selected} onChange={this.onSelectDataDource} />
+        </div>
+
+        <br />
+        <br />
+
+        <div>
+          <div className="query-editor-row__header">
+            <div className="query-editor-row__ref-id">
+              <span>GEL Expression:</span>
+            </div>
+          </div>
+          <div>
+            <textarea value={query.expression} onChange={this.onExpressionChange} className="gf-form-input" rows={3} />
+          </div>
         </div>
       </div>
     );
