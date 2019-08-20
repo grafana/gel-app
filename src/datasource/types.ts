@@ -20,8 +20,8 @@ export enum GELQueryType {
  */
 export interface GELQuery extends DataQuery {
   type: GELQueryType;
-  expression?: string;
   reducer?: string;
+  expression?: string;
 }
 
 export interface GELDataSourceOptions extends DataSourceJsonData {

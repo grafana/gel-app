@@ -7,7 +7,7 @@ import { TempGELQueryWrapper, GELDataSourceOptions, GELQuery, GELQueryType, GEL_
 
 import { getBackendSrv } from '@grafana/runtime';
 
-import { QueryEditorProps, Select, FormLabel, DataQuery } from '@grafana/ui';
+import { QueryEditorProps, Select, FormLabel, DataQuery, Button } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { QueryEditorRow } from './QueryEditorRow';
 import { getNextQueryID } from './util';
@@ -18,11 +18,6 @@ type Props = QueryEditorProps<GELDataSource, TempGELQueryWrapper, GELDataSourceO
 interface State {
   datasources: Array<SelectableValue<number>>;
 }
-
-const gelTypes: Array<SelectableValue<GELQueryType>> = [
-  { value: GELQueryType.math, label: 'Math Expression' },
-  { value: GELQueryType.reduce, label: 'Reduce Results' },
-];
 
 export class GELQueryEditor extends PureComponent<Props, State> {
   state: State = {
@@ -57,7 +52,7 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     console.log('SELECT', item);
   };
 
-  onSelectGELType = (item: SelectableValue<GELQueryType>) => {
+  addGEL = () => {
     const { query, onChange } = this.props;
     if (!query.queries) {
       query.queries = [];
@@ -66,11 +61,10 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     query.queries.push({
       refId: getNextQueryID(query),
       datasource: GEL_DS_KEY, // GEL Type!!!
-      type: item.value,
+      type: GELQueryType.math,
     } as GELQuery);
 
     onChange(query);
-    console.log('SELECT', item);
   };
 
   onRemoveQuery = (remove: DataQuery) => {
@@ -115,7 +109,7 @@ export class GELQueryEditor extends PureComponent<Props, State> {
                     <span>{q.refId}</span>
                   </div>
                   <div className="query-editor-row__collapsed-text">
-                    <span>GEL: {gelQuery.type}</span>
+                    <span>GEL:</span>
                   </div>
                   <div className="query-editor-row__actions">
                     <button className="query-editor-row__action" title="Remove query" onClick={() => this.onRemoveQuery(q)}>
@@ -147,9 +141,9 @@ export class GELQueryEditor extends PureComponent<Props, State> {
         <div className="form-field">
           <FormLabel width={6}>Add Query</FormLabel>
           <Select options={datasources} value={selected} onChange={this.onSelectDataSource} />
-
-          <FormLabel width={6}>Add GEL</FormLabel>
-          <Select options={gelTypes} value={selected} onChange={this.onSelectGELType} />
+          <Button variant={'inverse'} onClick={this.addGEL}>
+            Add GEL
+          </Button>
         </div>
       </div>
     );

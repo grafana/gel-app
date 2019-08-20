@@ -4,7 +4,6 @@ import { getBackendSrv, config } from '@grafana/runtime';
 
 import { GELDataSourceOptions, TempGELQueryWrapper, GEL_DS_KEY } from './types';
 import { responseToDataFrame } from './util';
-import { KeyValue } from '@grafana/data';
 
 export class GELDataSource extends DataSourceApi<TempGELQueryWrapper, GELDataSourceOptions> {
   constructor(private instanceSettings: DataSourceInstanceSettings<GELDataSourceOptions>) {
@@ -28,24 +27,20 @@ export class GELDataSource extends DataSourceApi<TempGELQueryWrapper, GELDataSou
       return Promise.resolve({ data: [] });
     }
     const first: TempGELQueryWrapper = targets[0];
-
-    // Tell it the IDs for each used datasource
-    const datasources = {
-      default: config.datasources[config.defaultDatasource].id,
-      names: {} as KeyValue<number>,
-    };
-    for (const q of first.queries) {
-      const name = q.datasource as string;
-      if (q.datasource && name !== GEL_DS_KEY && !datasources.names[name]) {
-        datasources.names[name] = config.datasources[name].id;
+    (opts as any).targets = first.queries.map(q => {
+      if (q.datasource === GEL_DS_KEY) {
+        return q;
       }
-    }
-    (opts as any).targets = first.queries;
+      const ds = config.datasources[q.datasource || config.defaultDatasource];
+      return {
+        ...q,
+        datasourceId: ds.id,
+      };
+    });
 
     return getBackendSrv()
       .post(url!, {
         options: opts,
-        datasources,
       })
       .then(res => {
         return { data: responseToDataFrame(res) };
