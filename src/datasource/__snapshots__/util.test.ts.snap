@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PluginDatasource when querying should return the saved data with a query 1`] = `
+Object {
+  "config": Object {},
+  "name": "Time",
+  "type": "time",
+  "values": Array [
+    1566319860000,
+    1566319920000,
+    1566319980000,
+    1566320040000,
+    1566320100000,
+    1566320160000,
+  ],
+}
+`;

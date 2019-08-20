@@ -1,5 +1,5 @@
 import { GELQuery } from './types';
-import { DataFrame, DataFrameHelper } from '@grafana/data';
+import { DataFrame, DataFrameHelper, dateTime, FieldType } from '@grafana/data';
 
 export function getNextQueryID(query: GELQuery) {
   if (!query || !query.queries) {
@@ -21,9 +21,18 @@ export function responseToDataFrame(rsp: any): DataFrame[] {
     const frame = new DataFrameHelper();
     frame.name = v.Name;
     for (const f of v.Fields) {
+      let v = f.Vector;
+      let type: FieldType | undefined = undefined;
+      if (f.Type === 'time') {
+        v = v.map((str: string) => {
+          return dateTime(str).valueOf();
+        });
+        type = FieldType.time;
+      }
       frame.addField({
         name: f.Name,
-        values: f.Vector,
+        type,
+        values: v,
       });
     }
     return frame;
