@@ -1,8 +1,9 @@
 // Types
 import { DataQueryRequest, DataQueryResponse, DataSourceApi, DataSourceInstanceSettings } from '@grafana/ui';
-import { getBackendSrv } from '@grafana/runtime';
+import { getBackendSrv, config } from '@grafana/runtime';
 
 import { GELQuery, GELDataSourceOptions } from './types';
+import { responseToDataFrame } from './util';
 
 export class GELDataSource extends DataSourceApi<GELQuery, GELDataSourceOptions> {
   constructor(private instanceSettings: DataSourceInstanceSettings<GELDataSourceOptions>) {
@@ -25,15 +26,27 @@ export class GELDataSource extends DataSourceApi<GELQuery, GELDataSourceOptions>
     if (targets.length < 1) {
       return Promise.resolve({ data: [] });
     }
+    const first: GELQuery = targets[0];
+    const target = {
+      ...first,
+      queries: first.queries.map(q => {
+        const ds = config.datasources[q.datasource || config.defaultDatasource];
+        console.log('DS', ds);
+        return {
+          ...q,
+          datasourceId: ds.id,
+        };
+      }),
+    };
 
     return getBackendSrv()
       .post(url!, {
         options: opts,
-        gel: targets[0],
+        gel: target,
       })
       .then(res => {
         console.log('RESPONSE', res);
-        return { data: [] };
+        return { data: [responseToDataFrame(res)] };
       })
       .catch(err => {
         err.isHandled = true;
