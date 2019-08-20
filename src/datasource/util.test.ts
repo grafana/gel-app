@@ -30,6 +30,9 @@ describe('PluginDatasource', () => {
     test('should return the saved data with a query', () => {
       const frame = responseToDataFrame(resp);
       expect(frame.name).toEqual('AAA');
+      expect(frame.fields.length).toEqual(2);
+      expect(frame.fields[0].name).toEqual('Time');
+      expect(frame.length).toEqual(resp.Values[0].Fields[0].Vector.length);
     });
   });
 });
