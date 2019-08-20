@@ -1,4 +1,4 @@
-import {responseToDataFrame} from './util';
+import { responseToDataFrame } from './util';
 
 const resp = {
   Values: [
