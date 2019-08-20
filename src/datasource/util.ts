@@ -16,14 +16,16 @@ export function getNextQueryID(query: GELQuery) {
   return 'G' + Date.now(); //
 }
 
-export function responseToDataFrame(rsp: any): DataFrame {
-  const frame = new DataFrameHelper();
-  frame.name = rsp.Name;
-  for (const f of rsp.Fields) {
-    frame.addField({
-      name: f.Name,
-      values: f.Vector,
-    });
-  }
-  return frame;
+export function responseToDataFrame(rsp: any): DataFrame[] {
+  return rsp.Values.map((v: any) => {
+    const frame = new DataFrameHelper();
+    frame.name = v.Name;
+    for (const f of v.Fields) {
+      frame.addField({
+        name: f.Name,
+        values: f.Vector,
+      });
+    }
+    return frame;
+  });
 }

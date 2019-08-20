@@ -28,7 +28,7 @@ const resp = {
 describe('PluginDatasource', () => {
   describe('when querying', () => {
     test('should return the saved data with a query', () => {
-      const frame = responseToDataFrame(resp);
+      const frame = responseToDataFrame(resp)[0];
       expect(frame.name).toEqual('AAA');
       expect(frame.fields.length).toEqual(2);
       expect(frame.fields[0].name).toEqual('Time');

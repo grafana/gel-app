@@ -45,8 +45,7 @@ export class GELDataSource extends DataSourceApi<GELQuery, GELDataSourceOptions>
         gel: target,
       })
       .then(res => {
-        console.log('RESPONSE', res);
-        return { data: [responseToDataFrame(res)] };
+        return { data: responseToDataFrame(res) };
       })
       .catch(err => {
         err.isHandled = true;
