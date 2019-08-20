@@ -1,9 +1,9 @@
 // Libraries
-import React, { PureComponent, ChangeEvent } from 'react';
+import React, { PureComponent } from 'react';
 
 // Types
 import { GELDataSource } from './GELDataSource';
-import { GELQuery, GELDataSourceOptions } from './types';
+import { TempGELQueryWrapper, GELDataSourceOptions, GELQuery, GELQueryType, GEL_DS_KEY } from './types';
 
 import { getBackendSrv } from '@grafana/runtime';
 
@@ -11,12 +11,18 @@ import { QueryEditorProps, Select, FormLabel, DataQuery } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { QueryEditorRow } from './QueryEditorRow';
 import { getNextQueryID } from './util';
+import { GELQueryNode } from './GELQueryNode';
 
-type Props = QueryEditorProps<GELDataSource, GELQuery, GELDataSourceOptions>;
+type Props = QueryEditorProps<GELDataSource, TempGELQueryWrapper, GELDataSourceOptions>;
 
 interface State {
   datasources: Array<SelectableValue<number>>;
 }
+
+const gelTypes: Array<SelectableValue<GELQueryType>> = [
+  { value: GELQueryType.math, label: 'Math Expression' },
+  { value: GELQueryType.reduce, label: 'Reduce Results' },
+];
 
 export class GELQueryEditor extends PureComponent<Props, State> {
   state: State = {
@@ -36,7 +42,7 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     });
   }
 
-  onSelectDataDource = (item: SelectableValue<number>) => {
+  onSelectDataSource = (item: SelectableValue<number>) => {
     const { query, onChange } = this.props;
     if (!query.queries) {
       query.queries = [];
@@ -51,6 +57,22 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     console.log('SELECT', item);
   };
 
+  onSelectGELType = (item: SelectableValue<GELQueryType>) => {
+    const { query, onChange } = this.props;
+    if (!query.queries) {
+      query.queries = [];
+    }
+
+    query.queries.push({
+      refId: getNextQueryID(query),
+      datasource: GEL_DS_KEY, // GEL Type!!!
+      type: item.value,
+    } as GELQuery);
+
+    onChange(query);
+    console.log('SELECT', item);
+  };
+
   onRemoveQuery = (remove: DataQuery) => {
     const { query, onChange } = this.props;
     const queries = query.queries.filter(q => {
@@ -59,12 +81,15 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     onChange({ ...query, queries });
   };
 
-  onExpressionChange = (evt: ChangeEvent<HTMLTextAreaElement>) => {
+  onChangeGELQuery = (gel: GELQuery) => {
     const { query, onChange } = this.props;
-    onChange({
-      ...query,
-      expression: evt.target.value,
+    const queries = query.queries.map(q => {
+      if (q.refId === gel.refId) {
+        return gel;
+      }
+      return q;
     });
+    onChange({ ...query, queries });
   };
 
   render() {
@@ -81,6 +106,33 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     return (
       <div>
         {query.queries.map((q, index) => {
+          if (q.datasource === GEL_DS_KEY) {
+            const gelQuery = q as GELQuery;
+            return (
+              <div key={index}>
+                <div className="query-editor-row__header">
+                  <div className="query-editor-row__ref-id">
+                    <span>{q.refId}</span>
+                  </div>
+                  <div className="query-editor-row__collapsed-text">
+                    <span>GEL: {gelQuery.type}</span>
+                  </div>
+                  <div className="query-editor-row__actions">
+                    <button className="query-editor-row__action" title="Remove query" onClick={() => this.onRemoveQuery(q)}>
+                      <i className="fa fa-fw fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <div>
+                    <GELQueryNode query={gelQuery} onChange={this.onChangeGELQuery} />
+                  </div>
+                </div>
+                <br />
+              </div>
+            );
+          }
+
           return (
             <QueryEditorRow
               key={index}
@@ -94,21 +146,10 @@ export class GELQueryEditor extends PureComponent<Props, State> {
 
         <div className="form-field">
           <FormLabel width={6}>Add Query</FormLabel>
-          <Select options={datasources} value={selected} onChange={this.onSelectDataDource} />
-        </div>
+          <Select options={datasources} value={selected} onChange={this.onSelectDataSource} />
 
-        <br />
-        <br />
-
-        <div>
-          <div className="query-editor-row__header">
-            <div className="query-editor-row__ref-id">
-              <span>GEL Expression:</span>
-            </div>
-          </div>
-          <div>
-            <textarea value={query.expression} onChange={this.onExpressionChange} className="gf-form-input" rows={3} />
-          </div>
+          <FormLabel width={6}>Add GEL</FormLabel>
+          <Select options={gelTypes} value={selected} onChange={this.onSelectGELType} />
         </div>
       </div>
     );

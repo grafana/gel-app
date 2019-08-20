@@ -1,7 +1,7 @@
-import { GELQuery } from './types';
+import { TempGELQueryWrapper } from './types';
 import { DataFrame, DataFrameHelper, dateTime, FieldType } from '@grafana/data';
 
-export function getNextQueryID(query: GELQuery) {
+export function getNextQueryID(query: TempGELQueryWrapper) {
   if (!query || !query.queries) {
     return 'GA';
   }

@@ -2,10 +2,11 @@
 import { DataQueryRequest, DataQueryResponse, DataSourceApi, DataSourceInstanceSettings } from '@grafana/ui';
 import { getBackendSrv, config } from '@grafana/runtime';
 
-import { GELQuery, GELDataSourceOptions } from './types';
+import { GELDataSourceOptions, TempGELQueryWrapper, GEL_DS_KEY } from './types';
 import { responseToDataFrame } from './util';
+import { KeyValue } from '@grafana/data';
 
-export class GELDataSource extends DataSourceApi<GELQuery, GELDataSourceOptions> {
+export class GELDataSource extends DataSourceApi<TempGELQueryWrapper, GELDataSourceOptions> {
   constructor(private instanceSettings: DataSourceInstanceSettings<GELDataSourceOptions>) {
     super(instanceSettings);
   }
@@ -13,11 +14,11 @@ export class GELDataSource extends DataSourceApi<GELQuery, GELDataSourceOptions>
   /**
    * Convert a query to a simple text string
    */
-  getQueryDisplayText(query: GELQuery): string {
+  getQueryDisplayText(query: TempGELQueryWrapper): string {
     return 'GEL: ' + query;
   }
 
-  async query(options: DataQueryRequest<GELQuery>): Promise<DataQueryResponse> {
+  async query(options: DataQueryRequest<TempGELQueryWrapper>): Promise<DataQueryResponse> {
     const { url } = this.instanceSettings;
     const { targets, startTime, ...opts } = options;
     if (targets.length > 1) {
@@ -26,23 +27,25 @@ export class GELDataSource extends DataSourceApi<GELQuery, GELDataSourceOptions>
     if (targets.length < 1) {
       return Promise.resolve({ data: [] });
     }
-    const first: GELQuery = targets[0];
-    const target = {
-      ...first,
-      queries: first.queries.map(q => {
-        const ds = config.datasources[q.datasource || config.defaultDatasource];
-        console.log('DS', ds);
-        return {
-          ...q,
-          datasourceId: ds.id,
-        };
-      }),
+    const first: TempGELQueryWrapper = targets[0];
+
+    // Tell it the IDs for each used datasource
+    const datasources = {
+      default: config.datasources[config.defaultDatasource].id,
+      names: {} as KeyValue<number>,
     };
+    for (const q of first.queries) {
+      const name = q.datasource as string;
+      if (q.datasource && name !== GEL_DS_KEY && !datasources.names[name]) {
+        datasources.names[name] = config.datasources[name].id;
+      }
+    }
+    (opts as any).targets = first.queries;
 
     return getBackendSrv()
       .post(url!, {
         options: opts,
-        gel: target,
+        datasources,
       })
       .then(res => {
         return { data: responseToDataFrame(res) };
