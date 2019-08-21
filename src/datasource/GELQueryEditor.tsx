@@ -75,11 +75,11 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     onChange({ ...query, queries });
   };
 
-  onChangeGELQuery = (gel: GELQuery) => {
+  onChangeGELQuery = (update: DataQuery) => {
     const { query, onChange } = this.props;
     const queries = query.queries.map(q => {
-      if (q.refId === gel.refId) {
-        return gel;
+      if (q.refId === update.refId) {
+        return update;
       }
       return q;
     });
@@ -87,7 +87,7 @@ export class GELQueryEditor extends PureComponent<Props, State> {
   };
 
   render() {
-    const { query, panelData, onChange } = this.props;
+    const { query, panelData } = this.props;
     const { datasources } = this.state;
     const selected = {
       label: '   ',
@@ -133,7 +133,7 @@ export class GELQueryEditor extends PureComponent<Props, State> {
               query={q}
               data={panelData}
               onRemoveQuery={this.onRemoveQuery}
-              onChange={onChange as (query: DataQuery) => void}
+              onChange={this.onChangeGELQuery}
             />
           );
         })}

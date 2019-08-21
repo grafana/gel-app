@@ -4,6 +4,8 @@
   "id": "gel-datasource",
   "metrics": true,
 
+  "hiddenQueries": true,
+
   "info": {
     "logos": {
       "small": "img/pipeline.svg",

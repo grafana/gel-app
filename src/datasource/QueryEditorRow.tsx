@@ -146,6 +146,14 @@ export class QueryEditorRow extends PureComponent<Props, State> {
     this.props.onRemoveQuery(this.props.query);
   };
 
+  onToggleQueryHide = () => {
+    const { query, onChange } = this.props;
+    onChange({
+      ...query,
+      hide: !query.hide,
+    });
+  };
+
   render() {
     const { query } = this.props;
     const { datasource } = this.state;
@@ -153,6 +161,8 @@ export class QueryEditorRow extends PureComponent<Props, State> {
     if (!datasource) {
       return null;
     }
+
+    const isDisabled = query.hide;
 
     return (
       <div>
@@ -164,6 +174,10 @@ export class QueryEditorRow extends PureComponent<Props, State> {
             <span>{query.datasource}</span>
           </div>
           <div className="query-editor-row__actions">
+            <button className="query-editor-row__action" onClick={this.onToggleQueryHide} title="Disable/enable query">
+              {isDisabled && <i className="fa fa-fw fa-eye-slash" />}
+              {!isDisabled && <i className="fa fa-fw fa-eye" />}
+            </button>
             <button className="query-editor-row__action" title="Remove query" onClick={this.onRemoveQuery}>
               <i className="fa fa-fw fa-trash"></i>
             </button>
