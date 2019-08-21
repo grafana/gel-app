@@ -86,6 +86,13 @@ export class GELQueryEditor extends PureComponent<Props, State> {
     onChange({ ...query, queries });
   };
 
+  onToggleQueryHide = (update: GELQuery) => {
+    this.onChangeGELQuery({
+      ...update,
+      hide: !update.hide,
+    });
+  };
+
   render() {
     const { query, panelData } = this.props;
     const { datasources } = this.state;
@@ -101,6 +108,7 @@ export class GELQueryEditor extends PureComponent<Props, State> {
       <div>
         {query.queries.map((q, index) => {
           if (q.datasource === GEL_DS_KEY) {
+            const isDisabled = q.hide;
             const gelQuery = q as GELQuery;
             return (
               <div key={index}>
@@ -112,6 +120,10 @@ export class GELQueryEditor extends PureComponent<Props, State> {
                     <span>GEL:</span>
                   </div>
                   <div className="query-editor-row__actions">
+                    <button className="query-editor-row__action" onClick={() => this.onToggleQueryHide(gelQuery)} title="Disable/enable query">
+                      {isDisabled && <i className="fa fa-fw fa-eye-slash" />}
+                      {!isDisabled && <i className="fa fa-fw fa-eye" />}
+                    </button>
                     <button className="query-editor-row__action" title="Remove query" onClick={() => this.onRemoveQuery(q)}>
                       <i className="fa fa-fw fa-trash"></i>
                     </button>
@@ -127,15 +139,7 @@ export class GELQueryEditor extends PureComponent<Props, State> {
             );
           }
 
-          return (
-            <QueryEditorRow
-              key={index}
-              query={q}
-              data={panelData}
-              onRemoveQuery={this.onRemoveQuery}
-              onChange={this.onChangeGELQuery}
-            />
-          );
+          return <QueryEditorRow key={index} query={q} data={panelData} onRemoveQuery={this.onRemoveQuery} onChange={this.onChangeGELQuery} />;
         })}
 
         <div className="form-field">
