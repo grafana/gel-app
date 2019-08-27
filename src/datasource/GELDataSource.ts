@@ -3,7 +3,7 @@ import { DataQueryRequest, DataQueryResponse, DataSourceApi, DataSourceInstanceS
 import { getBackendSrv, config } from '@grafana/runtime';
 
 import { GELDataSourceOptions, TempGELQueryWrapper, GEL_DS_KEY } from './types';
-import { responseToDataFrame } from './util';
+import { gelResponseToDataFrames } from './util';
 
 export class GELDataSource extends DataSourceApi<TempGELQueryWrapper, GELDataSourceOptions> {
   constructor(private instanceSettings: DataSourceInstanceSettings<GELDataSourceOptions>) {
@@ -43,13 +43,13 @@ export class GELDataSource extends DataSourceApi<TempGELQueryWrapper, GELDataSou
         options: opts,
       })
       .then(res => {
-        return { data: responseToDataFrame(res) };
-      })
-      .catch(err => {
-        err.isHandled = true;
-        console.error('Error', err);
-        return { data: [] };
+        return { data: gelResponseToDataFrames(res) };
       });
+    // .catch(err => {
+    //   err.isHandled = true;
+    //   console.error('Error', err);
+    //   return { data: [] };
+    // });
   }
 
   async testDatasource() {
