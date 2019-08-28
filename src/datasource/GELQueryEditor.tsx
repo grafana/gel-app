@@ -27,13 +27,17 @@ export class GELQueryEditor extends PureComponent<Props, State> {
   async componentDidMount() {
     const dslist: any[] = await getBackendSrv().get('/api/datasources');
     this.setState({
-      datasources: dslist.map(ds => {
-        return {
-          label: ds.name,
-          value: ds.id, // number
-          imgUrl: ds.typeLogoUrl,
-        };
-      }),
+      datasources: dslist
+        .filter(ds => {
+          return ds.type !== 'gel-datasource';
+        })
+        .map(ds => {
+          return {
+            label: ds.name,
+            value: ds.id, // number
+            imgUrl: ds.typeLogoUrl,
+          };
+        }),
     });
   }
 
