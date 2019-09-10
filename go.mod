@@ -8,7 +8,6 @@ go 1.12
 
 require (
 	github.com/VividCortex/mysqlerr v0.0.0-20170204212430-6c6b55f8796f // indirect
-	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-macaron/session v0.0.0-20190805070824-1a3cdc6f5659 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
@@ -16,9 +15,9 @@ require (
 	github.com/google/go-cmp v0.3.1
 	github.com/gosimple/slug v1.7.0 // indirect
 	github.com/grafana/grafana v6.1.6+incompatible
-	github.com/grafana/grafana-plugin-model v0.0.0-20180518082423-84176c64269d
-	github.com/hashicorp/go-hclog v0.9.2
-	github.com/hashicorp/go-plugin v1.0.1
+	github.com/grafana/grafana-plugin-model v0.0.0-20190906002829-a7284adfb995
+	github.com/hashicorp/go-hclog v0.0.0-20180402200405-69ff559dc25f
+	github.com/hashicorp/go-plugin v0.0.0-20180331002553-e8d22c780116
 	github.com/inconshreveable/log15 v0.0.0-20180818164646-67afb5ed74ec // indirect
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-isatty v0.0.9 // indirect
@@ -29,7 +28,8 @@ require (
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf // indirect
-	golang.org/x/net v0.0.0-20190909003024-a7b16738d86b
+	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
+	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
 	gonum.org/v1/gonum v0.0.0-20190908220844-1d8f8b2ee4ce
-	google.golang.org/grpc v1.23.0
+	google.golang.org/grpc v1.11.1
 )
