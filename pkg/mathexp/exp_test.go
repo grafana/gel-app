@@ -124,7 +124,7 @@ func TestNumberExpr(t *testing.T) {
 			name:      "binary: Scalar Op Number (Number will nil val) - currently Panics",
 			expr:      "1 + $A",
 			vars:      Vars{"A": Results{[]Value{makeNumber("", nil, nil)}}},
-			willPanic: false,
+			willPanic: true,
 		},
 	}
 
