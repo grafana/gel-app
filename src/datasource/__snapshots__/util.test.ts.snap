@@ -1,33 +1,110 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`GEL Utils should parse sample GEL output 1`] = `
-Object {
-  "config": Object {},
-  "name": "Time",
-  "type": "time",
-  "values": Array [
-    1566319860000,
-    1566319920000,
-    1566319980000,
-    1566320040000,
-    1566320100000,
-    1566320160000,
-  ],
-}
-`;
-
-exports[`PluginDatasource when querying should return the saved data with a query 1`] = `
-Object {
-  "config": Object {},
-  "name": "Time",
-  "type": "time",
-  "values": Array [
-    1566319860000,
-    1566319920000,
-    1566319980000,
-    1566320040000,
-    1566320100000,
-    1566320160000,
-  ],
-}
+Array [
+  Object {
+    "fields": Array [
+      Object {
+        "config": Object {},
+        "name": "Time",
+        "type": "time",
+        "values": Array [
+          1566937080000,
+        ],
+      },
+      Object {
+        "config": Object {},
+        "name": "GE-series",
+        "type": "number",
+        "values": Array [
+          2,
+        ],
+      },
+    ],
+    "labels": undefined,
+    "meta": undefined,
+    "name": "AAA",
+    "refId": "GE",
+  },
+  Object {
+    "fields": Array [
+      Object {
+        "config": Object {},
+        "name": "Time",
+        "type": "time",
+        "values": Array [
+          1566937114433,
+          1566937115433,
+          1566937116433,
+          1566937117433,
+          1566937118433,
+        ],
+      },
+      Object {
+        "config": Object {},
+        "name": "GA-series",
+        "type": "number",
+        "values": Array [
+          60.466028797961954,
+          60.906537886006966,
+          61.07109793922545,
+          61.00881212641243,
+          60.933449623483696,
+        ],
+      },
+    ],
+    "labels": undefined,
+    "meta": undefined,
+    "name": "BBB",
+    "refId": "GA",
+  },
+  Object {
+    "fields": Array [
+      Object {
+        "config": Object {},
+        "name": "Field 1",
+        "type": "number",
+        "values": Array [
+          60.8771852746181,
+        ],
+      },
+    ],
+    "labels": undefined,
+    "meta": undefined,
+    "name": "CCC",
+    "refId": "GC",
+  },
+  Object {
+    "fields": Array [
+      Object {
+        "config": Object {},
+        "name": "Time",
+        "type": "time",
+        "values": Array [
+          1566937114433,
+          1566937115433,
+          1566937116433,
+          1566937117433,
+          1566937118433,
+        ],
+      },
+      Object {
+        "config": Object {},
+        "name": "Field 2",
+        "type": "number",
+        "values": Array [
+          0.9932461319490806,
+          1.0004821611126804,
+          1.0031853093031915,
+          1.0021621704617347,
+          1.0009242271733128,
+        ],
+      },
+    ],
+    "labels": undefined,
+    "meta": undefined,
+    "name": "DDD",
+    "refId": "GD",
+  },
+]
 `;
