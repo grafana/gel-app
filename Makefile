@@ -20,7 +20,7 @@ test-in-docker: build-container
 
 # TODO: This should build for the current arch, not linux
 build:
-	go build -mod=vendor -o ./dist/${DSNAME}_linux_amd64 -a -tags netgo -ldflags '-w' ./pkg
+	go build -mod=vendor -o ./dist/datasource/${DSNAME}_linux_amd64 -a -tags netgo -ldflags '-w' ./pkg
 
 # TODO: other builds to use -mod=vendor? 
 build-darwin:

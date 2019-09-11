@@ -2,8 +2,6 @@
   "type": "app",
   "name": "GEL App POC",
   "id": "gel-app",
-  "backend": true,
-  "executable": "gel",
 
   "info": {
     "author": {

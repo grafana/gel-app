@@ -3,6 +3,8 @@
   "name": "GEL Data",
   "id": "gel-datasource",
   "metrics": true,
+  "executable": "gel",
+  "backend": true,
 
   "hiddenQueries": true,
 
