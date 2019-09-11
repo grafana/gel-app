@@ -15,7 +15,7 @@ type GELPlugin struct {
 }
 
 // Query Primary method called by grafana-server
-func (plugin *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRequest) (*datasource.DatasourceResponse, error) {
+func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRequest, api datasource.GrafanaAPI) (*datasource.DatasourceResponse, error) {
 
 	// Process App Request once we can get it from the Plugin-API
 	needGelAppReqPlz := gelpoc.GelAppReq{}
@@ -28,6 +28,15 @@ func (plugin *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.Datasour
 
 	// Execute Pipeline
 	//	Executing the pipeline will require the bi-directional calls
+	_, err := api.QueryDatasource(ctx, &datasource.QueryDatasourceRequest{
+		DatasourceId: 1,
+		Queries:      tsdbReq.Queries,
+		TimeRange:    tsdbReq.TimeRange,
+	})
+
+	if err != nil {
+		gp.logger.Error("Failed to call api.QueryDatasource", "err", err)
+	}
 
 	//plugin.logger.Debug("Query", "datasource", tsdbReq.Datasource.Name, "TimeRange", tsdbReq.TimeRange)
 
