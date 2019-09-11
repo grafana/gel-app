@@ -2,7 +2,7 @@ import { gelResponseToDataFrames } from './util';
 
 const resp = [
   {
-    name: '',
+    name: 'AAA',
     fields: [
       {
         name: 'Time',
@@ -19,7 +19,7 @@ const resp = [
     refId: 'GE',
   },
   {
-    name: '',
+    name: 'BBB',
     fields: [
       {
         name: 'Time',
@@ -42,7 +42,7 @@ const resp = [
     refId: 'GA',
   },
   {
-    name: '',
+    name: 'CCC',
     fields: [
       {
         name: '',
@@ -54,7 +54,7 @@ const resp = [
     refId: 'GC',
   },
   {
-    name: '',
+    name: 'DDD',
     fields: [
       {
         name: 'Time',
@@ -80,14 +80,16 @@ const resp = [
 
 describe('GEL Utils', () => {
   test('should parse sample GEL output', () => {
-    const frame = gelResponseToDataFrames(resp)[0];
+    const frames = gelResponseToDataFrames(resp);
+    const frame = frames[0];
     expect(frame.name).toEqual('AAA');
     expect(frame.fields.length).toEqual(2);
     expect(frame.length).toEqual(resp[0].fields[0].values.length);
 
     const timeField = frame.fields[0];
-
     expect(timeField.name).toEqual('Time');
-    expect(timeField).toMatchSnapshot();
+
+    // The whole response
+    expect(frames).toMatchSnapshot();
   });
 });
