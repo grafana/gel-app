@@ -23,6 +23,13 @@ In this repo:
 1. `make vendor`
 2. `make build` (on Linux), (or `make build-darwin` for mac) - which should output an executable to `dist/datasource`.
 
+**Warning**: The `go.mod` file has `replace` overrides to reference specific *commits* of the bidirectional_poc branches for Grafana. So I believe if those branches get new commits, the `replace` directives in `go.mod` will need to be updated to get the changes.
+
 ### Running
 
 You can then run grafana with the [bidirectional_poc](https://github.com/grafana/grafana/tree/bidirectional_poc) branch. If you enable debug logging in Grafana's ini you should see the plugin executed (or errors/problems). You should also see a gel process running after grafana starts `ps aux | grep gel | grep -v grep` or task manager or something :-).
+
+## Reference Branches
+
+- [Grafana bidirectional_poc](https://github.com/grafana/grafana/tree/bidirectional_poc)
+- [Grafana Plugin Model bidirectional_poc](https://github.com/grafana/grafana-plugin-model/tree/bidirectional_poc)
