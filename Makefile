@@ -22,15 +22,14 @@ test-in-docker: build-container
 build:
 	$(GO) build -mod=vendor -o ./dist/datasource/${DSNAME}_linux_amd64 -a -tags netgo -ldflags '-w' ./pkg
 
-# TODO: other builds to use -mod=vendor? 
 build-darwin:
-	$(GO) build -o ./dist/datasource/${DSNAME}_darwin_amd64 -a -tags netgo -ldflags '-w' ./pkg
+	$(GO) build -mod=vendor -o ./dist/datasource/${DSNAME}_darwin_amd64 -a -tags netgo -ldflags '-w' ./pkg
 
 build-dev:
-	$(GO) build -o ./dist/datasource/${DSNAME}_linux_amd64 -a ./pkg
+	$(GO) build -mod=vendor -o ./dist/datasource/${DSNAME}_linux_amd64 -a ./pkg
 
 build-win:
-	$(GO) build -o ./dist/datasource/${DSNAME}_windows_amd64.exe -a -tags netgo -ldflags '-w' ./pkg
+	$(GO) build -mod=vendor -o ./dist/datasource/${DSNAME}_windows_amd64.exe -a -tags netgo -ldflags '-w' ./pkg
 
 build-in-circleci: build-in-circleci-linux build-in-circleci-windows
 
