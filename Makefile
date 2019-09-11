@@ -1,10 +1,11 @@
 DSNAME=gel
+GO = GO111MODULE=on go
 all: build
 
 test:
 	mkdir -p coverage
-	go test ./pkg/... -v -cover -coverprofile=coverage/cover.out
-	go tool cover -html=coverage/cover.out -o coverage/coverage.html
+	$(GO) test ./pkg/... -v -cover -coverprofile=coverage/cover.out
+	$(GO) tool cover -html=coverage/cover.out -o coverage/coverage.html
 
 vendor:
 	go mod vendor
@@ -16,9 +17,12 @@ test-in-docker: build-container
 		-w /go/src/github.com/grafana/${DSNAME} \
 		plugin-builder make test
 
+
+# TODO: This should build for the current arch, not linux
 build:
 	go build -mod=vendor -o ./dist/${DSNAME}_linux_amd64 -a -tags netgo -ldflags '-w' ./pkg
 
+# TODO: other builds to use -mod=vendor? 
 build-darwin:
 	go build -o ./dist/${DSNAME}_darwin_amd64 -a -tags netgo -ldflags '-w' ./pkg
 
