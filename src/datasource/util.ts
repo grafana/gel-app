@@ -1,5 +1,5 @@
 import { TempGELQueryWrapper } from './types';
-import { DataFrame, DataFrameHelper, dateTime, FieldType } from '@grafana/data';
+import { DataFrame, MutableDataFrame, dateTime, FieldType } from '@grafana/data';
 
 export function getNextQueryID(query: TempGELQueryWrapper) {
   if (!query || !query.queries) {
@@ -18,7 +18,7 @@ export function getNextQueryID(query: TempGELQueryWrapper) {
 
 export function gelResponseToDataFrames(rsp: any[]): DataFrame[] {
   return rsp.map((v: any) => {
-    const frame = new DataFrameHelper();
+    const frame = new MutableDataFrame();
     frame.name = v.name;
     frame.refId = v.refId;
     if (v.labels) {
