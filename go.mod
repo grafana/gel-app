@@ -13,7 +13,6 @@ replace google.golang.org/genproto => google.golang.org/genproto v0.0.0-20180514
 go 1.12
 
 require (
-	github.com/davecgh/go-spew v1.1.1
 	github.com/google/go-cmp v0.3.1
 	github.com/grafana/grafana v0.0.0-00010101000000-000000000000
 	github.com/grafana/grafana-plugin-model v0.0.0-20190906002829-a7284adfb995
