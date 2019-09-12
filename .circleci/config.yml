@@ -61,10 +61,11 @@ jobs:
         keys:
         - yarn-packages-{{ checksum "yarn.lock" }}
     - run:
-        name: Install yarn
+        name: Install yarn and Go
         command: |
           sudo npm install -g yarn --quiet
           yarn install --pure-lockfile
+          sudo apt-get install golang-go
     - run:
         name: Run Toolkit CI
         command: npx grafana-toolkit plugin:ci-build --backend
