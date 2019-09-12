@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 
+	"github.com/grafana/grafana-plugin-model/go/datasource"
 	"github.com/hashicorp/go-hclog"
 	"google.golang.org/grpc"
 
@@ -54,9 +55,9 @@ func main() {
 			MagicCookieKey:   "grafana_plugin_type",
 			MagicCookieValue: "datasource",
 		},
-		// Plugins: map[string]plugin.Plugin{
-		// 	"gel-app": &datasource.DatasourcePluginImpl{Plugin: &GELPlugin{logger: pluginLogger}},
-		// },
+		Plugins: map[string]plugin.Plugin{
+			"gel-app": &datasource.DatasourcePluginImpl{Plugin: &GELPlugin{logger: pluginLogger}},
+		},
 		GRPCServer: pluginGRPCServer,
 	})
 }
