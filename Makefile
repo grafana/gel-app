@@ -2,6 +2,9 @@ DSNAME=gel
 GO = GO111MODULE=on go
 all: build
 
+# Called by circle-ci task
+backend-plugin-ci: test build-in-circleci
+
 test:
 	mkdir -p coverage
 	$(GO) test ./pkg/... -v -cover -coverprofile=coverage/cover.out
