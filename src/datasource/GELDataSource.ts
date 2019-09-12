@@ -26,10 +26,15 @@ export class GELDataSource extends DataSourceApi<TempGELQueryWrapper, GELDataSou
     if (targets.length < 1) {
       return Promise.resolve({ data: [] });
     }
+    const orgId = (window as any).grafanaBootData.user.orgId;
     const first: TempGELQueryWrapper = targets[0];
     const queries = first.queries.map(q => {
       if (q.datasource === GEL_DS_KEY) {
-        return q;
+        return {
+          ...q,
+          datasourceId: this.id,
+          orgId,
+        }
       }
       const ds = config.datasources[q.datasource || config.defaultDatasource];
       return {
@@ -37,6 +42,7 @@ export class GELDataSource extends DataSourceApi<TempGELQueryWrapper, GELDataSou
         datasourceId: ds.id,
         intervalMs,
         maxDataPoints,
+        orgId
         // ?? alias: templateSrv.replace(q.alias || ''),
       };
     });
