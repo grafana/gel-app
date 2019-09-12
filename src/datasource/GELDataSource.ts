@@ -19,7 +19,7 @@ export class GELDataSource extends DataSourceApi<TempGELQueryWrapper, GELDataSou
 
   async query(options: DataQueryRequest<TempGELQueryWrapper>): Promise<DataQueryResponse> {
     const { url } = this.instanceSettings;
-    const { targets, intervalMs, maxDataPoints } = options;
+    const { targets, intervalMs, maxDataPoints, range } = options;
     if (targets.length > 1) {
       return Promise.reject('Only query supported right now');
     }
@@ -43,11 +43,9 @@ export class GELDataSource extends DataSourceApi<TempGELQueryWrapper, GELDataSou
 
     return getBackendSrv()
       .post(url!, {
-        data: {
-          from: options.range.from.valueOf().toString(),
-          to: options.range.to.valueOf().toString(),
-          queries: queries,
-        },
+        from: range.from.valueOf().toString(),
+        to: range.to.valueOf().toString(),
+        queries: queries,
       })
       .then(res => {
         return { data: gelResponseToDataFrames(res) };
