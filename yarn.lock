@@ -713,35 +713,30 @@
   resolved "https://registry.yarnpkg.com/@emotion/utils/-/utils-0.8.2.tgz#576ff7fb1230185b619a75d258cbc98f0867a8dc"
   integrity sha512-rLu3wcBWH4P5q1CGoSSH/i9hrXs7SlbRLkoq9IGuoPYNGQvDJ3pt/wmOM+XgYjIDRMVIdkUWt0RsfzF50JfnCw==
 
-"@grafana/data@6.4.0-alpha.44-7ca77b8a9", "@grafana/data@next":
-  version "6.4.0-alpha.44-7ca77b8a9"
-  resolved "https://registry.yarnpkg.com/@grafana/data/-/data-6.4.0-alpha.44-7ca77b8a9.tgz#59697134709928c685abd3d2c2ff4e0eb356f151"
-  integrity sha512-7IYMeJLMp46GG1fU4EbMsz6N7o8X/27S/TBwORwh10atSAtdkhOmXb9qrn2tvsMixVYtZz1wCDAe7SjD+lMlxg==
+"@grafana/data@6.4.0-pre-c2dea633e", "@grafana/data@^6.4.0-pre-c2dea633e", "@grafana/data@canary":
+  version "6.4.0-pre-c2dea633e"
+  resolved "https://registry.yarnpkg.com/@grafana/data/-/data-6.4.0-pre-c2dea633e.tgz#63c22f3810c442866cb4958a37a8686420989a80"
+  integrity sha512-fxPqwMkaBspLayftbTinhntIzpsaxKYTdLsfffvuTLVyvT8uiVKjvwTJEJGQnixjp+8tm18PJhQrzSHrSB+KVA==
 
-"@grafana/data@6.4.0-alpha.44-f2ca3abf0", "@grafana/data@^6.4.0-alpha.44-7ca77b8a9":
-  version "6.4.0-alpha.44-f2ca3abf0"
-  resolved "https://registry.yarnpkg.com/@grafana/data/-/data-6.4.0-alpha.44-f2ca3abf0.tgz#0c0d8a7e2f350a6e3dbe78553914460bf2b05e70"
-  integrity sha512-fxtH5dl8qXFXDWYQaIK0uin8/pJW/OoIVxIXhkimUBe1eR6b3opJK6E2cBRQv1gVnVfxcvQKimyv3zFPfT0Ssg==
-
-"@grafana/runtime@next":
-  version "6.4.0-alpha.44-7ca77b8a9"
-  resolved "https://registry.yarnpkg.com/@grafana/runtime/-/runtime-6.4.0-alpha.44-7ca77b8a9.tgz#4f9bfff6ea89c52db619ee4be1c47268e852ade5"
-  integrity sha512-t6I+KkHxp2vUOI2T7/dL/TqYhjLAv9s29ApQ0LwqkTc/wEoSolLYAIUkES+0zKk/IbUssoXf+jOKUs/70kRu9w==
+"@grafana/runtime@canary":
+  version "6.4.0-pre-c2dea633e"
+  resolved "https://registry.yarnpkg.com/@grafana/runtime/-/runtime-6.4.0-pre-c2dea633e.tgz#97c87b0aa5ce4e2d634606838fd5a67de5f22f7e"
+  integrity sha512-606wOgfDWH8jnmsSc0vPeEhNRA9laPw5oWMFKHW5bG4Xlu6+EM6OCWxyz7IUVqmi39YOeVMMP7i+tAcyNXBsSA==
   dependencies:
-    "@grafana/data" "6.4.0-alpha.44-7ca77b8a9"
-    "@grafana/ui" "6.4.0-alpha.44-7ca77b8a9"
+    "@grafana/data" "6.4.0-pre-c2dea633e"
+    "@grafana/ui" "6.4.0-pre-c2dea633e"
     systemjs "0.20.19"
     systemjs-plugin-css "0.1.37"
 
-"@grafana/toolkit@next":
-  version "6.4.0-alpha.44-7ca77b8a9"
-  resolved "https://registry.yarnpkg.com/@grafana/toolkit/-/toolkit-6.4.0-alpha.44-7ca77b8a9.tgz#017fe6a4d7ee06e7e50bdc8edbd6192056675839"
-  integrity sha512-YyYvOI1vDhX8ns1wAOH5N1ZAjRy6RzaEE51BDcxcAhlMKjLTvlfy2i0hLov1bqgfjwOlDMLx0nE+OtSu6kOPQQ==
+"@grafana/toolkit@canary":
+  version "6.4.0-pre-c2dea633e"
+  resolved "https://registry.yarnpkg.com/@grafana/toolkit/-/toolkit-6.4.0-pre-c2dea633e.tgz#3d3aeab4aa4a1e1f6a0a0755918e277c693bee71"
+  integrity sha512-MNskhn51osh8u7ya1Pe653hIneZA1CsSCEXvkVgOls9yXpjK98lKdHls4drgviZAC9CmgxpRJ9IhUQYujNkHvA==
   dependencies:
     "@babel/core" "7.4.5"
     "@babel/preset-env" "7.4.5"
-    "@grafana/data" "^6.4.0-alpha.44-7ca77b8a9"
-    "@grafana/ui" "^6.4.0-alpha.44-7ca77b8a9"
+    "@grafana/data" "^6.4.0-pre-c2dea633e"
+    "@grafana/ui" "^6.4.0-pre-c2dea633e"
     "@types/execa" "^0.9.0"
     "@types/expect-puppeteer" "3.3.1"
     "@types/inquirer" "^6.0.3"
@@ -804,39 +799,12 @@
     url-loader "^2.0.1"
     webpack "4.35.0"
 
-"@grafana/ui@6.4.0-alpha.44-7ca77b8a9", "@grafana/ui@next":
-  version "6.4.0-alpha.44-7ca77b8a9"
-  resolved "https://registry.yarnpkg.com/@grafana/ui/-/ui-6.4.0-alpha.44-7ca77b8a9.tgz#095f1c2e870388b5ce3b1a46cb4018ddaa7e4257"
-  integrity sha512-UCu3IxTxWFECQlRu0v94lr0FX/8F9nCXYRaqCaUZVzH3j5fO8DAoSYUo86rxagIRFg5+pXNk9ihm/1b4BHC5RQ==
+"@grafana/ui@6.4.0-pre-c2dea633e", "@grafana/ui@^6.4.0-pre-c2dea633e", "@grafana/ui@canary":
+  version "6.4.0-pre-c2dea633e"
+  resolved "https://registry.yarnpkg.com/@grafana/ui/-/ui-6.4.0-pre-c2dea633e.tgz#a567af24e1a44f93f25110144e9a66d05828e8f0"
+  integrity sha512-KFr96MWTdcdSGscLlviv3DPmThf2+XBWwxoP5X9hmQthGbenSAylg0P+I4H/P68VNdL8+U2faw0nw+M0UOFAvw==
   dependencies:
-    "@grafana/data" "6.4.0-alpha.44-7ca77b8a9"
-    "@torkelo/react-select" "2.1.1"
-    "@types/react-color" "2.17.0"
-    classnames "2.2.6"
-    d3 "5.9.1"
-    jquery "3.4.1"
-    lodash "4.17.14"
-    moment "2.24.0"
-    papaparse "4.6.3"
-    rc-time-picker "^3.7.2"
-    react "16.8.6"
-    react-calendar "2.18.1"
-    react-color "2.17.0"
-    react-custom-scrollbars "4.2.1"
-    react-dom "16.8.6"
-    react-highlight-words "0.11.0"
-    react-popper "1.3.3"
-    react-storybook-addon-props-combinations "1.1.0"
-    react-transition-group "2.6.1"
-    react-virtualized "9.21.0"
-    tinycolor2 "1.4.1"
-
-"@grafana/ui@^6.4.0-alpha.44-7ca77b8a9":
-  version "6.4.0-alpha.44-f2ca3abf0"
-  resolved "https://registry.yarnpkg.com/@grafana/ui/-/ui-6.4.0-alpha.44-f2ca3abf0.tgz#b47cac239cb32a75f9e5e4991257d0eb17b1453c"
-  integrity sha512-3mfaNEjaAMuB4ohIkOZ0jMuCn0Z5p92Owm1HXLbyHmKMJBL/4sy2xhNs1LHaKv1DPbqrZQIHPqlT2LAxBXHm/w==
-  dependencies:
-    "@grafana/data" "6.4.0-alpha.44-f2ca3abf0"
+    "@grafana/data" "6.4.0-pre-c2dea633e"
     "@torkelo/react-select" "2.1.1"
     "@types/react-color" "2.17.0"
     classnames "2.2.6"
@@ -1886,9 +1854,9 @@ autoprefixer@^9.4.9:
     postcss-value-parser "^4.0.0"
 
 aws-sdk@^2.495.0:
-  version "2.526.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.526.0.tgz#e0f899be59edb7d50eb8cca7978bcd401a5d48c2"
-  integrity sha512-ZZqf8AnD9A8ZJd/4oU711R8taxm8sV7wcAOvT0HhrZxv8zASAzoz2lpZ19QAil6uJ52IOkq4ij/zGy7VBXEgPA==
+  version "2.527.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.527.0.tgz#79a770329b41219898d5f3f6407d4c838d382e4c"
+  integrity sha512-2HIKiLlUw+CpRiopXbHejpgBcVUtHGkS3RbHdO4spcgOVqWbrRIjnfxFJcQlR2Fl+H0GBZ2VH63k696DzO4g9g==
   dependencies:
     buffer "4.9.1"
     events "1.1.1"
@@ -3654,9 +3622,9 @@ ecc-jsbn@~0.1.1:
     safer-buffer "^2.1.0"
 
 electron-to-chromium@^1.3.191, electron-to-chromium@^1.3.247:
-  version "1.3.255"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.255.tgz#9f4b4f9ffd559dd7a81fef962186fc918d118b66"
-  integrity sha512-SZ6NlaNw3h4WR5kA1BK8XltdJCax02P+lW+z78RYoLDqmpyYuDQ5bS+/O6MCJ/j761qoZIFox2qYYt+UwqGA5w==
+  version "1.3.256"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.256.tgz#7f680d5f04df8e2bd9cb9758026d70f5ff1808a9"
+  integrity sha512-GHY1r2mO56BRMng6rkxxJvsWKtqy9k/IlSBrAV/VKwZKpTydVUJnOwajTNnl5uutJpthHgZy+HeofK5K6PqEgQ==
 
 elliptic@^6.0.0:
   version "6.5.1"

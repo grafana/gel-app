@@ -11,11 +11,11 @@
   "author": "Grafana Labs",
   "license": "Apache-2.0",
   "dependencies": {
-    "@grafana/toolkit": "next"
+    "@grafana/toolkit": "canary"
   },
   "devDependencies": {
-    "@grafana/data": "next",
-    "@grafana/runtime": "next",
-    "@grafana/ui": "next"
+    "@grafana/data": "canary",
+    "@grafana/runtime": "canary",
+    "@grafana/ui": "canary"
   }
 }
