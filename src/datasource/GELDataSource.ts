@@ -34,7 +34,7 @@ export class GELDataSource extends DataSourceApi<TempGELQueryWrapper, GELDataSou
           ...q,
           datasourceId: this.id,
           orgId,
-        }
+        };
       }
       const ds = config.datasources[q.datasource || config.defaultDatasource];
       return {
@@ -42,7 +42,7 @@ export class GELDataSource extends DataSourceApi<TempGELQueryWrapper, GELDataSou
         datasourceId: ds.id,
         intervalMs,
         maxDataPoints,
-        orgId
+        orgId,
         // ?? alias: templateSrv.replace(q.alias || ''),
       };
     });
