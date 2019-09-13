@@ -8,6 +8,10 @@ import (
 	"github.com/grafana/grafana-plugin-model/go/datasource"
 )
 
+// ToPBFrame Converts that dataframe to our protobuf (for grpc)
+// type.
+// Warning: Both these types are subject to substantial change
+// as the protocol is only in a branch.
 func (f *Frame) ToPBFrame() (*datasource.Frame, error) {
 	dsFrame := &datasource.Frame{
 		Name:   f.Name,
@@ -34,7 +38,7 @@ func (f *Frame) ToPBFrame() (*datasource.Frame, error) {
 		dsFrame.Fields[i] = &datasource.Field{
 			Name:   field.Name,
 			Type:   datasource.Field_FieldType(field.Type),
-			Vector: &listValue,
+			Values: &listValue,
 		}
 	}
 	return dsFrame, nil
