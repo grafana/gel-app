@@ -7,6 +7,7 @@ import (
 
 	"github.com/grafana/gel-app/pkg/data"
 	"github.com/grafana/gel-app/pkg/mathexp/parse"
+	"github.com/grafana/grafana-plugin-model/go/datasource"
 	"github.com/grafana/grafana/pkg/tsdb"
 )
 
@@ -223,6 +224,20 @@ func FromTSDB(seriesCollection tsdb.TimeSeriesSlice) Results {
 	return results
 }
 
+func FromGRPC(seriesCollection []*datasource.TimeSeries) Results {
+	results := Results{[]Value{}}
+	results.Values = make([]Value, len(seriesCollection))
+	for seriesIdx, series := range seriesCollection {
+		s := NewSeries(series.Name, data.Labels(series.Tags), len(series.Points))
+		for pointIdx, point := range series.Points {
+			t, f := convertDSTimePoint(point)
+			s.SetPoint(pointIdx, t, f)
+		}
+		results.Values[seriesIdx] = s
+	}
+	return results
+}
+
 // convertTSDBTimePoint coverts a tsdb.TimePoint into two values appropriate
 // for Series values.
 func convertTSDBTimePoint(point tsdb.TimePoint) (t *time.Time, f *float64) {
@@ -236,6 +251,14 @@ func convertTSDBTimePoint(point tsdb.TimePoint) (t *time.Time, f *float64) {
 		f = &point[valueIdx].Float64
 	}
 	return
+}
+
+func convertDSTimePoint(point *datasource.Point) (t *time.Time, f *float64) {
+	tI := int64(point.Timestamp)
+	uT := time.Unix(tI/int64(1e+3), (tI%int64(1e+3))*int64(1e+6)) // time.Time from millisecond unix ts
+	t = &uT
+	f = &point.Value
+	return t, f
 }
 
 // SortByTime sorts the series by the time from oldest to newest.

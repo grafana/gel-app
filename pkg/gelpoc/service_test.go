@@ -1,17 +1,5 @@
 package gelpoc
 
-import (
-	"context"
-	"testing"
-	"time"
-
-	"github.com/grafana/gel-app/pkg/data"
-	"github.com/grafana/grafana/pkg/components/null"
-	"github.com/grafana/grafana/pkg/components/simplejson"
-	"github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/tsdb"
-)
-
 var (
 	pluginID = "test-plugin"
 	dsRefID  = "GA"
@@ -147,189 +135,189 @@ var (
 
 // Helpers
 
-func pt(ts, val float64) tsdb.TimePoint {
-	return tsdb.TimePoint{null.FloatFrom(val), null.FloatFrom(ts)}
-}
+// func pt(ts, val float64) tsdb.TimePoint {
+// 	return tsdb.TimePoint{null.FloatFrom(val), null.FloatFrom(ts)}
+// }
 
-func fieldsAsTime(fs data.Fields) []*time.Time {
-	var res []*time.Time
-	for _, field := range fs {
-		if v, ok := field.Vector.(*data.TimeVector); ok {
-			for _, value := range *v {
-				res = append(res, value)
-			}
-		}
-	}
-	return res
-}
+// func fieldsAsTime(fs data.Fields) []*time.Time {
+// 	var res []*time.Time
+// 	for _, field := range fs {
+// 		if v, ok := field.Vector.(*data.TimeVector); ok {
+// 			for _, value := range *v {
+// 				res = append(res, value)
+// 			}
+// 		}
+// 	}
+// 	return res
+// }
 
-func fieldsAsFloat64(fs data.Fields) []*float64 {
-	var res []*float64
-	for _, field := range fs {
-		if v, ok := field.Vector.(*data.Float64Vector); ok {
-			for _, value := range *v {
-				res = append(res, value)
-			}
-		}
-	}
-	return res
-}
+// func fieldsAsFloat64(fs data.Fields) []*float64 {
+// 	var res []*float64
+// 	for _, field := range fs {
+// 		if v, ok := field.Vector.(*data.Float64Vector); ok {
+// 			for _, value := range *v {
+// 				res = append(res, value)
+// 			}
+// 		}
+// 	}
+// 	return res
+// }
 
-// Mocks
+// // Mocks
 
-type testCacheService struct {
-	GetDatasourceFn func(datasourceID int64, user *models.SignedInUser, skipCache bool) (*models.DataSource, error)
-}
+// type testCacheService struct {
+// 	GetDatasourceFn func(datasourceID int64, user *models.SignedInUser, skipCache bool) (*models.DataSource, error)
+// }
 
-func newTestCacheService(datasourceType string) *testCacheService {
-	return &testCacheService{
-		GetDatasourceFn: func(datasourceID int64, user *models.SignedInUser, skipCache bool) (*models.DataSource, error) {
-			return &models.DataSource{
-				Type: pluginID,
-			}, nil
-		},
-	}
-}
+// func newTestCacheService(datasourceType string) *testCacheService {
+// 	return &testCacheService{
+// 		GetDatasourceFn: func(datasourceID int64, user *models.SignedInUser, skipCache bool) (*models.DataSource, error) {
+// 			return &models.DataSource{
+// 				Type: pluginID,
+// 			}, nil
+// 		},
+// 	}
+// }
 
-func (s *testCacheService) GetDatasource(datasourceID int64, user *models.SignedInUser, skipCache bool) (*models.DataSource, error) {
-	return s.GetDatasourceFn(datasourceID, user, skipCache)
-}
+// func (s *testCacheService) GetDatasource(datasourceID int64, user *models.SignedInUser, skipCache bool) (*models.DataSource, error) {
+// 	return s.GetDatasourceFn(datasourceID, user, skipCache)
+// }
 
-type testQueryEndpoint struct {
-	QueryFn func(ctx context.Context, ds *models.DataSource, query *tsdb.TsdbQuery) (*tsdb.Response, error)
-}
+// type testQueryEndpoint struct {
+// 	QueryFn func(ctx context.Context, ds *models.DataSource, query *tsdb.TsdbQuery) (*tsdb.Response, error)
+// }
 
-func newTestQueryEndpoint(refID string, points ...tsdb.TimePoint) *testQueryEndpoint {
-	return &testQueryEndpoint{
-		QueryFn: func(ctx context.Context, ds *models.DataSource, query *tsdb.TsdbQuery) (*tsdb.Response, error) {
-			return &tsdb.Response{
-				Results: map[string]*tsdb.QueryResult{
-					refID: &tsdb.QueryResult{
-						RefId: refID,
-						Series: tsdb.TimeSeriesSlice{
-							&tsdb.TimeSeries{
-								Name:   refID + "-series",
-								Points: tsdb.TimeSeriesPoints(points),
-							},
-						},
-					},
-				},
-			}, nil
-		},
-	}
-}
+// func newTestQueryEndpoint(refID string, points ...tsdb.TimePoint) *testQueryEndpoint {
+// 	return &testQueryEndpoint{
+// 		QueryFn: func(ctx context.Context, ds *models.DataSource, query *tsdb.TsdbQuery) (*tsdb.Response, error) {
+// 			return &tsdb.Response{
+// 				Results: map[string]*tsdb.QueryResult{
+// 					refID: &tsdb.QueryResult{
+// 						RefId: refID,
+// 						Series: tsdb.TimeSeriesSlice{
+// 							&tsdb.TimeSeries{
+// 								Name:   refID + "-series",
+// 								Points: tsdb.TimeSeriesPoints(points),
+// 							},
+// 						},
+// 					},
+// 				},
+// 			}, nil
+// 		},
+// 	}
+// }
 
-func (e *testQueryEndpoint) Query(ctx context.Context, ds *models.DataSource, query *tsdb.TsdbQuery) (*tsdb.Response, error) {
-	return e.QueryFn(ctx, ds, query)
-}
+// func (e *testQueryEndpoint) Query(ctx context.Context, ds *models.DataSource, query *tsdb.TsdbQuery) (*tsdb.Response, error) {
+// 	return e.QueryFn(ctx, ds, query)
+// }
 
-func TestReqGoNumPlay(t *testing.T) {
-	s := &Service{}
-	aGelBlob := []byte(`
-	{
-		"datasource": "-- GEL --",
-		"type": "math",
-		"refId": "GA",
-		"expression": "1 + $GB"
-	}
-	`)
-	bGelBlob := []byte(`
-	{
-		"datasource": "-- GEL --",
-		"type": "math",
-		"refId": "GB",
-		"expression": "1 + $GC"
-	}
-	`)
-	datasourceBlob := []byte(`
-	{
-		"refId": "GC",
-		"datasource": "gdev-testdata",
-		"scenarioId": "predictable_pulse",
-		"stringInput": "",
-		"pulseWave": {
-			"timeStep": 60,
-			"onCount": 3,
-			"onValue": 2,
-			"offCount": 3,
-			"offValue": 1
-		},
-		"datasourceId": 4
-	}
-	`)
-	dGelBlob := []byte(`
-	{
-		"datasource": "-- GEL --",
-		"type": "math",
-		"refId": "GD",
-		"expression": "1 + $GE"
-	}
-	`)
-	eGelBlob := []byte(`
-	{
-		"datasource": "-- GEL --",
-		"type": "math",
-		"refId": "GE",
-		"expression": "1"
-	}
-	`)
+// func TestReqGoNumPlay(t *testing.T) {
+// 	s := &Service{}
+// 	aGelBlob := []byte(`
+// 	{
+// 		"datasource": "-- GEL --",
+// 		"type": "math",
+// 		"refId": "GA",
+// 		"expression": "1 + $GB"
+// 	}
+// 	`)
+// 	bGelBlob := []byte(`
+// 	{
+// 		"datasource": "-- GEL --",
+// 		"type": "math",
+// 		"refId": "GB",
+// 		"expression": "1 + $GC"
+// 	}
+// 	`)
+// 	datasourceBlob := []byte(`
+// 	{
+// 		"refId": "GC",
+// 		"datasource": "gdev-testdata",
+// 		"scenarioId": "predictable_pulse",
+// 		"stringInput": "",
+// 		"pulseWave": {
+// 			"timeStep": 60,
+// 			"onCount": 3,
+// 			"onValue": 2,
+// 			"offCount": 3,
+// 			"offValue": 1
+// 		},
+// 		"datasourceId": 4
+// 	}
+// 	`)
+// 	dGelBlob := []byte(`
+// 	{
+// 		"datasource": "-- GEL --",
+// 		"type": "math",
+// 		"refId": "GD",
+// 		"expression": "1 + $GE"
+// 	}
+// 	`)
+// 	eGelBlob := []byte(`
+// 	{
+// 		"datasource": "-- GEL --",
+// 		"type": "math",
+// 		"refId": "GE",
+// 		"expression": "1"
+// 	}
+// 	`)
 
-	aGelSJSON, err := simplejson.NewJson(aGelBlob)
-	if err != nil {
-		t.FailNow()
-	}
-	bGelSJSON, err := simplejson.NewJson(bGelBlob)
-	if err != nil {
-		t.FailNow()
-	}
-	dGelSJSON, err := simplejson.NewJson(dGelBlob)
-	if err != nil {
-		t.FailNow()
-	}
-	eGelSJSON, err := simplejson.NewJson(eGelBlob)
-	if err != nil {
-		t.FailNow()
-	}
-	dsJSON, err := simplejson.NewJson(datasourceBlob)
-	if err != nil {
-		t.FailNow()
-	}
-	req := GelAppReq{
-		ReqOptions{
-			Targets: []*simplejson.Json{
-				aGelSJSON,
-				bGelSJSON,
-				dsJSON,
-				dGelSJSON, // d and e are connect to each other, but not the rest of the graph
-				eGelSJSON, //
-				// P.O.S !@#$ simplejson seems to ignore struct tags
-				// simplejson.NewFromAny(
-				// 	&struct {
-				// 		Datasource string `json:"datasource"`
-				// 		Type       string `json:"type"`
-				// 		RefID      string `json:"refId"`
-				// 		Expr       string `json:"expression"`
-				// 	}{
-				// 		gelDataSourceName,
-				// 		"math",
-				// 		"$GB",
-				// 		"1 + $GA",
-				// 	},
-				// ),
-			},
-		},
-	}
+// 	aGelSJSON, err := simplejson.NewJson(aGelBlob)
+// 	if err != nil {
+// 		t.FailNow()
+// 	}
+// 	bGelSJSON, err := simplejson.NewJson(bGelBlob)
+// 	if err != nil {
+// 		t.FailNow()
+// 	}
+// 	dGelSJSON, err := simplejson.NewJson(dGelBlob)
+// 	if err != nil {
+// 		t.FailNow()
+// 	}
+// 	eGelSJSON, err := simplejson.NewJson(eGelBlob)
+// 	if err != nil {
+// 		t.FailNow()
+// 	}
+// 	dsJSON, err := simplejson.NewJson(datasourceBlob)
+// 	if err != nil {
+// 		t.FailNow()
+// 	}
+// 	req := GelAppReq{
+// 		ReqOptions{
+// 			Targets: []*simplejson.Json{
+// 				aGelSJSON,
+// 				bGelSJSON,
+// 				dsJSON,
+// 				dGelSJSON, // d and e are connect to each other, but not the rest of the graph
+// 				eGelSJSON, //
+// 				// P.O.S !@#$ simplejson seems to ignore struct tags
+// 				// simplejson.NewFromAny(
+// 				// 	&struct {
+// 				// 		Datasource string `json:"datasource"`
+// 				// 		Type       string `json:"type"`
+// 				// 		RefID      string `json:"refId"`
+// 				// 		Expr       string `json:"expression"`
+// 				// 	}{
+// 				// 		gelDataSourceName,
+// 				// 		"math",
+// 				// 		"$GB",
+// 				// 		"1 + $GA",
+// 				// 	},
+// 				// ),
+// 			},
+// 		},
+// 	}
 
-	_ = req
-	_ = s
-	// TODO Fix me
+// 	_ = req
+// 	_ = s
+// 	// TODO Fix me
 
-	// nodes, err := buildPipeline(
-	// 	req.Options.Targets,
-	// 	tsdb.NewTimeRange(req.Options.Range.Raw.From, req.Options.Range.Raw.To),
-	// 	s.DatasourceCache,
-	// )
+// 	// nodes, err := buildPipeline(
+// 	// 	req.Options.Targets,
+// 	// 	tsdb.NewTimeRange(req.Options.Range.Raw.From, req.Options.Range.Raw.To),
+// 	// 	s.DatasourceCache,
+// 	// )
 
-	// spew.Dump(err)
-	// spew.Dump(nodes)
-}
+// 	// spew.Dump(err)
+// 	// spew.Dump(nodes)
+// }

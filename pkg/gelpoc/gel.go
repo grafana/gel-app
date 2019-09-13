@@ -1,19 +1,19 @@
 package gelpoc
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/grafana/grafana/pkg/components/simplejson"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
-	"github.com/grafana/grafana/pkg/models"
 )
 
 // Command is an interface for all GEL commands.
 type Command interface {
 	NeedsVars() []string
-	Execute(c *models.ReqContext, vars mathexp.Vars) (mathexp.Results, error)
+	Execute(c context.Context, vars mathexp.Vars) (mathexp.Results, error)
 }
 
 // MathCommand is a GEL commad for a GEL math expression such as "1 + $GA / 2"
@@ -54,7 +54,7 @@ func (gm *MathCommand) NeedsVars() []string {
 
 // Execute runs the command and returns the results or an error if the command
 // failed to execute.
-func (gm *MathCommand) Execute(c *models.ReqContext, vars mathexp.Vars) (mathexp.Results, error) {
+func (gm *MathCommand) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 	return gm.Expression.Execute(vars)
 }
 
@@ -88,7 +88,7 @@ func (gr *ReduceCommand) NeedsVars() []string {
 
 // Execute runs the command and returns the results or an error if the command
 // failed to execute.
-func (gr *ReduceCommand) Execute(c *models.ReqContext, vars mathexp.Vars) (mathexp.Results, error) {
+func (gr *ReduceCommand) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 	newRes := mathexp.Results{}
 	for _, val := range vars[gr.VarToReduce].Values {
 		series, ok := val.(mathexp.Series)

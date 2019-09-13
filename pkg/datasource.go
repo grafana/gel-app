@@ -17,28 +17,46 @@ type GELPlugin struct {
 // Query Primary method called by grafana-server
 func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRequest, api datasource.GrafanaAPI) (*datasource.DatasourceResponse, error) {
 
-	// Process App Request once we can get it from the Plugin-API
-	needGelAppReqPlz := gelpoc.GelAppReq{}
-	_ = needGelAppReqPlz
-
-	gService := gelpoc.Service{}
-	_ = gService
+	gService := gelpoc.Service{
+		DatasourceAPI: api,
+	}
 
 	// Build Pipeline from Request
 
-	// Execute Pipeline
-	//	Executing the pipeline will require the bi-directional calls
-	_, err := api.QueryDatasource(ctx, &datasource.QueryDatasourceRequest{
-		DatasourceId: 1,
-		Queries:      tsdbReq.Queries,
-		TimeRange:    tsdbReq.TimeRange,
-	})
+	gReq := gelpoc.GelAppReq{
+		DataSourceReq: tsdbReq,
+	}
+
+	frames, err := gService.Pipeline(ctx, gReq)
+
+	//gp.logger.Debug("resp", spew.Sdump(frames))
 
 	if err != nil {
 		gp.logger.Error("Failed to call api.QueryDatasource", "err", err)
 	}
 
+	//pbFrames := make([]*datasource.Frames, len(frames))
+
+	pbFrames := &datasource.Frames{
+		Frames: make([]*datasource.Frame, len(frames)),
+	}
+
+	for i, frame := range frames {
+		pbFrames.Frames[i], err = frame.ToPBFrame()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	resp := &datasource.DatasourceResponse{
+		Results: []*datasource.QueryResult{
+			&datasource.QueryResult{
+				Frames: pbFrames,
+			},
+		},
+	}
+
 	//plugin.logger.Debug("Query", "datasource", tsdbReq.Datasource.Name, "TimeRange", tsdbReq.TimeRange)
 
-	return nil, nil
+	return resp, nil
 }

@@ -1,17 +1,15 @@
 package gelpoc
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
+	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"github.com/grafana/grafana/pkg/components/simplejson"
 
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/topo"
-
-	"github.com/grafana/grafana/pkg/components/simplejson"
-	"github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/services/datasources"
-	"github.com/grafana/grafana/pkg/tsdb"
 )
 
 // NodeType is the type of a DPNode. Currently either a GEL or datasource query.
@@ -29,7 +27,7 @@ type Node interface {
 	ID() int64 // ID() allows the gonum graph node interface to be fulfilled
 	NodeType() NodeType
 	RefID() string
-	Execute(c *models.ReqContext, vars mathexp.Vars) (mathexp.Results, error)
+	Execute(c context.Context, vars mathexp.Vars) (mathexp.Results, error)
 	String() string
 }
 
@@ -38,7 +36,7 @@ type DataPipeline []Node
 
 // Execute runs all the command/datasource requests in the pipeline return a
 // map of the refId of the of each command
-func (dp *DataPipeline) Execute(c *models.ReqContext) (mathexp.Vars, error) {
+func (dp *DataPipeline) Execute(c context.Context) (mathexp.Vars, error) {
 	vars := make(mathexp.Vars)
 	for _, node := range *dp {
 		res, err := node.Execute(c, vars)
@@ -55,7 +53,7 @@ const gelDataSourceName = "-- GEL --"
 
 // buildPipeline builds a graph of the nodes, and returns the nodes in an
 // executable order
-func buildPipeline(targets []*simplejson.Json, tr *tsdb.TimeRange, cache datasources.CacheService) (DataPipeline, error) {
+func buildPipeline(targets []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (DataPipeline, error) {
 	graph, err := buildDependencyGraph(targets, tr, cache)
 	if err != nil {
 		return nil, err
@@ -70,7 +68,7 @@ func buildPipeline(targets []*simplejson.Json, tr *tsdb.TimeRange, cache datasou
 }
 
 // buildDependencyGraph returns a dependency graph for a set of target.
-func buildDependencyGraph(targets []*simplejson.Json, tr *tsdb.TimeRange, cache datasources.CacheService) (*simple.DirectedGraph, error) {
+func buildDependencyGraph(targets []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
 	graph, err := buildGraph(targets, tr, cache)
 	if err != nil {
 		return nil, err
@@ -116,16 +114,22 @@ func buildNodeRegistry(g *simple.DirectedGraph) map[string]Node {
 }
 
 // buildGraph creates a new graph populated with nodes for every target.
-func buildGraph(targets []*simplejson.Json, tr *tsdb.TimeRange, cache datasources.CacheService) (*simple.DirectedGraph, error) {
+func buildGraph(targets []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
 	dp := simple.NewDirectedGraph()
 
 	for _, target := range targets {
-		datasource := target.Get("datasource").MustString()
-		refID := target.Get("refId").MustString()
+		sj, err := simplejson.NewJson([]byte(target.ModelJson))
+		if err != nil {
+			return nil, err
+		}
+		datasource := sj.Get("datasource").MustString()
+		//datasource := target.Get("datasource").MustString()
+		refID := target.GetRefId()
+		//refID := target.Get("refId").MustString()
 
 		switch datasource {
 		case gelDataSourceName:
-			node, err := buildGELNode(refID, dp, target)
+			node, err := buildGELNode(refID, dp, sj)
 			if err != nil {
 				return nil, err
 			}
@@ -136,9 +140,9 @@ func buildGraph(targets []*simplejson.Json, tr *tsdb.TimeRange, cache datasource
 					id:    dp.NewNode().ID(),
 					refID: refID,
 				},
-				query:     target,
+				query:     sj,
 				timeRange: tr,
-				dsCache:   cache,
+				dsAPI:     cache,
 			}
 			dp.AddNode(dsNode)
 		}

@@ -5,10 +5,8 @@ import (
 	"fmt"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
+	"github.com/grafana/grafana-plugin-model/go/datasource"
 	"github.com/grafana/grafana/pkg/components/simplejson"
-	"github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/services/datasources"
-	"github.com/grafana/grafana/pkg/tsdb"
 	"gonum.org/v1/gonum/graph/simple"
 )
 
@@ -50,8 +48,8 @@ func (gn *GELNode) NodeType() NodeType {
 // Execute runs the node and adds the results to vars. If the node requires
 // other nodes they must have already been executed and their results must
 // already by in vars.
-func (gn *GELNode) Execute(c *models.ReqContext, vars mathexp.Vars) (mathexp.Results, error) {
-	return gn.GELCommand.Execute(c, vars)
+func (gn *GELNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
+	return gn.GELCommand.Execute(ctx, vars)
 }
 
 func buildGELNode(refID string, dp *simple.DirectedGraph, target *simplejson.Json) (*GELNode, error) {
@@ -86,8 +84,8 @@ func buildGELNode(refID string, dp *simple.DirectedGraph, target *simplejson.Jso
 type DSNode struct {
 	baseNode
 	query     *simplejson.Json
-	timeRange *tsdb.TimeRange
-	dsCache   datasources.CacheService
+	timeRange *datasource.TimeRange
+	dsAPI     datasource.GrafanaAPI
 }
 
 // ID returns the id of the node so it can fulfill the gonum's graph Node interface.
@@ -109,50 +107,100 @@ func (dn *DSNode) NodeType() NodeType {
 // Execute runs the node and adds the results to vars. If the node requires
 // other nodes they must have already been executed and their results must
 // already by in vars.
-func (dn *DSNode) Execute(c *models.ReqContext, vars mathexp.Vars) (mathexp.Results, error) {
+func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 	datasourceID, err := dn.query.Get("datasourceId").Int64()
 	if err != nil {
 		return mathexp.Results{}, fmt.Errorf("query missing datasourceId")
 	}
-
-	ds, err := dn.dsCache.GetDatasource(datasourceID, c.SignedInUser, c.SkipCache)
+	orgID, err := dn.query.Get("orgId").Int64()
 	if err != nil {
-		return mathexp.Results{}, fmt.Errorf("unable to load datasource: %v", err)
+		return mathexp.Results{}, fmt.Errorf("query missing orgId")
 	}
 
-	return dn.execute(c.Req.Context(), ds, vars)
-}
+	// dn.query TO datasource.QueryDatasourceRequest
+	qBytes, err := dn.query.Encode()
+	if err != nil {
+		return mathexp.Results{}, fmt.Errorf("failed to marshal query model: %v", err)
+	}
 
-func (dn *DSNode) execute(ctx context.Context, ds *models.DataSource, vars mathexp.Vars) (mathexp.Results, error) {
-	request := &tsdb.TsdbQuery{
-		TimeRange: dn.timeRange,
-		Queries: []*tsdb.Query{
-			&tsdb.Query{
-				RefId:      dn.query.Get("refId").MustString(),
-				IntervalMs: dn.query.Get("intervalMs").MustInt64(1000),
-				Model:      dn.query,
-				DataSource: ds,
-			},
+	queries := []*datasource.Query{
+		&datasource.Query{
+			RefId:         dn.refID,
+			IntervalMs:    dn.query.Get("intervalMs").MustInt64(1000),
+			MaxDataPoints: dn.query.Get("maxDataPoints").MustInt64(5000),
+			ModelJson:     string(qBytes),
 		},
 	}
 
-	resp, err := tsdb.HandleRequest(ctx, ds, request)
+	qd := &datasource.QueryDatasourceRequest{
+		TimeRange:    dn.timeRange,
+		Queries:      queries,
+		DatasourceId: datasourceID,
+		OrgId:        orgID,
+	}
+
+	resp, err := dn.dsAPI.QueryDatasource(ctx, qd)
 	if err != nil {
-		return mathexp.Results{}, fmt.Errorf("metric request error: %v", err)
+		return mathexp.Results{}, err
 	}
-
-	for _, res := range resp.Results {
-		if res.Error != nil {
-			return mathexp.Results{}, fmt.Errorf("%v : %v", res.ErrorString, res.Error.Error())
-		}
-	}
-
 	vals := make([]mathexp.Value, 0, len(resp.Results))
-	for _, tsdbRes := range resp.Results {
-		vals = append(vals, mathexp.FromTSDB(tsdbRes.Series).Values...)
-	}
+	vals = append(vals, mathexp.FromGRPC(resp.Results[0].GetSeries()).Values...)
+
+	// 	vals := make([]mathexp.Value, 0, len(resp.Results))
+	// 	for _, tsdbRes := range resp.Results {
+	// 		vals = append(vals, mathexp.FromTSDB(tsdbRes.Series).Values...)
+	// 	}
+
+	// 	return mathexp.Results{
+	// 		Values: vals,
+	// 	}, nil
+
+	//_ = someRes
+
+	// ds, err := dn.dsAPI.GetDatasource(datasourceID, c.SignedInUser, c.SkipCache)
+	// if err != nil {
+	// 	return mathexp.Results{}, fmt.Errorf("unable to load datasource: %v", err)
+	// }
 
 	return mathexp.Results{
 		Values: vals,
 	}, nil
+
+	//return mathexp.Results{}, nil
+
+	//return dn.execute(ctx, ds, vars)
 }
+
+// func (dn *DSNode) execute(ctx context.Context, ds *models.DataSource, vars mathexp.Vars) (mathexp.Results, error) {
+// 	request := &tsdb.TsdbQuery{
+// 		TimeRange: dn.timeRange,
+// 		Queries: []*tsdb.Query{
+// 			&tsdb.Query{
+// 				RefId:      dn.query.Get("refId").MustString(),
+// 				IntervalMs: dn.query.Get("intervalMs").MustInt64(1000),
+// 				Model:      dn.query,
+// 				DataSource: ds,
+// 			},
+// 		},
+// 	}
+
+// 	resp, err := tsdb.HandleRequest(ctx, ds, request)
+// 	if err != nil {
+// 		return mathexp.Results{}, fmt.Errorf("metric request error: %v", err)
+// 	}
+
+// 	for _, res := range resp.Results {
+// 		if res.Error != nil {
+// 			return mathexp.Results{}, fmt.Errorf("%v : %v", res.ErrorString, res.Error.Error())
+// 		}
+// 	}
+
+// 	vals := make([]mathexp.Value, 0, len(resp.Results))
+// 	for _, tsdbRes := range resp.Results {
+// 		vals = append(vals, mathexp.FromTSDB(tsdbRes.Series).Values...)
+// 	}
+
+// 	return mathexp.Results{
+// 		Values: vals,
+// 	}, nil
+// }

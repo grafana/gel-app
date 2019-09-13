@@ -68,7 +68,7 @@ func (f *Fields) Copy() Fields {
 type Field struct {
 	Name   string    `json:"name"`
 	Type   FieldType `json:"type"`
-	Vector Vector    `json:"values"` // KMB thinks this should be vectors
+	Vector Vector    `json:"values"` // KMB thinks this should be vector
 }
 
 // Copy returns a new copy of the Field that can be mutated without
