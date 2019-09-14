@@ -34,9 +34,9 @@ type Node interface {
 // DataPipeline is an ordered set of nodes returned from DPGraph processing.
 type DataPipeline []Node
 
-// Execute runs all the command/datasource requests in the pipeline return a
+// execute runs all the command/datasource requests in the pipeline return a
 // map of the refId of the of each command
-func (dp *DataPipeline) Execute(c context.Context) (mathexp.Vars, error) {
+func (dp *DataPipeline) execute(c context.Context) (mathexp.Vars, error) {
 	vars := make(mathexp.Vars)
 	for _, node := range *dp {
 		res, err := node.Execute(c, vars)
@@ -51,10 +51,10 @@ func (dp *DataPipeline) Execute(c context.Context) (mathexp.Vars, error) {
 
 const gelDataSourceName = "-- GEL --"
 
-// buildPipeline builds a graph of the nodes, and returns the nodes in an
+// BuildPipeline builds a graph of the nodes, and returns the nodes in an
 // executable order
-func buildPipeline(targets []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (DataPipeline, error) {
-	graph, err := buildDependencyGraph(targets, tr, cache)
+func buildPipeline(queries []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (DataPipeline, error) {
+	graph, err := buildDependencyGraph(queries, tr, cache)
 	if err != nil {
 		return nil, err
 	}
@@ -67,9 +67,9 @@ func buildPipeline(targets []*datasource.Query, tr *datasource.TimeRange, cache 
 	return nodes, nil
 }
 
-// buildDependencyGraph returns a dependency graph for a set of target.
-func buildDependencyGraph(targets []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
-	graph, err := buildGraph(targets, tr, cache)
+// buildDependencyGraph returns a dependency graph for a set of queries.
+func buildDependencyGraph(queries []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
+	graph, err := buildGraph(queries, tr, cache)
 	if err != nil {
 		return nil, err
 	}
@@ -113,19 +113,17 @@ func buildNodeRegistry(g *simple.DirectedGraph) map[string]Node {
 	return res
 }
 
-// buildGraph creates a new graph populated with nodes for every target.
-func buildGraph(targets []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
+// buildGraph creates a new graph populated with nodes for every query.
+func buildGraph(queries []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
 	dp := simple.NewDirectedGraph()
 
-	for _, target := range targets {
-		sj, err := simplejson.NewJson([]byte(target.ModelJson))
+	for _, query := range queries {
+		sj, err := simplejson.NewJson([]byte(query.ModelJson))
 		if err != nil {
 			return nil, err
 		}
 		datasource := sj.Get("datasource").MustString()
-		//datasource := target.Get("datasource").MustString()
-		refID := target.GetRefId()
-		//refID := target.Get("refId").MustString()
+		refID := query.GetRefId()
 
 		switch datasource {
 		case gelDataSourceName:
@@ -134,7 +132,7 @@ func buildGraph(targets []*datasource.Query, tr *datasource.TimeRange, cache dat
 				return nil, err
 			}
 			dp.AddNode(node)
-		default: // If it's not a GEL target, it's a data source.
+		default: // If it's not a GEL query, it's a data source query.
 			dsNode := &DSNode{
 				baseNode: baseNode{
 					id:    dp.NewNode().ID(),

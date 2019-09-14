@@ -6,6 +6,8 @@ import (
 	hclog "github.com/hashicorp/go-hclog"
 	plugin "github.com/hashicorp/go-plugin"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 // GELPlugin stores reference to plugin and logger
@@ -16,47 +18,42 @@ type GELPlugin struct {
 
 // Query Primary method called by grafana-server
 func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRequest, api datasource.GrafanaAPI) (*datasource.DatasourceResponse, error) {
-
 	gService := gelpoc.Service{
 		DatasourceAPI: api,
 	}
-
-	// Build Pipeline from Request
 
 	gReq := gelpoc.GelAppReq{
 		DataSourceReq: tsdbReq,
 	}
 
-	frames, err := gService.Pipeline(ctx, gReq)
-
-	//gp.logger.Debug("resp", spew.Sdump(frames))
-
+	// Build Pipeline from Request
+	pipeline, err := gService.BuildPipeline(gReq)
 	if err != nil {
-		gp.logger.Error("Failed to call api.QueryDatasource", "err", err)
+		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	//pbFrames := make([]*datasource.Frames, len(frames))
+	// Execute Pipeline
+	frames, err := gService.ExecutePipeline(ctx, pipeline)
+	if err != nil {
+		return nil, status.Error(codes.Unknown, err.Error())
+	}
 
+	// Convert the []*data.Frames to protobuf Frames appropriate for the plugin-model
 	pbFrames := &datasource.Frames{
 		Frames: make([]*datasource.Frame, len(frames)),
 	}
-
 	for i, frame := range frames {
 		pbFrames.Frames[i], err = frame.ToPBFrame()
 		if err != nil {
-			return nil, err
+			return nil, status.Error(codes.Internal, err.Error())
 		}
 	}
 
-	resp := &datasource.DatasourceResponse{
+	return &datasource.DatasourceResponse{
 		Results: []*datasource.QueryResult{
 			&datasource.QueryResult{
 				Frames: pbFrames,
 			},
 		},
-	}
-
-	//plugin.logger.Debug("Query", "datasource", tsdbReq.Datasource.Name, "TimeRange", tsdbReq.TimeRange)
-
-	return resp, nil
+	}, nil
 }

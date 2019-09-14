@@ -52,8 +52,8 @@ func (gn *GELNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resu
 	return gn.GELCommand.Execute(ctx, vars)
 }
 
-func buildGELNode(refID string, dp *simple.DirectedGraph, target *simplejson.Json) (*GELNode, error) {
-	commandType, err := ParseCommandType(target.Get("type").MustString())
+func buildGELNode(refID string, dp *simple.DirectedGraph, query *simplejson.Json) (*GELNode, error) {
+	commandType, err := ParseCommandType(query.Get("type").MustString())
 	if err != nil {
 		return nil, fmt.Errorf("invalid GEL type in '%v'", refID)
 	}
@@ -67,12 +67,12 @@ func buildGELNode(refID string, dp *simple.DirectedGraph, target *simplejson.Jso
 
 	switch commandType {
 	case TypeMath:
-		node.GELCommand, err = UnmarshalMathCommand(target)
+		node.GELCommand, err = UnmarshalMathCommand(query)
 		if err != nil {
 			return nil, err
 		}
 	case TypeReduce:
-		node.GELCommand = UnmarshalReduceCommand(target)
+		node.GELCommand = UnmarshalReduceCommand(query)
 	default:
 		return nil, fmt.Errorf("gel type '%v' in '%v' not implemented", commandType, refID)
 	}
@@ -143,64 +143,13 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 	if err != nil {
 		return mathexp.Results{}, err
 	}
+
 	vals := make([]mathexp.Value, 0, len(resp.Results))
-	vals = append(vals, mathexp.FromGRPC(resp.Results[0].GetSeries()).Values...)
-
-	// 	vals := make([]mathexp.Value, 0, len(resp.Results))
-	// 	for _, tsdbRes := range resp.Results {
-	// 		vals = append(vals, mathexp.FromTSDB(tsdbRes.Series).Values...)
-	// 	}
-
-	// 	return mathexp.Results{
-	// 		Values: vals,
-	// 	}, nil
-
-	//_ = someRes
-
-	// ds, err := dn.dsAPI.GetDatasource(datasourceID, c.SignedInUser, c.SkipCache)
-	// if err != nil {
-	// 	return mathexp.Results{}, fmt.Errorf("unable to load datasource: %v", err)
-	// }
+	for _, dsRes := range resp.Results {
+		vals = append(vals, mathexp.FromGRPC(dsRes.GetSeries()).Values...)
+	}
 
 	return mathexp.Results{
 		Values: vals,
 	}, nil
-
-	//return mathexp.Results{}, nil
-
-	//return dn.execute(ctx, ds, vars)
 }
-
-// func (dn *DSNode) execute(ctx context.Context, ds *models.DataSource, vars mathexp.Vars) (mathexp.Results, error) {
-// 	request := &tsdb.TsdbQuery{
-// 		TimeRange: dn.timeRange,
-// 		Queries: []*tsdb.Query{
-// 			&tsdb.Query{
-// 				RefId:      dn.query.Get("refId").MustString(),
-// 				IntervalMs: dn.query.Get("intervalMs").MustInt64(1000),
-// 				Model:      dn.query,
-// 				DataSource: ds,
-// 			},
-// 		},
-// 	}
-
-// 	resp, err := tsdb.HandleRequest(ctx, ds, request)
-// 	if err != nil {
-// 		return mathexp.Results{}, fmt.Errorf("metric request error: %v", err)
-// 	}
-
-// 	for _, res := range resp.Results {
-// 		if res.Error != nil {
-// 			return mathexp.Results{}, fmt.Errorf("%v : %v", res.ErrorString, res.Error.Error())
-// 		}
-// 	}
-
-// 	vals := make([]mathexp.Value, 0, len(resp.Results))
-// 	for _, tsdbRes := range resp.Results {
-// 		vals = append(vals, mathexp.FromTSDB(tsdbRes.Series).Values...)
-// 	}
-
-// 	return mathexp.Results{
-// 		Values: vals,
-// 	}, nil
-// }

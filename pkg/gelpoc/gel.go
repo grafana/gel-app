@@ -35,10 +35,10 @@ func NewMathCommand(expr string) (*MathCommand, error) {
 	}, nil
 }
 
-// UnmarshalMathCommand creates a MathCommand from Grafana's frontend target.
-func UnmarshalMathCommand(target *simplejson.Json) (*MathCommand, error) {
-	refID := target.Get("refId").MustString()
-	exprString := target.Get("expression").MustString()
+// UnmarshalMathCommand creates a MathCommand from Grafana's frontend query.
+func UnmarshalMathCommand(query *simplejson.Json) (*MathCommand, error) {
+	refID := query.Get("refId").MustString()
+	exprString := query.Get("expression").MustString()
 	gm, err := NewMathCommand(exprString)
 	if err != nil {
 		return nil, fmt.Errorf("invalid math command type in '%v': %v", refID, err)
@@ -72,11 +72,11 @@ func NewReduceCommand(reducer, varToReduce string) *ReduceCommand {
 	}
 }
 
-// UnmarshalReduceCommand creates a MathCMD from Grafana's frontend target.
-func UnmarshalReduceCommand(target *simplejson.Json) *ReduceCommand {
-	varToReduce := target.Get("expression").MustString()
+// UnmarshalReduceCommand creates a MathCMD from Grafana's frontend query.
+func UnmarshalReduceCommand(query *simplejson.Json) *ReduceCommand {
+	varToReduce := query.Get("expression").MustString()
 	varToReduce = strings.TrimPrefix(varToReduce, "$")
-	redFunc := target.Get("reducer").MustString()
+	redFunc := query.Get("reducer").MustString()
 	return NewReduceCommand(redFunc, varToReduce)
 }
 

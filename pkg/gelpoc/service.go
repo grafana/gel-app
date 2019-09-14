@@ -8,45 +8,6 @@ import (
 	"github.com/grafana/grafana-plugin-model/go/datasource"
 )
 
-// // GelAppReq is current request structure from the frontend for GEL.
-// type GelAppReq struct {
-// 	Options ReqOptions `json:"options"`
-// }
-
-// // ReqOptions is the payload of a GelAppReq.
-// type ReqOptions struct {
-// 	RequestID   string `json:"requestId"`
-// 	Timezone    string `json:"timezone"`
-// 	PanelID     int    `json:"panelId"`
-// 	DashboardID int    `json:"dashboardId"`
-// 	Range       struct {
-// 		From time.Time `json:"from"`
-// 		To   time.Time `json:"to"`
-// 		Raw  struct {
-// 			From string `json:"from"`
-// 			To   string `json:"to"`
-// 		} `json:"raw"`
-// 	} `json:"range"`
-// 	Interval      string `json:"interval"`
-// 	IntervalMs    int    `json:"intervalMs"`
-// 	MaxDataPoints int    `json:"maxDataPoints"`
-// 	ScopedVars    struct {
-// 		Interval struct {
-// 			Text  string `json:"text"`
-// 			Value string `json:"value"`
-// 		} `json:"__interval"`
-// 		IntervalMs struct {
-// 			Text  string `json:"text"`
-// 			Value int    `json:"value"`
-// 		} `json:"__interval_ms"`
-// 	} `json:"scopedVars"`
-// 	RangeRaw struct {
-// 		From string `json:"from"`
-// 		To   string `json:"to"`
-// 	} `json:"rangeRaw"`
-// 	Targets []*simplejson.Json `json:"targets"`
-// }
-
 type GelAppReq struct {
 	DataSourceReq *datasource.DatasourceRequest
 }
@@ -67,49 +28,43 @@ type GelAppReq struct {
 // Service is service representation for GEL.
 type Service struct {
 	DatasourceAPI datasource.GrafanaAPI
-	//DatasourceCache datasources.CacheService `inject:""`
-	// log             log.Logger
 }
 
-// // Init initializes the GelService.
-// func (s *GelService) Init() error {
-// 	s.log = log.New("gel")
-
-// 	s.RouterRegister.Group("/api/gel", func(r routing.RouteRegister) {
-// 		r.Post("/expr", binding.Bind(GelAppReq{}), api.Wrap(s.Pipeline))
-// 	})
-
-// 	return nil
-// }
-
-// Pipeline builds and executes a GEL data pipeline and returns all the results
-// as a slice of *data.Frame.
-func (s *Service) Pipeline(ctx context.Context, req GelAppReq) ([]*data.Frame, error) {
+// BuildPipeline builds a pipeline from a request.
+func (s *Service) BuildPipeline(req GelAppReq) (DataPipeline, error) {
 	timeRange := &datasource.TimeRange{
 		FromRaw: req.DataSourceReq.TimeRange.GetFromRaw(),
 		ToRaw:   req.DataSourceReq.TimeRange.GetToRaw(),
 	}
-
-	pipeline, err := buildPipeline(
-		//req.Options.Targets,
+	return buildPipeline(
 		req.DataSourceReq.Queries,
 		timeRange,
-		//tsdb.NewTimeRange(req.Options.Range.Raw.From, req.Options.Range.Raw.To),
 		s.DatasourceAPI,
 	)
+}
+
+// ExecutePipeline executes a GEL data pipeline and returns all the results
+// as a slice of *data.Frame. Queries that are marked has hidden should be executed
+// but should not returned (TODO: currently hidden is ignored).
+func (s *Service) ExecutePipeline(ctx context.Context, pipeline DataPipeline) ([]*data.Frame, error) {
+	vars, err := pipeline.execute(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	vars, err := pipeline.Execute(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	//frames := extractDataFrames(vars, req.HiddenTargets())
+	//TODO: hide targets. frames := extractDataFrames(vars, req.HiddenTargets())
 	frames := extractDataFrames(vars, make(map[string]struct{}))
 
 	return frames, nil
+}
+
+// BuildAndExecutePipeline builds and executes a GEL data pipeline and returns all the results
+// as a slice of *data.Frame.
+func (s *Service) BuildAndExecutePipeline(ctx context.Context, req GelAppReq) ([]*data.Frame, error) {
+	pipeline, err := s.BuildPipeline(req)
+	if err != nil {
+		return nil, err
+	}
+	return s.ExecutePipeline(ctx, pipeline)
 }
 
 func extractDataFrames(vars mathexp.Vars, hidden map[string]struct{}) []*data.Frame {
