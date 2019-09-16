@@ -7,7 +7,7 @@ import (
 
 	"github.com/grafana/gel-app/pkg/data"
 	"github.com/grafana/gel-app/pkg/mathexp/parse"
-	"github.com/grafana/grafana/pkg/tsdb"
+	"github.com/grafana/grafana-plugin-model/go/datasource"
 )
 
 // Results is a container for Value interfaces.
@@ -208,14 +208,15 @@ func (s Series) Reduce(rFunc string) (Number, error) {
 	return number, nil
 }
 
-// FromTSDB converts Grafana's existing tsdb.TimeSeriesSlice type to Series stored in a data.FrameCollection
-func FromTSDB(seriesCollection tsdb.TimeSeriesSlice) Results {
+// FromGRPC converts time series only (at the moment) from a
+// GRPC TimeSeries type to a Series Type
+func FromGRPC(seriesCollection []*datasource.TimeSeries) Results {
 	results := Results{[]Value{}}
 	results.Values = make([]Value, len(seriesCollection))
 	for seriesIdx, series := range seriesCollection {
 		s := NewSeries(series.Name, data.Labels(series.Tags), len(series.Points))
 		for pointIdx, point := range series.Points {
-			t, f := convertTSDBTimePoint(point)
+			t, f := convertDSTimePoint(point)
 			s.SetPoint(pointIdx, t, f)
 		}
 		results.Values[seriesIdx] = s
@@ -223,19 +224,12 @@ func FromTSDB(seriesCollection tsdb.TimeSeriesSlice) Results {
 	return results
 }
 
-// convertTSDBTimePoint coverts a tsdb.TimePoint into two values appropriate
-// for Series values.
-func convertTSDBTimePoint(point tsdb.TimePoint) (t *time.Time, f *float64) {
-	timeIdx, valueIdx := 1, 0
-	if point[timeIdx].Valid { // Assuming valid is null?
-		tI := int64(point[timeIdx].Float64)
-		uT := time.Unix(tI/int64(1e+3), (tI%int64(1e+3))*int64(1e+6)) // time.Time from millisecond unix ts
-		t = &uT
-	}
-	if point[valueIdx].Valid {
-		f = &point[valueIdx].Float64
-	}
-	return
+func convertDSTimePoint(point *datasource.Point) (t *time.Time, f *float64) {
+	tI := int64(point.Timestamp)
+	uT := time.Unix(tI/int64(1e+3), (tI%int64(1e+3))*int64(1e+6)) // time.Time from millisecond unix ts
+	t = &uT
+	f = &point.Value
+	return t, f
 }
 
 // SortByTime sorts the series by the time from oldest to newest.
@@ -267,3 +261,35 @@ func (ss SortSeriesByTime) Less(i, j int) bool {
 	jTimeVal := Series(ss).GetTime(j)
 	return iTimeVal.Before(*jTimeVal)
 }
+
+// Kept for reference of difference Series types, commented out to avoid import
+
+// FromTSDB converts Grafana's existing tsdb.TimeSeriesSlice type to Series stored in a data.FrameCollection
+// func FromTSDB(seriesCollection tsdb.TimeSeriesSlice) Results {
+// 	results := Results{[]Value{}}
+// 	results.Values = make([]Value, len(seriesCollection))
+// 	for seriesIdx, series := range seriesCollection {
+// 		s := NewSeries(series.Name, data.Labels(series.Tags), len(series.Points))
+// 		for pointIdx, point := range series.Points {
+// 			t, f := convertTSDBTimePoint(point)
+// 			s.SetPoint(pointIdx, t, f)
+// 		}
+// 		results.Values[seriesIdx] = s
+// 	}
+// 	return results
+// }
+
+// convertTSDBTimePoint coverts a tsdb.TimePoint into two values appropriate
+// for Series values.
+// func convertTSDBTimePoint(point tsdb.TimePoint) (t *time.Time, f *float64) {
+// 	timeIdx, valueIdx := 1, 0
+// 	if point[timeIdx].Valid { // Assuming valid is null?
+// 		tI := int64(point[timeIdx].Float64)
+// 		uT := time.Unix(tI/int64(1e+3), (tI%int64(1e+3))*int64(1e+6)) // time.Time from millisecond unix ts
+// 		t = &uT
+// 	}
+// 	if point[valueIdx].Valid {
+// 		f = &point[valueIdx].Float64
+// 	}
+// 	return
+// }

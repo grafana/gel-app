@@ -51,9 +51,9 @@ jobs:
         root: .
         paths:
         - ci
-  build_osx:
+  build_backend:
     docker:
-    - image: circleci/node:10
+    - image: circleci/golang:1.12
     working_directory: ~/plugin
     steps:
     - checkout
@@ -61,13 +61,15 @@ jobs:
         keys:
         - yarn-packages-{{ checksum "yarn.lock" }}
     - run:
-        name: Install yarn
+        name: Install yarn and Go
         command: |
+          curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+          sudo apt-get install -y nodejs
           sudo npm install -g yarn --quiet
           yarn install --pure-lockfile
     - run:
         name: Run Toolkit CI
-        command: npx grafana-toolkit plugin:ci-build --backend osx
+        command: npx grafana-toolkit plugin:ci-build --backend
     - save_cache:
         paths:
         - node_modules
@@ -75,32 +77,7 @@ jobs:
     - persist_to_workspace:
         root: .
         paths:
-        - ci/jobs/build_osx
-  build_win64:
-    docker:
-    - image: circleci/node:10
-    working_directory: ~/plugin
-    steps:
-    - checkout
-    - restore_cache:
-        keys:
-        - yarn-packages-{{ checksum "yarn.lock" }}
-    - run:
-        name: Install yarn
-        command: |
-          sudo npm install -g yarn --quiet
-          yarn install --pure-lockfile
-    - run:
-        name: Run Toolkit CI
-        command: npx grafana-toolkit plugin:ci-build --backend win64
-    - save_cache:
-        paths:
-        - node_modules
-        key: yarn-packages-{{ checksum "yarn.lock" }}
-    - persist_to_workspace:
-        root: .
-        paths:
-        - ci/jobs/build_win64
+        - ci/jobs/build_backend
   package:
     docker:
     - image: circleci/node:10
@@ -219,14 +196,12 @@ workflows:
   plugin_workflow:
     jobs:
     - build_plugin
-    - build_osx
-    - build_win64
+    - build_backend
     - build_docs
     - package:
         requires:
         - build_plugin
-        - build_osx
-        - build_win64
+        - build_backend
         - build_docs
     - test_6_2_5:
         requires:

@@ -19,37 +19,43 @@ export class GELDataSource extends DataSourceApi<TempGELQueryWrapper, GELDataSou
 
   async query(options: DataQueryRequest<TempGELQueryWrapper>): Promise<DataQueryResponse> {
     const { url } = this.instanceSettings;
-    const { targets, startTime, ...opts } = options;
+    const { targets, intervalMs, maxDataPoints, range } = options;
     if (targets.length > 1) {
       return Promise.reject('Only query supported right now');
     }
     if (targets.length < 1) {
       return Promise.resolve({ data: [] });
     }
+    const orgId = (window as any).grafanaBootData.user.orgId;
     const first: TempGELQueryWrapper = targets[0];
-    (opts as any).targets = first.queries.map(q => {
+    const queries = first.queries.map(q => {
       if (q.datasource === GEL_DS_KEY) {
-        return q;
+        return {
+          ...q,
+          datasourceId: this.id,
+          orgId,
+        };
       }
       const ds = config.datasources[q.datasource || config.defaultDatasource];
       return {
         ...q,
         datasourceId: ds.id,
+        intervalMs,
+        maxDataPoints,
+        orgId,
+        // ?? alias: templateSrv.replace(q.alias || ''),
       };
     });
 
     return getBackendSrv()
       .post(url!, {
-        options: opts,
+        from: range.from.valueOf().toString(),
+        to: range.to.valueOf().toString(),
+        queries: queries,
       })
       .then(res => {
         return { data: gelResponseToDataFrames(res) };
       });
-    // .catch(err => {
-    //   err.isHandled = true;
-    //   console.error('Error', err);
-    //   return { data: [] };
-    // });
   }
 
   async testDatasource() {

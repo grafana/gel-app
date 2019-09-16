@@ -5,10 +5,8 @@ import (
 	"fmt"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
+	"github.com/grafana/grafana-plugin-model/go/datasource"
 	"github.com/grafana/grafana/pkg/components/simplejson"
-	"github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/services/datasources"
-	"github.com/grafana/grafana/pkg/tsdb"
 	"gonum.org/v1/gonum/graph/simple"
 )
 
@@ -50,12 +48,12 @@ func (gn *GELNode) NodeType() NodeType {
 // Execute runs the node and adds the results to vars. If the node requires
 // other nodes they must have already been executed and their results must
 // already by in vars.
-func (gn *GELNode) Execute(c *models.ReqContext, vars mathexp.Vars) (mathexp.Results, error) {
-	return gn.GELCommand.Execute(c, vars)
+func (gn *GELNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
+	return gn.GELCommand.Execute(ctx, vars)
 }
 
-func buildGELNode(refID string, dp *simple.DirectedGraph, target *simplejson.Json) (*GELNode, error) {
-	commandType, err := ParseCommandType(target.Get("type").MustString())
+func buildGELNode(refID string, dp *simple.DirectedGraph, query *simplejson.Json) (*GELNode, error) {
+	commandType, err := ParseCommandType(query.Get("type").MustString())
 	if err != nil {
 		return nil, fmt.Errorf("invalid GEL type in '%v'", refID)
 	}
@@ -69,12 +67,12 @@ func buildGELNode(refID string, dp *simple.DirectedGraph, target *simplejson.Jso
 
 	switch commandType {
 	case TypeMath:
-		node.GELCommand, err = UnmarshalMathCommand(target)
+		node.GELCommand, err = UnmarshalMathCommand(query)
 		if err != nil {
 			return nil, err
 		}
 	case TypeReduce:
-		node.GELCommand = UnmarshalReduceCommand(target)
+		node.GELCommand = UnmarshalReduceCommand(query)
 	default:
 		return nil, fmt.Errorf("gel type '%v' in '%v' not implemented", commandType, refID)
 	}
@@ -86,8 +84,8 @@ func buildGELNode(refID string, dp *simple.DirectedGraph, target *simplejson.Jso
 type DSNode struct {
 	baseNode
 	query     *simplejson.Json
-	timeRange *tsdb.TimeRange
-	dsCache   datasources.CacheService
+	timeRange *datasource.TimeRange
+	dsAPI     datasource.GrafanaAPI
 }
 
 // ID returns the id of the node so it can fulfill the gonum's graph Node interface.
@@ -109,48 +107,46 @@ func (dn *DSNode) NodeType() NodeType {
 // Execute runs the node and adds the results to vars. If the node requires
 // other nodes they must have already been executed and their results must
 // already by in vars.
-func (dn *DSNode) Execute(c *models.ReqContext, vars mathexp.Vars) (mathexp.Results, error) {
+func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 	datasourceID, err := dn.query.Get("datasourceId").Int64()
 	if err != nil {
 		return mathexp.Results{}, fmt.Errorf("query missing datasourceId")
 	}
-
-	ds, err := dn.dsCache.GetDatasource(datasourceID, c.SignedInUser, c.SkipCache)
+	orgID, err := dn.query.Get("orgId").Int64()
 	if err != nil {
-		return mathexp.Results{}, fmt.Errorf("unable to load datasource: %v", err)
+		return mathexp.Results{}, fmt.Errorf("query missing orgId")
 	}
 
-	return dn.execute(c.Req.Context(), ds, vars)
-}
+	// dn.query TO datasource.QueryDatasourceRequest
+	qBytes, err := dn.query.Encode()
+	if err != nil {
+		return mathexp.Results{}, fmt.Errorf("failed to marshal query model: %v", err)
+	}
 
-func (dn *DSNode) execute(ctx context.Context, ds *models.DataSource, vars mathexp.Vars) (mathexp.Results, error) {
-	request := &tsdb.TsdbQuery{
-		TimeRange: dn.timeRange,
-		Debug:     false,
-		Queries: []*tsdb.Query{
-			&tsdb.Query{
-				RefId:      dn.query.Get("refId").MustString(),
-				IntervalMs: dn.query.Get("intervalMs").MustInt64(1000),
-				Model:      dn.query,
-				DataSource: ds,
-			},
+	queries := []*datasource.Query{
+		&datasource.Query{
+			RefId:         dn.refID,
+			IntervalMs:    dn.query.Get("intervalMs").MustInt64(1000),
+			MaxDataPoints: dn.query.Get("maxDataPoints").MustInt64(5000),
+			ModelJson:     string(qBytes),
 		},
 	}
 
-	resp, err := tsdb.HandleRequest(ctx, ds, request)
-	if err != nil {
-		return mathexp.Results{}, fmt.Errorf("metric request error: %v", err)
+	qd := &datasource.QueryDatasourceRequest{
+		TimeRange:    dn.timeRange,
+		Queries:      queries,
+		DatasourceId: datasourceID,
+		OrgId:        orgID,
 	}
 
-	for _, res := range resp.Results {
-		if res.Error != nil {
-			return mathexp.Results{}, fmt.Errorf("%v : %v", res.ErrorString, res.Error.Error())
-		}
+	resp, err := dn.dsAPI.QueryDatasource(ctx, qd)
+	if err != nil {
+		return mathexp.Results{}, err
 	}
 
 	vals := make([]mathexp.Value, 0, len(resp.Results))
-	for _, tsdbRes := range resp.Results {
-		vals = append(vals, mathexp.FromTSDB(tsdbRes.Series).Values...)
+	for _, dsRes := range resp.Results {
+		vals = append(vals, mathexp.FromGRPC(dsRes.GetSeries()).Values...)
 	}
 
 	return mathexp.Results{

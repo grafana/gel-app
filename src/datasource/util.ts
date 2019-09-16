@@ -1,5 +1,5 @@
 import { TempGELQueryWrapper } from './types';
-import { DataFrame, MutableDataFrame, dateTime, FieldType } from '@grafana/data';
+import { DataFrame, MutableDataFrame, FieldType } from '@grafana/data';
 
 export function getNextQueryID(query: TempGELQueryWrapper) {
   if (!query || !query.queries) {
@@ -16,8 +16,8 @@ export function getNextQueryID(query: TempGELQueryWrapper) {
   return 'G' + Date.now(); //
 }
 
-export function gelResponseToDataFrames(rsp: any[]): DataFrame[] {
-  return rsp.map((v: any) => {
+export function gelResponseToDataFrames(rsp: any): DataFrame[] {
+  return rsp.Frames.map((v: any) => {
     const frame = new MutableDataFrame();
     frame.name = v.name;
     frame.refId = v.refId;
@@ -28,9 +28,10 @@ export function gelResponseToDataFrames(rsp: any[]): DataFrame[] {
       let v = f.values;
       const type: FieldType = f.type;
       // HACK: this should be supported out-of-the-box
+      // String as ms date
       if (type === FieldType.time) {
         v = v.map((str: string) => {
-          return dateTime(str).valueOf();
+          return parseInt(str.slice(0, -6), 10);
         });
       }
       frame.addField({

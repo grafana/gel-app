@@ -1,19 +1,19 @@
 package gelpoc
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/grafana/grafana/pkg/components/simplejson"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
-	"github.com/grafana/grafana/pkg/models"
 )
 
 // Command is an interface for all GEL commands.
 type Command interface {
 	NeedsVars() []string
-	Execute(c *models.ReqContext, vars mathexp.Vars) (mathexp.Results, error)
+	Execute(c context.Context, vars mathexp.Vars) (mathexp.Results, error)
 }
 
 // MathCommand is a GEL commad for a GEL math expression such as "1 + $GA / 2"
@@ -35,10 +35,10 @@ func NewMathCommand(expr string) (*MathCommand, error) {
 	}, nil
 }
 
-// UnmarshalMathCommand creates a MathCommand from Grafana's frontend target.
-func UnmarshalMathCommand(target *simplejson.Json) (*MathCommand, error) {
-	refID := target.Get("refId").MustString()
-	exprString := target.Get("expression").MustString()
+// UnmarshalMathCommand creates a MathCommand from Grafana's frontend query.
+func UnmarshalMathCommand(query *simplejson.Json) (*MathCommand, error) {
+	refID := query.Get("refId").MustString()
+	exprString := query.Get("expression").MustString()
 	gm, err := NewMathCommand(exprString)
 	if err != nil {
 		return nil, fmt.Errorf("invalid math command type in '%v': %v", refID, err)
@@ -54,7 +54,7 @@ func (gm *MathCommand) NeedsVars() []string {
 
 // Execute runs the command and returns the results or an error if the command
 // failed to execute.
-func (gm *MathCommand) Execute(c *models.ReqContext, vars mathexp.Vars) (mathexp.Results, error) {
+func (gm *MathCommand) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 	return gm.Expression.Execute(vars)
 }
 
@@ -72,11 +72,11 @@ func NewReduceCommand(reducer, varToReduce string) *ReduceCommand {
 	}
 }
 
-// UnmarshalReduceCommand creates a MathCMD from Grafana's frontend target.
-func UnmarshalReduceCommand(target *simplejson.Json) *ReduceCommand {
-	varToReduce := target.Get("expression").MustString()
+// UnmarshalReduceCommand creates a MathCMD from Grafana's frontend query.
+func UnmarshalReduceCommand(query *simplejson.Json) *ReduceCommand {
+	varToReduce := query.Get("expression").MustString()
 	varToReduce = strings.TrimPrefix(varToReduce, "$")
-	redFunc := target.Get("reducer").MustString()
+	redFunc := query.Get("reducer").MustString()
 	return NewReduceCommand(redFunc, varToReduce)
 }
 
@@ -88,7 +88,7 @@ func (gr *ReduceCommand) NeedsVars() []string {
 
 // Execute runs the command and returns the results or an error if the command
 // failed to execute.
-func (gr *ReduceCommand) Execute(c *models.ReqContext, vars mathexp.Vars) (mathexp.Results, error) {
+func (gr *ReduceCommand) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 	newRes := mathexp.Results{}
 	for _, val := range vars[gr.VarToReduce].Values {
 		series, ok := val.(mathexp.Series)

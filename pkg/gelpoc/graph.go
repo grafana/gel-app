@@ -1,17 +1,15 @@
 package gelpoc
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
+	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"github.com/grafana/grafana/pkg/components/simplejson"
 
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/topo"
-
-	"github.com/grafana/grafana/pkg/components/simplejson"
-	"github.com/grafana/grafana/pkg/models"
-	"github.com/grafana/grafana/pkg/services/datasources"
-	"github.com/grafana/grafana/pkg/tsdb"
 )
 
 // NodeType is the type of a DPNode. Currently either a GEL or datasource query.
@@ -29,16 +27,16 @@ type Node interface {
 	ID() int64 // ID() allows the gonum graph node interface to be fulfilled
 	NodeType() NodeType
 	RefID() string
-	Execute(c *models.ReqContext, vars mathexp.Vars) (mathexp.Results, error)
+	Execute(c context.Context, vars mathexp.Vars) (mathexp.Results, error)
 	String() string
 }
 
 // DataPipeline is an ordered set of nodes returned from DPGraph processing.
 type DataPipeline []Node
 
-// Execute runs all the command/datasource requests in the pipeline return a
+// execute runs all the command/datasource requests in the pipeline return a
 // map of the refId of the of each command
-func (dp *DataPipeline) Execute(c *models.ReqContext) (mathexp.Vars, error) {
+func (dp *DataPipeline) execute(c context.Context) (mathexp.Vars, error) {
 	vars := make(mathexp.Vars)
 	for _, node := range *dp {
 		res, err := node.Execute(c, vars)
@@ -53,10 +51,10 @@ func (dp *DataPipeline) Execute(c *models.ReqContext) (mathexp.Vars, error) {
 
 const gelDataSourceName = "-- GEL --"
 
-// buildPipeline builds a graph of the nodes, and returns the nodes in an
+// BuildPipeline builds a graph of the nodes, and returns the nodes in an
 // executable order
-func buildPipeline(targets []*simplejson.Json, tr *tsdb.TimeRange, cache datasources.CacheService) (DataPipeline, error) {
-	graph, err := buildDependencyGraph(targets, tr, cache)
+func buildPipeline(queries []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (DataPipeline, error) {
+	graph, err := buildDependencyGraph(queries, tr, cache)
 	if err != nil {
 		return nil, err
 	}
@@ -69,9 +67,9 @@ func buildPipeline(targets []*simplejson.Json, tr *tsdb.TimeRange, cache datasou
 	return nodes, nil
 }
 
-// buildDependencyGraph returns a dependency graph for a set of target.
-func buildDependencyGraph(targets []*simplejson.Json, tr *tsdb.TimeRange, cache datasources.CacheService) (*simple.DirectedGraph, error) {
-	graph, err := buildGraph(targets, tr, cache)
+// buildDependencyGraph returns a dependency graph for a set of queries.
+func buildDependencyGraph(queries []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
+	graph, err := buildGraph(queries, tr, cache)
 	if err != nil {
 		return nil, err
 	}
@@ -115,30 +113,34 @@ func buildNodeRegistry(g *simple.DirectedGraph) map[string]Node {
 	return res
 }
 
-// buildGraph creates a new graph populated with nodes for every target.
-func buildGraph(targets []*simplejson.Json, tr *tsdb.TimeRange, cache datasources.CacheService) (*simple.DirectedGraph, error) {
+// buildGraph creates a new graph populated with nodes for every query.
+func buildGraph(queries []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
 	dp := simple.NewDirectedGraph()
 
-	for _, target := range targets {
-		datasource := target.Get("datasource").MustString()
-		refID := target.Get("refId").MustString()
+	for _, query := range queries {
+		sj, err := simplejson.NewJson([]byte(query.ModelJson))
+		if err != nil {
+			return nil, err
+		}
+		datasource := sj.Get("datasource").MustString()
+		refID := query.GetRefId()
 
 		switch datasource {
 		case gelDataSourceName:
-			node, err := buildGELNode(refID, dp, target)
+			node, err := buildGELNode(refID, dp, sj)
 			if err != nil {
 				return nil, err
 			}
 			dp.AddNode(node)
-		default: // If it's not a GEL target, it's a data source.
+		default: // If it's not a GEL query, it's a data source query.
 			dsNode := &DSNode{
 				baseNode: baseNode{
 					id:    dp.NewNode().ID(),
 					refID: refID,
 				},
-				query:     target,
+				query:     sj,
 				timeRange: tr,
-				dsCache:   cache,
+				dsAPI:     cache,
 			}
 			dp.AddNode(dsNode)
 		}
