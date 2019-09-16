@@ -4,7 +4,7 @@ As of Sept 16, 2019 this will run as a datasource plugin.
 
 ## Instructions
 
-Last Updated: 2019-09-11
+Last Updated: 2019-09-16
 
 Currently Grafana will run GEL as a backend plugin. When you have built it, Grafana should run the service with the [bidirectional_poc](https://github.com/grafana/grafana/tree/bidirectional_poc) of Grafana.
 
@@ -12,8 +12,10 @@ In this repo:
 
 ### Build Frontend
 
+If you run into an issue with the following two steps, try deleting the `yarn.lock` file and running `yarn install` again. If that does not work, ask Ryan for help in the `#gel` slack channel.
+
 1. `yarn install`
-2. `yarn dev`. If you run into an issue, try deleting the `yarn.lock` file and running `yarn install` again. If that does not work, ask Ryan for help in the #gel channel.
+2. `yarn dev`.
 
 ### Build Go Backend
 
@@ -24,9 +26,14 @@ In this repo:
 
 ### Running
 
-You can then run grafana with the [bidirectional_poc](https://github.com/grafana/grafana/tree/bidirectional_poc) branch.
+You will need to run grafana with the [bidirectional_poc](https://github.com/grafana/grafana/tree/bidirectional_poc) branch. Be sure to run `GO111MODULE=on go mod vendor` on the branch to get the updated plugin-model.
 
-When grafana is running, add the GEL datasource, for datasource settings set the URL to `/api/tsdb/query`.
+The plugin will need to be added to grafana's `data/plugins` through your preferred method. One way is to create a symlink, in the `data/plugins` directory something like `ln -s /home/kbrandt/src/github.com/grafana/gel-app/ gel-app`.
+
+When grafana is running, in Grafana's UI:
+
+1. Enable the GEL plugin in Grafana's UI.
+2. Add the GEL datasource, for datasource settings set the URL to `/api/tsdb/query`.
 
 If you enable debug logging in Grafana's ini you should see the plugin executed (or errors/problems). You should also see a gel process running after grafana starts `ps aux | grep gel | grep -v grep` or task manager or something :-).
 
