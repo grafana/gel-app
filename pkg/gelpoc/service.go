@@ -2,6 +2,7 @@ package gelpoc
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/grafana/gel-app/pkg/data"
 	"github.com/grafana/gel-app/pkg/mathexp"
@@ -12,18 +13,27 @@ type GelAppReq struct {
 	DataSourceReq *datasource.DatasourceRequest
 }
 
-// HiddenTargets returns map if refId strings for targets
+// HiddenRefIDs returns map if refId strings for targets
 // that have hide: true in the request.
-// func (gr *GelAppReq) HiddenTargets() map[string]struct{} {
-// 	hidden := make(map[string]struct{})
-// 	for _, target := range gr.Options.Targets {
-// 		refID := target.Get("refId").MustString()
-// 		if target.Get("hide").MustBool() {
-// 			hidden[refID] = struct{}{}
-// 		}
-// 	}
-// 	return hidden
-// }
+func (gr *GelAppReq) HiddenRefIDs() (map[string]struct{}, error) {
+	hidden := make(map[string]struct{})
+	for _, query := range gr.DataSourceReq.GetQueries() {
+		refID := query.GetRefId()
+		hide := struct {
+			Hide bool `json:"hide"`
+		}{
+			false,
+		}
+		err := json.Unmarshal([]byte(query.ModelJson), &hide)
+		if err != nil {
+			return nil, err
+		}
+		if hide.Hide {
+			hidden[refID] = struct{}{}
+		}
+	}
+	return hidden, nil
+}
 
 // Service is service representation for GEL.
 type Service struct {
@@ -51,8 +61,7 @@ func (s *Service) ExecutePipeline(ctx context.Context, pipeline DataPipeline) ([
 	if err != nil {
 		return nil, err
 	}
-	//TODO: hide targets. frames := extractDataFrames(vars, req.HiddenTargets())
-	frames := extractDataFrames(vars, make(map[string]struct{}))
+	frames := extractDataFrames(vars)
 
 	return frames, nil
 }
@@ -67,12 +76,9 @@ func (s *Service) BuildAndExecutePipeline(ctx context.Context, req GelAppReq) ([
 	return s.ExecutePipeline(ctx, pipeline)
 }
 
-func extractDataFrames(vars mathexp.Vars, hidden map[string]struct{}) []*data.Frame {
+func extractDataFrames(vars mathexp.Vars) []*data.Frame {
 	res := []*data.Frame{}
 	for refID, results := range vars {
-		if _, ok := hidden[refID]; ok {
-			continue // do not return hidden results
-		}
 		for _, val := range results.Values {
 			df := val.AsDataFrame()
 			df.RefID = refID

@@ -30,14 +30,13 @@ type GELNode struct {
 }
 
 // ID returns the id of the node so it can fulfill the gonum's graph Node interface.
-func (gn *GELNode) ID() int64 {
-	return gn.id
+func (b *baseNode) ID() int64 {
+	return b.id
 }
 
-// RefID returns the reference ID of the of the node that comes from
-// the request.
-func (gn *GELNode) RefID() string {
-	return gn.refID
+// RefID returns the refId of the node.
+func (b *baseNode) RefID() string {
+	return b.refID
 }
 
 // NodeType returns the data pipeline node type.
@@ -86,17 +85,6 @@ type DSNode struct {
 	query     *simplejson.Json
 	timeRange *datasource.TimeRange
 	dsAPI     datasource.GrafanaAPI
-}
-
-// ID returns the id of the node so it can fulfill the gonum's graph Node interface.
-func (dn *DSNode) ID() int64 {
-	return dn.id
-}
-
-// RefID returns the reference ID of the of the node that comes from
-// the request.
-func (dn *DSNode) RefID() string {
-	return dn.refID
 }
 
 // NodeType returns the data pipeline node type.
