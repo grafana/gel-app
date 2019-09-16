@@ -1,15 +1,12 @@
 # GEL POC
 
-As of Sept 9th 2019 - the backend GEL code in `pkg` is no longer runnable. This is because the code was moved from the grafana-enterprise repo. We aim to have it runnable again as a plugin by Sept 13th.
-
-The `pkg/gel` folder in particular was meant for enterprise so needs to be reworked. The `pkg/data`
-and `pkg/mathexp/...` packages can run tests.
+As of Sept 16, 2019 this will run as a datasource plugin.
 
 ## Instructions
 
 Last Updated: 2019-09-11
 
-Currently Grafana views GEL as a backend plugin. When you have built it, Grafana should run the service.
+Currently Grafana will run GEL as a backend plugin. When you have built it, Grafana should run the service with the [bidirectional_poc](https://github.com/grafana/grafana/tree/bidirectional_poc) of Grafana.
 
 In this repo:
 
@@ -27,7 +24,23 @@ In this repo:
 
 ### Running
 
-You can then run grafana with the [bidirectional_poc](https://github.com/grafana/grafana/tree/bidirectional_poc) branch. If you enable debug logging in Grafana's ini you should see the plugin executed (or errors/problems). You should also see a gel process running after grafana starts `ps aux | grep gel | grep -v grep` or task manager or something :-).
+You can then run grafana with the [bidirectional_poc](https://github.com/grafana/grafana/tree/bidirectional_poc) branch.
+
+When grafana is running, add the GEL datasource, for datasource settings set the URL to `/api/tsdb/query`.
+
+If you enable debug logging in Grafana's ini you should see the plugin executed (or errors/problems). You should also see a gel process running after grafana starts `ps aux | grep gel | grep -v grep` or task manager or something :-).
+
+### Using GEL
+
+Select "GEL Data", the GEL datasource as the Query.
+
+Currently it is expected you *only do one top level (upper right) Add "Query"* which would create refId "A".
+
+From there, you can click "Add Query" and/or "Add GEL" within the GEL query that was added. Each of these will be refs like "GA", "GB", etc. You can reference queries with `$GA` for example in the math text text field, or in the Fields of reduction.
+
+#### Caveats
+
+The first query within the GEL datasource must be a GEL Node ("Add GEL" in the UI). That is to say it has to be a math expr or a reduction function. (This is because the grafana `/api/tsdb/query` endpoint looks at the first query to pick the datasource).
 
 ## Reference Branches
 
