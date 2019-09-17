@@ -2,12 +2,13 @@ package gelpoc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
-	"github.com/grafana/grafana/pkg/components/simplejson"
 
+	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/topo"
 )
@@ -114,36 +115,36 @@ func buildNodeRegistry(g *simple.DirectedGraph) map[string]Node {
 }
 
 // buildGraph creates a new graph populated with nodes for every query.
-func buildGraph(queries []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
+func buildGraph(queries []*datasource.Query, tr *datasource.TimeRange, dsAPI datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
 	dp := simple.NewDirectedGraph()
 
 	for _, query := range queries {
-		sj, err := simplejson.NewJson([]byte(query.ModelJson))
+		rawQueryProp := make(map[string]interface{})
+		err := json.Unmarshal([]byte(query.GetModelJson()), &rawQueryProp)
 		if err != nil {
 			return nil, err
 		}
-		datasource := sj.Get("datasource").MustString()
-		refID := query.GetRefId()
-
-		switch datasource {
-		case gelDataSourceName:
-			node, err := buildGELNode(refID, dp, sj)
-			if err != nil {
-				return nil, err
-			}
-			dp.AddNode(node)
-		default: // If it's not a GEL query, it's a data source query.
-			dsNode := &DSNode{
-				baseNode: baseNode{
-					id:    dp.NewNode().ID(),
-					refID: refID,
-				},
-				query:     sj,
-				timeRange: tr,
-				dsAPI:     cache,
-			}
-			dp.AddNode(dsNode)
+		rn := &rawNode{
+			Query: rawQueryProp,
+			RefID: query.RefId,
 		}
+
+		dsName, err := rn.GetDatasourceName()
+		if err != nil {
+			return nil, err
+		}
+
+		var node graph.Node
+		switch dsName {
+		case gelDataSourceName:
+			node, err = buildGELNode(dp, rn)
+		default: // If it's not a GEL query, it's a data source query.
+			node, err = buildDSNode(dp, rn, tr, dsAPI)
+		}
+		if err != nil {
+			return nil, err
+		}
+		dp.AddNode(node)
 	}
 	return dp, nil
 }
