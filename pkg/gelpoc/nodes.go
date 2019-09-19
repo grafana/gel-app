@@ -109,6 +109,11 @@ func buildGELNode(dp *simple.DirectedGraph, rn *rawNode) (*GELNode, error) {
 	return node, nil
 }
 
+const (
+	defaultIntervalMS = int64(64)
+	defaultMaxDP      = int64(5000)
+)
+
 // DSNode is a DPNode that holds a datasource request.
 type DSNode struct {
 	baseNode
@@ -134,8 +139,8 @@ func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr *datasource.TimeRange
 		},
 		query:      rn.Query,
 		timeRange:  tr,
-		intervalMS: 1000,
-		maxDP:      5000,
+		intervalMS: defaultIntervalMS,
+		maxDP:      defaultMaxDP,
 		dsAPI:      dsAPI,
 	}
 
