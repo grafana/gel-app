@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/grafana/grafana/pkg/components/simplejson"
-
 	"github.com/grafana/gel-app/pkg/mathexp"
 )
 
@@ -36,12 +34,19 @@ func NewMathCommand(expr string) (*MathCommand, error) {
 }
 
 // UnmarshalMathCommand creates a MathCommand from Grafana's frontend query.
-func UnmarshalMathCommand(query *simplejson.Json) (*MathCommand, error) {
-	refID := query.Get("refId").MustString()
-	exprString := query.Get("expression").MustString()
+func UnmarshalMathCommand(rn *rawNode) (*MathCommand, error) {
+	rawExpr, ok := rn.Query["expression"]
+	if !ok {
+		return nil, fmt.Errorf("no expression in gel command for refId %v", rn.RefID)
+	}
+	exprString, ok := rawExpr.(string)
+	if !ok {
+		return nil, fmt.Errorf("expected expression to be a string, got %T", rawExpr)
+	}
+
 	gm, err := NewMathCommand(exprString)
 	if err != nil {
-		return nil, fmt.Errorf("invalid math command type in '%v': %v", refID, err)
+		return nil, fmt.Errorf("invalid math command type in '%v': %v", rn.RefID, err)
 	}
 	return gm, nil
 }
@@ -66,6 +71,7 @@ type ReduceCommand struct {
 
 // NewReduceCommand creates a new ReduceCMD.
 func NewReduceCommand(reducer, varToReduce string) *ReduceCommand {
+	// TODO: validate reducer here, before execution
 	return &ReduceCommand{
 		Reducer:     reducer,
 		VarToReduce: varToReduce,
@@ -73,11 +79,27 @@ func NewReduceCommand(reducer, varToReduce string) *ReduceCommand {
 }
 
 // UnmarshalReduceCommand creates a MathCMD from Grafana's frontend query.
-func UnmarshalReduceCommand(query *simplejson.Json) *ReduceCommand {
-	varToReduce := query.Get("expression").MustString()
+func UnmarshalReduceCommand(rn *rawNode) (*ReduceCommand, error) {
+	rawVar, ok := rn.Query["expression"]
+	if !ok {
+		return nil, fmt.Errorf("no variable to reduce in gel command for refId %v", rn.RefID)
+	}
+	varToReduce, ok := rawVar.(string)
+	if !ok {
+		return nil, fmt.Errorf("expected variable to be a string, got %T for refId %v", rawVar, rn.RefID)
+	}
 	varToReduce = strings.TrimPrefix(varToReduce, "$")
-	redFunc := query.Get("reducer").MustString()
-	return NewReduceCommand(redFunc, varToReduce)
+
+	rawReducer, ok := rn.Query["reducer"]
+	if !ok {
+		return nil, fmt.Errorf("no reducer specified in gel command for refId %v", rn.RefID)
+	}
+	redFunc, ok := rawReducer.(string)
+	if !ok {
+		return nil, fmt.Errorf("expected reducer to be a string, got %T for refId %v", rawReducer, rn.RefID)
+	}
+
+	return NewReduceCommand(redFunc, varToReduce), nil
 }
 
 // NeedsVars returns the variable names (refIds) that are dependencies
