@@ -1,5 +1,7 @@
 import { TempGELQueryWrapper } from './types';
 import { DataFrame, MutableDataFrame, FieldType } from '@grafana/data';
+import { Table } from 'apache-arrow';
+import { decode } from 'base64-arraybuffer';
 
 export function getNextQueryID(query: TempGELQueryWrapper) {
   if (!query || !query.queries) {
@@ -17,6 +19,17 @@ export function getNextQueryID(query: TempGELQueryWrapper) {
 }
 
 export function gelResponseToDataFrames(rsp: any): DataFrame[] {
+  if (rsp.results) {
+    const frames: DataFrame[] = [];
+    for (const v of Object.values(rsp.results)) {
+      const raw = decode((v as any).meta.GC);
+      const uints = new Uint8Array(raw);
+      const arrowTable = Table.from([uints]);
+      console.log('ENC', arrowTable.toString());
+      console.log('FIELDS', arrowTable.schema.fields.length);
+    }
+    return frames;
+  }
   return rsp.Frames.map((v: any) => {
     const frame = new MutableDataFrame();
     frame.name = v.name;

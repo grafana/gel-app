@@ -45,9 +45,40 @@ const resp = {
   ],
 };
 
+/* tslint:disable */
+const resEnc = {
+  results: {
+    '': {
+      refId: '',
+      meta: {
+        GC:
+          '/////3gAAAAQAAAAAAAKAAwACgAJAAQACgAAABAAAAAAAQMACAAIAAAABAAIAAAABAAAAAEAAAAUAAAAEAAUABAAAAAPAAgAAAAEABAAAAAQAAAAGAAAAAAAAAMYAAAAAAAAAAAABgAIAAYABgAAAAAAAgAGAAAAU2NhbGFyAAD/////iAAAABQAAAAAAAAADAAWABQAEwAMAAQADAAAAAgAAAAAAAAAFAAAAAAAAAMDAAoAGAAMAAgABAAKAAAAFAAAADgAAAABAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAIQP////8AAAAA',
+      },
+      series: [],
+      tables: null,
+      frames: null,
+    },
+  },
+};
+/* tslint:enable */
+
 describe('GEL Utils', () => {
   test('should parse sample GEL output', () => {
     const frames = gelResponseToDataFrames(resp);
+    const frame = frames[0];
+    expect(frame.name).toEqual('BBB');
+    expect(frame.fields.length).toEqual(2);
+    expect(frame.length).toEqual(resp.Frames[0].fields[0].values.length);
+
+    const timeField = frame.fields[0];
+    expect(timeField.name).toEqual('Time');
+
+    // The whole response
+    expect(frames).toMatchSnapshot();
+  });
+
+  test('should parse response with binary arrow', () => {
+    const frames = gelResponseToDataFrames(resEnc);
     const frame = frames[0];
     expect(frame.name).toEqual('BBB');
     expect(frame.fields.length).toEqual(2);
