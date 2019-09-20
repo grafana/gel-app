@@ -1,6 +1,9 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/grafana/gel-app/pkg/data"
 	"github.com/grafana/gel-app/pkg/gelpoc"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
@@ -65,10 +68,33 @@ func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRe
 		}
 	}
 
+	byteFrames := make(map[string][]byte, len(frames))
+
+	for _, frame := range frames {
+		//gp.logger.Debug("frame", spew.Sdump(frame))
+		b, err := frame.ToArrow()
+		if err != nil {
+			return nil, err
+		}
+		gp.logger.Debug("ref", frame.RefID, "len", fmt.Sprintf("%v", len(b)))
+		//byteFrames[frame.RefID] = base64.StdEncoding.EncodeToString(b)
+		byteFrames[frame.RefID] = b
+		//gp.logger.Debug("b64 string", byteFrames[frame.RefID])
+		//gp.logger.Debug("frame as arrow bytes", string(b))
+	}
+
+	jBFrames, err := json.Marshal(byteFrames)
+	if err != nil {
+		return nil, err
+	}
+
+	gp.logger.Debug("json", string(jBFrames))
+
 	return &datasource.DatasourceResponse{
 		Results: []*datasource.QueryResult{
 			&datasource.QueryResult{
-				Frames: pbFrames,
+				//Frames:   pbFrames,
+				MetaJson: string(jBFrames),
 			},
 		},
 	}, nil
