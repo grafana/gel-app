@@ -81,9 +81,22 @@ func (f *Frame) ToArrow() ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		arrowFields[i] = arrow.Field{Name: field.Name, Type: at}
+		mdMap := map[string]string{
+			"name": field.Name,
+			"type": field.Type.String(),
+		}
+		arrowFields[i] = arrow.Field{Name: field.Name, Type: at, Metadata: arrow.MetadataFrom(mdMap), Nullable: true}
 	}
-	schema := arrow.NewSchema(arrowFields, nil)
+	tableMDMap := map[string]string{
+		"name":  f.Name,
+		"refId": f.RefID,
+	}
+	if f.GetLabels() != nil {
+		tableMDMap["labels"] = f.Labels.String()
+	}
+
+	md := arrow.MetadataFrom(tableMDMap)
+	schema := arrow.NewSchema(arrowFields, &md)
 	pool := memory.NewGoAllocator()
 	columns := make([]array.Column, len(f.Fields))
 	for fieldIdx, field := range f.Fields {
