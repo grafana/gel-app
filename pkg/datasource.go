@@ -68,22 +68,19 @@ func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRe
 		}
 	}
 
-	byteFrames := make(map[string][]byte, len(frames))
+	byteFrames := make([][]byte, len(frames))
 
-	for _, frame := range frames {
+	for i, frame := range frames {
 		//gp.logger.Debug("frame", spew.Sdump(frame))
 		b, err := frame.ToArrow()
 		if err != nil {
 			return nil, err
 		}
 		gp.logger.Debug("ref", frame.RefID, "len", fmt.Sprintf("%v", len(b)))
-		//byteFrames[frame.RefID] = base64.StdEncoding.EncodeToString(b)
-		byteFrames[frame.RefID] = b
-		//gp.logger.Debug("b64 string", byteFrames[frame.RefID])
-		//gp.logger.Debug("frame as arrow bytes", string(b))
+		byteFrames[i] = b
 	}
 
-	jBFrames, err := json.Marshal(byteFrames)
+	jBFrames, err := json.Marshal(byteFrames) // json.Marshal b64 encodes []byte
 	if err != nil {
 		return nil, err
 	}
