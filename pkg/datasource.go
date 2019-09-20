@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/grafana/gel-app/pkg/data"
 	"github.com/grafana/gel-app/pkg/gelpoc"
@@ -68,15 +67,14 @@ func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRe
 		}
 	}
 
+	// Each Frame as a byte representation of an arrow table
 	byteFrames := make([][]byte, len(frames))
 
 	for i, frame := range frames {
-		//gp.logger.Debug("frame", spew.Sdump(frame))
 		b, err := frame.ToArrow()
 		if err != nil {
 			return nil, err
 		}
-		gp.logger.Debug("ref", frame.RefID, "len", fmt.Sprintf("%v", len(b)))
 		byteFrames[i] = b
 	}
 
@@ -84,8 +82,6 @@ func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRe
 	if err != nil {
 		return nil, err
 	}
-
-	gp.logger.Debug("json", string(jBFrames))
 
 	return &datasource.DatasourceResponse{
 		Results: []*datasource.QueryResult{
