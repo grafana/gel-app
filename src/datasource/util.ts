@@ -1,5 +1,6 @@
 import { TempGELQueryWrapper } from './types';
-import { DataFrame, MutableDataFrame, FieldType } from '@grafana/data';
+import { DataFrame, MutableDataFrame, FieldType, Field, Vector, ArrayVector } from '@grafana/data';
+import { Table, ArrowType } from 'apache-arrow';
 
 export function getNextQueryID(query: TempGELQueryWrapper) {
   if (!query || !query.queries) {
@@ -16,7 +17,67 @@ export function getNextQueryID(query: TempGELQueryWrapper) {
   return 'G' + Date.now(); //
 }
 
+export function base64StringToArrowTable(text: string) {
+  const b64 = atob(text);
+  const arr = Uint8Array.from(b64, c => {
+    return c.charCodeAt(0);
+  });
+  return Table.from(arr);
+}
+
+export function arrowTableToDataFrame(table: Table): DataFrame {
+  const fields: Field[] = [];
+  for (let i = 0; i < table.numCols; i++) {
+    const col = table.getColumnAt(i);
+    if (col) {
+      const schema = table.schema.fields[i];
+      let type = FieldType.other;
+      let values: Vector<any> = col; //
+      if ('Time' === col.name) {
+        type = FieldType.time;
+
+        // Silly conversion until we agree on date formats
+        const ms: number[] = new Array(col.length);
+        for (let j = 0; j < col.length; j++) {
+          ms[j] = col.get(j) / 1000000; // nanoseconds to milliseconds
+        }
+        values = new ArrayVector(ms);
+      } else {
+        switch ((schema.typeId as unknown) as ArrowType) {
+          case ArrowType.FloatingPoint: {
+            break;
+          }
+          default:
+            console.log('UNKOWN Type:', schema);
+        }
+      }
+
+      fields.push({
+        name: col.name,
+        type,
+        config: {}, // TODO, pull from metadata
+        values,
+      });
+    }
+  }
+  return {
+    fields,
+    length: table.length,
+  };
+}
+
 export function gelResponseToDataFrames(rsp: any): DataFrame[] {
+  if (rsp.results) {
+    const frames: DataFrame[] = [];
+    for (const res of Object.values(rsp.results)) {
+      for (const b of Object.values((res as any).meta)) {
+        const t = base64StringToArrowTable(b as string);
+        frames.push(arrowTableToDataFrame(t));
+      }
+    }
+    return frames;
+  }
+
   return rsp.Frames.map((v: any) => {
     const frame = new MutableDataFrame();
     frame.name = v.name;

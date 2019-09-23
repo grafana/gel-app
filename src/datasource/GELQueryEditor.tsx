@@ -98,7 +98,7 @@ export class GELQueryEditor extends PureComponent<Props, State> {
   };
 
   render() {
-    const { query, panelData } = this.props;
+    const { query, data } = this.props;
     const { datasources } = this.state;
     const selected = {
       label: '   ',
@@ -143,7 +143,7 @@ export class GELQueryEditor extends PureComponent<Props, State> {
             );
           }
 
-          return <QueryEditorRow key={index} query={q} data={panelData} onRemoveQuery={this.onRemoveQuery} onChange={this.onChangeGELQuery} />;
+          return <QueryEditorRow key={index} query={q} data={data!} onRemoveQuery={this.onRemoveQuery} onChange={this.onChangeGELQuery} />;
         })}
 
         <div className="form-field">
