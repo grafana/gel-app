@@ -10,17 +10,29 @@ var builtins = map[string]parse.Func{
 	"abs": {
 		Args:          []parse.ReturnType{parse.TypeVariantSet},
 		VariantReturn: true,
-		F:             Abs,
+		F:             abs,
 	},
 	"log": {
 		Args:          []parse.ReturnType{parse.TypeVariantSet},
 		VariantReturn: true,
-		F:             Log,
+		F:             log,
+	},
+	"nan": {
+		Return: parse.TypeScalar,
+		F:      nan,
+	},
+	"inf": {
+		Return: parse.TypeScalar,
+		F:      inf,
+	},
+	"null": {
+		Return: parse.TypeScalar,
+		F:      null,
 	},
 }
 
-// Abs returns the absolute value for each result in NumberSet, SeriesSet, or Scalar
-func Abs(e *State, varSet Results) Results {
+// abs returns the absolute value for each result in NumberSet, SeriesSet, or Scalar
+func abs(e *State, varSet Results) Results {
 	newRes := Results{}
 	for _, res := range varSet.Values {
 		newVal := perFloat(res, math.Abs)
@@ -29,14 +41,31 @@ func Abs(e *State, varSet Results) Results {
 	return newRes
 }
 
-// Log returns the natural logarithm value for each result in NumberSet, SeriesSet, or Scalar
-func Log(e *State, varSet Results) Results {
+// log returns the natural logarithm value for each result in NumberSet, SeriesSet, or Scalar
+func log(e *State, varSet Results) Results {
 	newRes := Results{}
 	for _, res := range varSet.Values {
 		newVal := perFloat(res, math.Log)
 		newRes.Values = append(newRes.Values, newVal)
 	}
 	return newRes
+}
+
+// nan returns a scalar nan value
+func nan(e *State) Results {
+	aNaN := math.NaN()
+	return NewScalarResults(&aNaN)
+}
+
+// inf returns a scalar positive infinity value
+func inf(e *State) Results {
+	aInf := math.Inf(0)
+	return NewScalarResults(&aInf)
+}
+
+// null returns a null scalar value
+func null(e *State) Results {
+	return NewScalarResults(nil)
 }
 
 func perFloat(val Value, floatF func(x float64) float64) Value {
