@@ -1,5 +1,5 @@
 import { TempGELQueryWrapper } from './types';
-import { DataFrame, MutableDataFrame, FieldType, Field, Vector, ArrayVector } from '@grafana/data';
+import { DataFrame, MutableDataFrame, FieldType, Field, Vector } from '@grafana/data';
 import { Table, ArrowType } from 'apache-arrow';
 
 export function getNextQueryID(query: TempGELQueryWrapper) {
@@ -32,17 +32,7 @@ export function arrowTableToDataFrame(table: Table): DataFrame {
     if (col) {
       const schema = table.schema.fields[i];
       let type = FieldType.other;
-      let values: Vector<any> = col; //
-      if ('Time' === col.name) {
-        type = FieldType.time;
-
-        // Silly conversion until we agree on date formats
-        const ms: number[] = new Array(col.length);
-        for (let j = 0; j < col.length; j++) {
-          ms[j] = col.get(j) / 1000000; // nanoseconds to milliseconds
-        }
-        values = new ArrayVector(ms);
-      } else {
+      let values: Vector<any> = col;
         switch ((schema.typeId as unknown) as ArrowType) {
           case ArrowType.Decimal:
           case ArrowType.Int:
@@ -54,9 +44,12 @@ export function arrowTableToDataFrame(table: Table): DataFrame {
             type = FieldType.boolean;
             break;
           }
+          case ArrowType.Timestamp: {
+            type = FieldType.time;
+            break;
+          }
           default:
-            console.log('UNKOWN Type:', schema);
-        }
+            console.log('UNKNOWN Type:', schema);
       }
 
       fields.push({
@@ -93,18 +86,9 @@ export function gelResponseToDataFrames(rsp: any): DataFrame[] {
       frame.labels = v.labels;
     }
     for (const f of v.fields) {
-      let v = f.values;
-      const type: FieldType = f.type;
-      // HACK: this should be supported out-of-the-box
-      // String as ms date
-      if (type === FieldType.time) {
-        v = v.map((str: string) => {
-          return parseInt(str.slice(0, -6), 10);
-        });
-      }
       frame.addField({
         ...f,
-        values: v,
+        values: f.values,
       });
     }
     return frame;
