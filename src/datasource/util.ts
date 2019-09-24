@@ -1,5 +1,5 @@
 import { TempGELQueryWrapper } from './types';
-import { DataFrame, MutableDataFrame, FieldType, Field, Vector } from '@grafana/data';
+import { DataFrame, FieldType, Field, Vector } from '@grafana/data';
 import { Table, ArrowType } from 'apache-arrow';
 
 export function getNextQueryID(query: TempGELQueryWrapper) {
@@ -67,30 +67,12 @@ export function arrowTableToDataFrame(table: Table): DataFrame {
 }
 
 export function gelResponseToDataFrames(rsp: any): DataFrame[] {
-  if (rsp.results) {
-    const frames: DataFrame[] = [];
-    for (const res of Object.values(rsp.results)) {
-      for (const b of (res as any).meta) {
-        const t = base64StringToArrowTable(b as string);
-        frames.push(arrowTableToDataFrame(t));
-      }
+  const frames: DataFrame[] = [];
+  for (const res of Object.values(rsp.results)) {
+    for (const b of (res as any).meta) {
+      const t = base64StringToArrowTable(b as string);
+      frames.push(arrowTableToDataFrame(t));
     }
-    return frames;
   }
-
-  return rsp.Frames.map((v: any) => {
-    const frame = new MutableDataFrame();
-    frame.name = v.name;
-    frame.refId = v.refId;
-    if (v.labels) {
-      frame.labels = v.labels;
-    }
-    for (const f of v.fields) {
-      frame.addField({
-        ...f,
-        values: f.values,
-      });
-    }
-    return frame;
-  });
+  return frames;
 }
