@@ -44,7 +44,14 @@ export function arrowTableToDataFrame(table: Table): DataFrame {
         values = new ArrayVector(ms);
       } else {
         switch ((schema.typeId as unknown) as ArrowType) {
+          case ArrowType.Decimal:
+          case ArrowType.Int:
           case ArrowType.FloatingPoint: {
+            type = FieldType.number;
+            break;
+          }
+          case ArrowType.Bool: {
+            type = FieldType.boolean;
             break;
           }
           default:
