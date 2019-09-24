@@ -56,17 +56,6 @@ func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRe
 		frames = filteredFrames
 	}
 
-	// Convert the []*data.Frames to protobuf Frames appropriate for the plugin-model
-	pbFrames := &datasource.Frames{
-		Frames: make([]*datasource.Frame, len(frames)),
-	}
-	for i, frame := range frames {
-		pbFrames.Frames[i], err = frame.ToPBFrame()
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-	}
-
 	// Each Frame as a byte representation of an arrow table
 	byteFrames := make([][]byte, len(frames))
 
@@ -86,7 +75,6 @@ func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRe
 	return &datasource.DatasourceResponse{
 		Results: []*datasource.QueryResult{
 			&datasource.QueryResult{
-				//Frames:   pbFrames,
 				MetaJson: string(jBFrames),
 			},
 		},
