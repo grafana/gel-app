@@ -32,24 +32,24 @@ export function arrowTableToDataFrame(table: Table): DataFrame {
     if (col) {
       const schema = table.schema.fields[i];
       let type = FieldType.other;
-      let values: Vector<any> = col;
-        switch ((schema.typeId as unknown) as ArrowType) {
-          case ArrowType.Decimal:
-          case ArrowType.Int:
-          case ArrowType.FloatingPoint: {
-            type = FieldType.number;
-            break;
-          }
-          case ArrowType.Bool: {
-            type = FieldType.boolean;
-            break;
-          }
-          case ArrowType.Timestamp: {
-            type = FieldType.time;
-            break;
-          }
-          default:
-            console.log('UNKNOWN Type:', schema);
+      const values: Vector<any> = col;
+      switch ((schema.typeId as unknown) as ArrowType) {
+        case ArrowType.Decimal:
+        case ArrowType.Int:
+        case ArrowType.FloatingPoint: {
+          type = FieldType.number;
+          break;
+        }
+        case ArrowType.Bool: {
+          type = FieldType.boolean;
+          break;
+        }
+        case ArrowType.Timestamp: {
+          type = FieldType.time;
+          break;
+        }
+        default:
+          console.log('UNKNOWN Type:', schema);
       }
 
       fields.push({
