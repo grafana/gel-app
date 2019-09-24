@@ -42,7 +42,7 @@ describe('GEL Utils', () => {
       }
     }
 
-    const norm = frames.map( f => toDataFrameDTO(f) );
+    const norm = frames.map(f => toDataFrameDTO(f));
     expect(norm).toMatchSnapshot();
   });
 });
