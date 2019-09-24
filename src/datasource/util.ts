@@ -70,7 +70,7 @@ export function gelResponseToDataFrames(rsp: any): DataFrame[] {
   if (rsp.results) {
     const frames: DataFrame[] = [];
     for (const res of Object.values(rsp.results)) {
-      for (const b of Object.values((res as any).meta)) {
+      for (const b of (res as any).meta) {
         const t = base64StringToArrowTable(b as string);
         frames.push(arrowTableToDataFrame(t));
       }
