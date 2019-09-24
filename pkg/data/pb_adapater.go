@@ -120,14 +120,16 @@ func (f *Frame) ToArrow() ([]byte, error) {
 			builder.Release()
 			chunked.Release()
 		case TypeTime:
-			builder := array.NewStringBuilder(pool)
+			builder := array.NewTimestampBuilder(pool, &arrow.TimestampType{
+				Unit: arrow.Nanosecond,
+			})
 			defer builder.Release()
 			for _, v := range *field.Vector.(*TimeVector) {
 				if v == nil {
 					builder.AppendNull()
 					continue
 				}
-				builder.Append(fmt.Sprintf("%v", v.UnixNano()))
+				builder.Append(arrow.Timestamp(v.UnixNano()))
 			}
 			chunked := array.NewChunked(arrowFields[fieldIdx].Type, []array.Interface{builder.NewArray()})
 
@@ -145,7 +147,7 @@ func (f *Frame) ToArrow() ([]byte, error) {
 	tableReader := array.NewTableReader(table, -1)
 	defer tableReader.Release()
 
-	// arrow tables with the go API are written to files, so we create a fake 
+	// arrow tables with the go API are written to files, so we create a fake
 	// file buffer that the FileWriter can write to.
 	// In the future and with streaming, I think will likely be using the arrow
 	// message type some how.
@@ -182,7 +184,7 @@ func (f FieldType) ArrowType() (dt arrow.DataType, err error) {
 	case TypeNumber:
 		dt = &arrow.Float64Type{}
 	case TypeTime:
-		dt = &arrow.StringType{} // we encode time as strings for now
+		dt = &arrow.TimestampType{}
 	default:
 		return dt, fmt.Errorf("unsupported type %s for arrow conversion", f)
 	}
