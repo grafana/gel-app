@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+
 	"github.com/grafana/gel-app/pkg/data"
 	"github.com/grafana/gel-app/pkg/gelpoc"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
@@ -54,21 +56,26 @@ func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRe
 		frames = filteredFrames
 	}
 
-	// Convert the []*data.Frames to protobuf Frames appropriate for the plugin-model
-	pbFrames := &datasource.Frames{
-		Frames: make([]*datasource.Frame, len(frames)),
-	}
+	// Each Frame as a byte representation of an arrow table
+	byteFrames := make([][]byte, len(frames))
+
 	for i, frame := range frames {
-		pbFrames.Frames[i], err = frame.ToPBFrame()
+		b, err := frame.ToArrow()
 		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
+			return nil, err
 		}
+		byteFrames[i] = b
+	}
+
+	jBFrames, err := json.Marshal(byteFrames) // json.Marshal b64 encodes []byte
+	if err != nil {
+		return nil, err
 	}
 
 	return &datasource.DatasourceResponse{
 		Results: []*datasource.QueryResult{
 			&datasource.QueryResult{
-				Frames: pbFrames,
+				MetaJson: string(jBFrames),
 			},
 		},
 	}, nil

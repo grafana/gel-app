@@ -109,7 +109,7 @@ export class QueryEditorRow extends PureComponent<Props, State> {
   }
 
   renderPluginEditor() {
-    const { query, data, onChange } = this.props;
+    const { query, onChange } = this.props;
     const { datasource, queryResponse } = this.state;
 
     if (!datasource || !datasource.components) {
@@ -123,16 +123,7 @@ export class QueryEditorRow extends PureComponent<Props, State> {
     if (datasource.components.QueryEditor) {
       const QueryEditor = datasource.components.QueryEditor;
 
-      return (
-        <QueryEditor
-          query={query}
-          datasource={datasource}
-          onChange={onChange}
-          onRunQuery={this.onRunQuery}
-          queryResponse={queryResponse}
-          panelData={data}
-        />
-      );
+      return <QueryEditor query={query} datasource={datasource} onChange={onChange} onRunQuery={this.onRunQuery} data={queryResponse} />;
     }
 
     return <div>Data source plugin does not export any Query Editor component</div>;

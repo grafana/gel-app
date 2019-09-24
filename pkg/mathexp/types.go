@@ -50,6 +50,7 @@ func NewScalar(f *float64) Scalar {
 			Fields: data.Fields{
 				&data.Field{
 					Name:   "Scalar",
+					Type:   data.TypeNumber,
 					Vector: &data.Float64Vector{f},
 				},
 			},
