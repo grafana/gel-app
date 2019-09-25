@@ -223,5 +223,6 @@ export function filterPanelDataToQuery(data: PanelData, refId: string): PanelDat
     series,
     request,
     error,
+    timeRange: data.timeRange,
   };
 }
