@@ -17,8 +17,11 @@ github.com/google/flatbuffers v1.11.0/go.mod h1:1AeVuKshWv4vARoZatz6mlQ0JxURH0Kv
 github.com/google/go-cmp v0.3.1 h1:Xye71clBPdm5HgqGwUkwhbynsUJZhDbS20FvLhQ2izg=
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/grafana/grafana v6.1.6+incompatible h1:Eyeg3ifz220cWiu0hLoPjJJmle+nxR63ZEmSDgYDokg=
+github.com/grafana/grafana-plugin-model v0.0.0-20180518082423-84176c64269d h1:J3XXvgaMHzZ+gC/pStYNc6k+LjPuhPeAevwgN0AqTeM=
 github.com/grafana/grafana-plugin-model v0.0.0-20190914153046-e03e7e48a2ca h1:J5C67rUVfLGkQk8GEhEAXsH6gFVrffHlG6XZ2Nsz2bI=
 github.com/grafana/grafana-plugin-model v0.0.0-20190914153046-e03e7e48a2ca/go.mod h1:61HQj0TcXe65fYyDq8Oqds/+9isXdFyZE38Dw3hTCho=
+github.com/grafana/grafana-plugin-model v0.0.0-20190925141336-5d93412845bc h1:a/RQT8YKBOLp3sqrq2TQZDkTgTfIekUkgsoxNAIOZjI=
+github.com/grafana/grafana-plugin-model v0.0.0-20190925141336-5d93412845bc/go.mod h1:61HQj0TcXe65fYyDq8Oqds/+9isXdFyZE38Dw3hTCho=
 github.com/hashicorp/go-hclog v0.0.0-20180402200405-69ff559dc25f h1:t34t/ySFIGsPOLQ/dCcKeCoErlqhXlNLYvPn7mVogzo=
 github.com/hashicorp/go-hclog v0.0.0-20180402200405-69ff559dc25f/go.mod h1:9bjs9uLqI8l75knNv3lV1kA55veR+WUPSiKIWcQHudI=
 github.com/hashicorp/go-plugin v0.0.0-20180331002553-e8d22c780116 h1:Y4V/yReWjQo/Ngyc0w6C3EKXKincp4YgvXeo8lI4LrI=

@@ -12,9 +12,9 @@ go 1.12
 
 require (
 	github.com/apache/arrow/go/arrow v0.0.0-20190716210558-5f564424c71c
-	github.com/golang/protobuf v1.2.0
+	github.com/golang/protobuf v1.2.0 // indirect
 	github.com/google/go-cmp v0.3.1
-	github.com/grafana/grafana-plugin-model v0.0.0-20190914153046-e03e7e48a2ca
+	github.com/grafana/grafana-plugin-model v0.0.0-20190925141336-5d93412845bc
 	github.com/hashicorp/go-hclog v0.8.0
 	github.com/hashicorp/go-plugin v0.0.0-20190220160451-3f118e8ee104
 	github.com/mattetti/filebuffer v1.0.0
