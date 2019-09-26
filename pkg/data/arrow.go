@@ -45,7 +45,6 @@ func (f *Frame) ToArrow() ([]byte, error) {
 		switch field.Type {
 		case TypeNumber:
 			builder := array.NewFloat64Builder(pool)
-			defer builder.Release()
 			for _, v := range *field.Vector.(*Float64Vector) {
 				if v == nil {
 					builder.AppendNull()
@@ -62,7 +61,6 @@ func (f *Frame) ToArrow() ([]byte, error) {
 			builder := array.NewTimestampBuilder(pool, &arrow.TimestampType{
 				Unit: arrow.Nanosecond,
 			})
-			defer builder.Release()
 			for _, v := range *field.Vector.(*TimeVector) {
 				if v == nil {
 					builder.AppendNull()
