@@ -20,6 +20,6 @@ require (
 	github.com/mattetti/filebuffer v1.0.0
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/net v0.0.0-20190909003024-a7b16738d86b
-	gonum.org/v1/gonum v0.0.0-20190908220844-1d8f8b2ee4ce
+	gonum.org/v1/gonum v0.0.0-20190923210107-40fa6a493b3d
 	google.golang.org/grpc v1.11.1
 )
