@@ -12,8 +12,7 @@ import (
 
 // ToArrow converts the Frame to an arrow table and returns
 // a byte representation of that table.
-// TODO: I am not sure if Release needs to be called for everything in this function
-// or not. If so each array.Column in columns is missing a Release().
+// TODO: I am not sure if Release needs to be called for everything in this function.
 func (f *Frame) ToArrow() ([]byte, error) {
 	// Create arrow schema with metadata
 	arrowFields := make([]arrow.Field, len(f.Fields))
@@ -42,6 +41,12 @@ func (f *Frame) ToArrow() ([]byte, error) {
 	// Build the arrow columns
 	pool := memory.NewGoAllocator()
 	columns := make([]array.Column, len(f.Fields))
+	defer func() {
+		for _, c := range columns {
+			c.Release()
+		}
+	}()
+
 	var builder array.Builder
 	for fieldIdx, field := range f.Fields {
 		// build each column depending on the type
