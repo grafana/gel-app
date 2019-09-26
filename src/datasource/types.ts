@@ -12,6 +12,7 @@ export interface TempGELQueryWrapper extends DataQuery {
 export enum GELQueryType {
   math = 'math',
   reduce = 'reduce',
+  resample = 'resample',
 }
 
 /**
@@ -22,6 +23,7 @@ export interface GELQuery extends DataQuery {
   type: GELQueryType;
   reducer?: string;
   expression?: string;
+  rule?: string;
 }
 
 export interface GELDataSourceOptions extends DataSourceJsonData {

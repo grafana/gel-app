@@ -8,6 +8,10 @@ import (
 	"github.com/grafana/gel-app/pkg/data"
 	"github.com/grafana/gel-app/pkg/mathexp/parse"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"gonum.org/v1/gonum/stat"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 // Results is a container for Value interfaces.
@@ -183,6 +187,100 @@ func newSeriesFields(metricName string, len int) data.Fields {
 	fields[0].Vector.Make(len)
 	fields[1].Vector.Make(len)
 	return fields
+}
+
+func msToTime(ms string) (time.Time, error) {
+	msInt, err := strconv.ParseInt(ms, 10, 64)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return time.Unix(0, msInt*int64(time.Millisecond)), nil
+}
+
+// Resample turns the Series into a Number based on the given reduction function
+func (s Series) Resample(rule string, tr *datasource.TimeRange) (Series, error) {
+	AliasToDuration := map[string]time.Duration{
+		"D":   86400 * time.Second,
+		"W":   604800 * time.Second,
+		"MS":  2629800 * time.Second,
+		"Y":   31557600 * time.Second,
+		"H":   time.Hour,
+		"T":   time.Minute,
+		"min": time.Minute,
+		"S":   time.Second,
+		"L":   time.Millisecond,
+		"ms":  time.Millisecond,
+		"U":   time.Microsecond,
+		"us":  time.Microsecond,
+		"N":   time.Nanosecond,
+	}
+	aliases := make([]string, 0)
+	for k := range AliasToDuration {
+		aliases = append(aliases, k)
+	}
+	// Use anything other regular expressions?
+	expr := strings.Join(aliases, "|")
+	re := regexp.MustCompile(fmt.Sprintf(`^(\d*)(%v)$`, expr))
+	match := re.FindStringSubmatch(rule)
+
+	if len(match) == 0 {
+		// What should I return instead of s?
+		return s, fmt.Errorf("resample rule %v not implemented", rule)
+	}
+	var multiplier int64
+	if match[1] != "" {
+		valueInt64, err := strconv.ParseInt(match[1], 10, 64)
+		if err != nil {
+			// Different message for ErrSyntax and ErrRange
+			return s, fmt.Errorf("string %v cannot be converted to integer", match[1])
+		}
+		multiplier = valueInt64
+	} else {
+		multiplier = 1
+	}
+	interval := time.Duration(multiplier) * AliasToDuration[match[2]]
+
+	from, err := msToTime(tr.FromRaw)
+	if err != nil {
+		return s, fmt.Errorf("Invalid `from` field: %v", tr.FromRaw)
+	}
+	to, err := msToTime(tr.ToRaw)
+	if err != nil {
+		return s, fmt.Errorf("Invalid `to` field: %v", tr.ToRaw)
+	}
+
+	newSeriesLength := int(to.Sub(from).Nanoseconds() / interval.Nanoseconds())
+	resampled := NewSeries(s.Name, s.Labels, newSeriesLength)
+	bookmark := 0
+	var lastSeen *float64 = nil
+	for idx, t := 0, from; t.Before(to); idx++ {
+		values := make([]float64, 0)
+		sIdx := bookmark
+		for {
+			st, v := s.GetPoint(sIdx)
+			if st.After(t) {
+				break
+			}
+			bookmark++
+			sIdx++
+			lastSeen = v
+			values = append(values, *v)
+		}
+		var value *float64 = nil
+		if len(values) == 0 { // upsampling
+			if lastSeen != nil { // only bfill for now
+				value = lastSeen
+			}
+		} else { // downsampling
+			tmp := stat.Mean(values, nil) // only mean for now
+			value = &tmp
+		}
+		tv := t // this is required otherwise all points keep the latest timestamp; anything better?
+		resampled.SetPoint(idx, &tv, value)
+		t = t.Add(interval)
+	}
+	return resampled, nil
 }
 
 // Reduce turns the Series into a Number based on the given reduction function

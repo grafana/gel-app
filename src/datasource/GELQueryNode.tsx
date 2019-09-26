@@ -13,7 +13,11 @@ interface Props {
 
 interface State {}
 
-const gelTypes: Array<SelectableValue<GELQueryType>> = [{ value: GELQueryType.math, label: 'Math' }, { value: GELQueryType.reduce, label: 'Reduce' }];
+const gelTypes: Array<SelectableValue<GELQueryType>> = [
+  { value: GELQueryType.math, label: 'Math' },
+  { value: GELQueryType.reduce, label: 'Reduce' },
+  { value: GELQueryType.resample, label: 'Resample' },
+];
 
 const reducerTypes: Array<SelectableValue<string>> = [
   { value: ReducerID.min, label: 'Min', description: 'Get the minimum value' },
@@ -53,11 +57,27 @@ export class GELQueryNode extends PureComponent<Props, State> {
     });
   };
 
+  onRuleReducer = (item: SelectableValue<string>) => {
+    const { query, onChange } = this.props;
+    onChange({
+      ...query,
+      rule: item.value!,
+    });
+  };
+
   onExpressionChange = (evt: ChangeEvent<any>) => {
     const { query, onChange } = this.props;
     onChange({
       ...query,
       expression: evt.target.value,
+    });
+  };
+
+  onRuleChange = (evt: ChangeEvent<any>) => {
+    const { query, onChange } = this.props;
+    onChange({
+      ...query,
+      rule: evt.target.value,
     });
   };
 
@@ -77,6 +97,12 @@ export class GELQueryNode extends PureComponent<Props, State> {
               <Select options={reducerTypes} value={reducer} onChange={this.onSelectReducer} />
 
               <FormField label="Fields:" labelWidth={5} onChange={this.onExpressionChange} value={query.expression} />
+            </>
+          )}
+          {query.type === GELQueryType.resample && (
+            <>
+              <FormField label="Series:" labelWidth={5} onChange={this.onExpressionChange} value={query.expression} />
+              <FormField label="Rule:" labelWidth={5} onChange={this.onRuleChange} value={query.rule} />
             </>
           )}
         </div>

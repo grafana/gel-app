@@ -80,7 +80,7 @@ func (gn *GELNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resu
 	return gn.GELCommand.Execute(ctx, vars)
 }
 
-func buildGELNode(dp *simple.DirectedGraph, rn *rawNode) (*GELNode, error) {
+func buildGELNode(dp *simple.DirectedGraph, tr *datasource.TimeRange, rn *rawNode) (*GELNode, error) {
 
 	commandType, err := rn.GetGELType()
 	if err != nil {
@@ -99,6 +99,8 @@ func buildGELNode(dp *simple.DirectedGraph, rn *rawNode) (*GELNode, error) {
 		node.GELCommand, err = UnmarshalMathCommand(rn)
 	case TypeReduce:
 		node.GELCommand, err = UnmarshalReduceCommand(rn)
+	case TypeResample:
+		node.GELCommand, err = UnmarshalResampleCommand(rn, tr)
 	default:
 		return nil, fmt.Errorf("gel type '%v' in '%v' not implemented", commandType, rn.RefID)
 	}
