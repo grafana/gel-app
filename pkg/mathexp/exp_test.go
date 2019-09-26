@@ -865,3 +865,65 @@ func TestNaN(t *testing.T) {
 		})
 	}
 }
+
+func TestNull(t *testing.T) {
+	var tests = []struct {
+		name      string
+		expr      string
+		vars      Vars
+		newErrIs  assert.ErrorAssertionFunc
+		execErrIs assert.ErrorAssertionFunc
+		results   Results
+		willPanic bool
+	}{
+		{
+			name:      "scalar: unary ! null(): is null()",
+			expr:      "! null()",
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results:   NewScalarResults(nil),
+		},
+		{
+			name:      "scalar: binary null() + null(): is nan()", // odd behavior?
+			expr:      "null() + null()",
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results:   NewScalarResults(NaN),
+		},
+		{
+			name:      "scalar: binary 1 + null(): is nan()", // odd behavior?
+			expr:      "1 + null()",
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results:   NewScalarResults(NaN),
+		},
+	}
+
+	// go-cmp instead of testify assert is used to compare results here
+	// because it supports an option for NaN equality.
+	// https://github.com/stretchr/testify/pull/691#issuecomment-528457166
+	opt := cmp.Comparer(func(x, y float64) bool {
+		return (math.IsNaN(x) && math.IsNaN(y)) || x == y
+	})
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testBlock := func() {
+				e, err := New(tt.expr)
+				tt.newErrIs(t, err)
+				if e != nil {
+					res, err := e.Execute(tt.vars)
+					tt.execErrIs(t, err)
+					if !cmp.Equal(res, tt.results, opt) {
+						assert.FailNow(t, tt.name, cmp.Diff(res, tt.results, opt))
+					}
+				}
+			}
+			if tt.willPanic {
+				assert.Panics(t, testBlock)
+			} else {
+				assert.NotPanics(t, testBlock)
+			}
+		})
+	}
+}
