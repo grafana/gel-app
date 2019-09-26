@@ -12,6 +12,8 @@ import (
 
 // ToArrow converts the Frame to an arrow table and returns
 // a byte representation of that table.
+// TODO: I am not sure if Release needs to be called for everything in this function
+// or not. If so each array.Column in columns is missing a Release().
 func (f *Frame) ToArrow() ([]byte, error) {
 	// Create arrow schema with metadata
 	arrowFields := make([]arrow.Field, len(f.Fields))
@@ -40,25 +42,21 @@ func (f *Frame) ToArrow() ([]byte, error) {
 	// Build the arrow columns
 	pool := memory.NewGoAllocator()
 	columns := make([]array.Column, len(f.Fields))
+	var builder array.Builder
 	for fieldIdx, field := range f.Fields {
 		// build each column depending on the type
 		switch field.Type {
 		case TypeNumber:
-			builder := array.NewFloat64Builder(pool)
+			builder = array.NewFloat64Builder(pool)
 			for _, v := range *field.Vector.(*Float64Vector) {
 				if v == nil {
 					builder.AppendNull()
 					continue
 				}
-				builder.Append(*v)
+				builder.(*array.Float64Builder).Append(*v)
 			}
-			chunked := array.NewChunked(arrowFields[fieldIdx].Type, []array.Interface{builder.NewArray()})
-
-			columns[fieldIdx] = *array.NewColumn(arrowFields[fieldIdx], chunked)
-			builder.Release()
-			chunked.Release()
 		case TypeTime:
-			builder := array.NewTimestampBuilder(pool, &arrow.TimestampType{
+			builder = array.NewTimestampBuilder(pool, &arrow.TimestampType{
 				Unit: arrow.Nanosecond,
 			})
 			for _, v := range *field.Vector.(*TimeVector) {
@@ -66,16 +64,16 @@ func (f *Frame) ToArrow() ([]byte, error) {
 					builder.AppendNull()
 					continue
 				}
-				builder.Append(arrow.Timestamp(v.UnixNano()))
+				builder.(*array.TimestampBuilder).Append(arrow.Timestamp(v.UnixNano()))
 			}
-			chunked := array.NewChunked(arrowFields[fieldIdx].Type, []array.Interface{builder.NewArray()})
-
-			columns[fieldIdx] = *array.NewColumn(arrowFields[fieldIdx], chunked)
-			builder.Release()
-			chunked.Release()
 		default:
+			builder.Release()
 			return nil, fmt.Errorf("unsupported field type %s for arrow converstion", field.Type)
 		}
+		chunked := array.NewChunked(arrowFields[fieldIdx].Type, []array.Interface{builder.NewArray()})
+		columns[fieldIdx] = *array.NewColumn(arrowFields[fieldIdx], chunked)
+		chunked.Release()
+		builder.Release()
 	}
 
 	// Create a table from the schema and columns
