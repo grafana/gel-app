@@ -246,6 +246,10 @@ func (e *State) walkBinary(node *parse.BinaryNode) (Results, error) {
 			// Scalar op Scalar
 			case Scalar:
 				bFloat := bt.GetFloat64Value()
+				if aFloat == nil || bFloat == nil {
+					value = NewScalar(nil)
+					break
+				}
 				f := math.NaN()
 				if aFloat != nil && bFloat != nil {
 					f, err = binaryOp(node.OpStr, *aFloat, *bFloat)
@@ -391,6 +395,10 @@ func binaryOp(op string, a, b float64) (r float64, err error) {
 func biScalarNumber(name string, labels data.Labels, op string, number Number, scalarVal *float64, numberFirst bool) (Number, error) {
 	newNumber := NewNumber(name, labels)
 	f := number.GetFloat64Value()
+	if f == nil || scalarVal == nil {
+		newNumber.SetValue(nil)
+		return newNumber, nil
+	}
 	nF := math.NaN()
 	var err error
 	if numberFirst {
@@ -411,12 +419,14 @@ func biSeriesNumber(name string, labels data.Labels, op string, series Series, s
 	for i := 0; i < series.Len(); i++ {
 		nF := math.NaN()
 		t, f := series.GetPoint(i)
-		if f != nil {
-			if seriesFirst {
-				nF, err = binaryOp(op, *f, *scalarVal)
-			} else {
-				nF, err = binaryOp(op, *scalarVal, *f)
-			}
+		if f == nil || scalarVal == nil {
+			newSeries.SetPoint(i, t, nil)
+			continue
+		}
+		if seriesFirst {
+			nF, err = binaryOp(op, *f, *scalarVal)
+		} else {
+			nF, err = binaryOp(op, *scalarVal, *f)
 		}
 		if err != nil {
 			return newSeries, err
@@ -437,6 +447,10 @@ func biSeriesSeries(name string, labels data.Labels, op string, aSeries, bSeries
 			bTime := bSeries.GetTime(bIdx)
 			if *aTime == *bTime {
 				bF := bSeries.GetValue(bIdx)
+				if aF == nil || bF == nil {
+					newSeries.SetPoint(aIdx, aTime, nil)
+					break
+				}
 				nF, err := binaryOp(op, *aF, *bF)
 				if err != nil {
 					return newSeries, err
