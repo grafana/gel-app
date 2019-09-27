@@ -44,7 +44,7 @@ func TestResampleSeries(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			series, err := tt.seriesToResample.Resample(tt.interval, tt.timeRange)
 			tt.errIs(t, err)
-			if err != nil {
+			if err == nil {
 				tt.seriesIs(t, tt.series, series)
 			}
 		})
