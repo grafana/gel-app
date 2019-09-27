@@ -20,7 +20,7 @@ func TestResampleSeries(t *testing.T) {
 		series           Series
 	}{
 		{
-			name:     "resample series",
+			name:     "resample series; time range shorter than the rule interval",
 			interval: "5S",
 			timeRange: &datasource.TimeRange{
 				FromRaw: fmt.Sprintf("%v", time.Unix(0, 0).Unix()+1e3),
@@ -31,7 +31,21 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(7, 0), float64Pointer(1),
 			}),
-			errIs:    assert.NoError,
+			errIs: assert.Error,
+		},
+		{
+			name:     "resample series",
+			interval: "5S",
+			timeRange: &datasource.TimeRange{
+				FromRaw: fmt.Sprintf("%v", time.Unix(0, 0).Unix()*1e3),
+				ToRaw:   fmt.Sprintf("%v", time.Unix(11, 0).Unix()*1e3),
+			},
+			seriesToResample: makeSeries("", nil, tp{
+				unixTimePointer(2, 0), float64Pointer(2),
+			}, tp{
+				unixTimePointer(7, 0), float64Pointer(1),
+			}),
+			errIs:    assert.Error,
 			seriesIs: assert.Equal,
 			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), float64Pointer(2),
