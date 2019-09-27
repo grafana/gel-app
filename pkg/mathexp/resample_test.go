@@ -45,7 +45,7 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(7, 0), float64Pointer(1),
 			}),
-			errIs:    assert.Error,
+			errIs:    assert.NoError,
 			seriesIs: assert.Equal,
 			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), float64Pointer(2),
