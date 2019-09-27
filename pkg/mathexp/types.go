@@ -196,7 +196,7 @@ func msToTime(ms string) (time.Time, error) {
 		return time.Time{}, err
 	}
 
-	return time.Unix(0, msInt*int64(time.Millisecond)), nil
+	return time.Unix(0, msInt), nil
 }
 
 // Resample turns the Series into a Number based on the given reduction function
@@ -252,6 +252,10 @@ func (s Series) Resample(rule string, tr *datasource.TimeRange) (Series, error) 
 	}
 
 	newSeriesLength := int(to.Sub(from).Nanoseconds() / interval.Nanoseconds())
+	//newSeriesLength := int(math.Ceil(float64(to.Sub(from).Nanoseconds() / interval.Nanoseconds())))
+	if newSeriesLength == 0 {
+		return s, fmt.Errorf("The series cannot be sampled further; the time range is shorter than the interval")
+	}
 	resampled := NewSeries(s.Name, s.Labels, newSeriesLength)
 	bookmark := 0
 	var lastSeen *float64 = nil
