@@ -5,13 +5,14 @@ import (
 	"sort"
 	"time"
 
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/grafana/gel-app/pkg/data"
 	"github.com/grafana/gel-app/pkg/mathexp/parse"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
 	"gonum.org/v1/gonum/stat"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 // Results is a container for Value interfaces.
@@ -243,11 +244,11 @@ func (s Series) Resample(rule string, tr *datasource.TimeRange) (Series, error) 
 
 	from, err := msToTime(tr.FromRaw)
 	if err != nil {
-		return s, fmt.Errorf("Invalid `from` field: %v", tr.FromRaw)
+		return s, fmt.Errorf(`failed to parse "from" field "%v": %v`, tr.FromRaw, err)
 	}
 	to, err := msToTime(tr.ToRaw)
 	if err != nil {
-		return s, fmt.Errorf("Invalid `to` field: %v", tr.ToRaw)
+		return s, fmt.Errorf(`failed to parse "to" field "%v": %v`, tr.FromRaw, err)
 	}
 
 	newSeriesLength := int(to.Sub(from).Nanoseconds() / interval.Nanoseconds())
