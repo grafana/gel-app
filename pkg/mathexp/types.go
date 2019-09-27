@@ -196,7 +196,7 @@ func msToTime(ms string) (time.Time, error) {
 		return time.Time{}, err
 	}
 
-	return time.Unix(0, msInt), nil
+	return time.Unix(0, msInt*int64(time.Millisecond)), nil
 }
 
 // Resample turns the Series into a Number based on the given reduction function
@@ -251,18 +251,22 @@ func (s Series) Resample(rule string, tr *datasource.TimeRange) (Series, error) 
 		return s, fmt.Errorf(`failed to parse "to" field "%v": %v`, tr.FromRaw, err)
 	}
 
-	newSeriesLength := int(to.Sub(from).Nanoseconds() / interval.Nanoseconds())
-	//newSeriesLength := int(math.Ceil(float64(to.Sub(from).Nanoseconds() / interval.Nanoseconds())))
-	if newSeriesLength == 0 {
+	newSeriesLength := int(float64(to.Sub(from).Nanoseconds()) / float64(interval.Nanoseconds()))
+	if newSeriesLength <= 0 {
 		return s, fmt.Errorf("The series cannot be sampled further; the time range is shorter than the interval")
 	}
-	resampled := NewSeries(s.Name, s.Labels, newSeriesLength)
+	resampled := NewSeries(s.Name, s.Labels, newSeriesLength+1)
 	bookmark := 0
 	var lastSeen *float64 = nil
-	for idx, t := 0, from; t.Before(to); idx++ {
+	idx := 0
+	t := from
+	for !t.After(to) && idx <= newSeriesLength {
 		values := make([]float64, 0)
 		sIdx := bookmark
 		for {
+			if sIdx == s.Len() {
+				break
+			}
 			st, v := s.GetPoint(sIdx)
 			if st.After(t) {
 				break
@@ -281,9 +285,10 @@ func (s Series) Resample(rule string, tr *datasource.TimeRange) (Series, error) 
 			tmp := stat.Mean(values, nil) // only mean for now
 			value = &tmp
 		}
-		tv := t // this is required otherwise all points keep the latest timestamp; anything better?
+		tv := t // his is required otherwise all points keep the latest timestamp; anything better?
 		resampled.SetPoint(idx, &tv, value)
 		t = t.Add(interval)
+		idx++
 	}
 	return resampled, nil
 }
