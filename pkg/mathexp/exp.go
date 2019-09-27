@@ -102,6 +102,7 @@ func (e *State) walkUnary(node *parse.UnaryNode) (Results, error) {
 		var newVal Value
 		switch rt := val.(type) {
 		case Scalar:
+			newVal = NewScalar(nil)
 			f := rt.GetFloat64Value()
 			if f != nil {
 				newF, err := unaryOp(node.OpStr, *f)
@@ -130,13 +131,15 @@ func unarySeries(s Series, op string) (Series, error) {
 	newSeries := NewSeries(s.Name, s.Labels, s.Len())
 	for i := 0; i < s.Len(); i++ {
 		t, f := s.GetPoint(i)
-		if f != nil {
-			newF, err := unaryOp(op, *f)
-			if err != nil {
-				return newSeries, err
-			}
-			newSeries.SetPoint(i, t, &newF)
+		if f == nil {
+			newSeries.SetPoint(i, t, nil)
+			continue
 		}
+		newF, err := unaryOp(op, *f)
+		if err != nil {
+			return newSeries, err
+		}
+		newSeries.SetPoint(i, t, &newF)
 	}
 	return newSeries, nil
 }

@@ -877,25 +877,51 @@ func TestNull(t *testing.T) {
 		willPanic bool
 	}{
 		{
-			name:      "scalar: unary ! null(): is null()",
+			name:      "scalar: unary ! null(): is null",
 			expr:      "! null()",
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
 			results:   NewScalarResults(nil),
 		},
 		{
-			name:      "scalar: binary null() + null(): is nan()", // odd behavior?
+			name:      "scalar: binary null() + null(): is nan", // odd behavior?
 			expr:      "null() + null()",
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
 			results:   NewScalarResults(NaN),
 		},
 		{
-			name:      "scalar: binary 1 + null(): is nan()", // odd behavior?
+			name:      "scalar: binary 1 + null(): is nan", // odd behavior?
 			expr:      "1 + null()",
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
 			results:   NewScalarResults(NaN),
+		},
+		{
+			name: "series: unary with a null value in it has null",
+			expr: "- $A",
+			vars: Vars{
+				"A": Results{
+					[]Value{
+						makeSeries("", nil, tp{
+							unixTimePointer(5, 0), float64Pointer(1),
+						}, tp{
+							unixTimePointer(10, 0), nil,
+						}),
+					},
+				},
+			},
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results: Results{
+				[]Value{
+					makeSeries("", nil, tp{
+						unixTimePointer(5, 0), float64Pointer(-1),
+					}, tp{
+						unixTimePointer(10, 0), nil,
+					}),
+				},
+			},
 		},
 	}
 
