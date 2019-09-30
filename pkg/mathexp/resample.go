@@ -3,12 +3,13 @@ package mathexp
 import (
 	"fmt"
 
-	"github.com/grafana/grafana-plugin-model/go/datasource"
-	"gonum.org/v1/gonum/stat"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"gonum.org/v1/gonum/stat"
 )
 
 var aliasToDuration = map[string]time.Duration{
@@ -60,15 +61,6 @@ func parseRule(rule string) (time.Duration, error) {
 	return time.Duration(multiplier) * aliasToDuration[match[2]], nil
 }
 
-func msToTime(ms string) (time.Time, error) {
-	msInt, err := strconv.ParseInt(ms, 10, 64)
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	return time.Unix(0, msInt*int64(time.Millisecond)), nil
-}
-
 // Resample turns the Series into a Number based on the given reduction function
 func (s Series) Resample(rule string, tr *datasource.TimeRange) (Series, error) {
 	interval, err := parseRule(rule)
@@ -76,14 +68,8 @@ func (s Series) Resample(rule string, tr *datasource.TimeRange) (Series, error) 
 		return s, fmt.Errorf(`failed to parse "rule" field "%v": %v`, rule, err)
 	}
 
-	from, err := msToTime(tr.FromRaw)
-	if err != nil {
-		return s, fmt.Errorf(`failed to parse "from" field "%v": %v`, tr.FromRaw, err)
-	}
-	to, err := msToTime(tr.ToRaw)
-	if err != nil {
-		return s, fmt.Errorf(`failed to parse "to" field "%v": %v`, tr.FromRaw, err)
-	}
+	from := time.Unix(0, tr.FromEpochMs*int64(time.Millisecond))
+	to := time.Unix(0, tr.ToEpochMs*int64(time.Millisecond))
 
 	newSeriesLength := int(float64(to.Sub(from).Nanoseconds()) / float64(interval.Nanoseconds()))
 	fmt.Println(">>>>>>", float64(to.Sub(from).Nanoseconds())/float64(interval.Nanoseconds()), newSeriesLength)

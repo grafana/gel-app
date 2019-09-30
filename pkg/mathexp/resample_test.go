@@ -1,7 +1,6 @@
 package mathexp
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -23,8 +22,8 @@ func TestResampleSeries(t *testing.T) {
 			name:     "resample series: time range shorter than the rule interval",
 			interval: "5S",
 			timeRange: &datasource.TimeRange{
-				FromRaw: fmt.Sprintf("%v", time.Unix(0, 0).Unix()+1e3),
-				ToRaw:   fmt.Sprintf("%v", time.Unix(11, 0).Unix()+1e3),
+				FromEpochMs: time.Unix(0, 0).Unix() + 1e3,
+				ToEpochMs:   time.Unix(11, 0).Unix() + 1e3,
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -37,8 +36,8 @@ func TestResampleSeries(t *testing.T) {
 			name:     "resample series: invalid time range",
 			interval: "5S",
 			timeRange: &datasource.TimeRange{
-				FromRaw: fmt.Sprintf("%v", time.Unix(11, 0).Unix()+1e3),
-				ToRaw:   fmt.Sprintf("%v", time.Unix(0, 0).Unix()+1e3),
+				FromEpochMs: time.Unix(11, 0).Unix() * 1e3,
+				ToEpochMs:   time.Unix(0, 0).Unix() * 1e3,
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -51,8 +50,8 @@ func TestResampleSeries(t *testing.T) {
 			name:     "resample series: downsampling (mean aggregation)",
 			interval: "5S",
 			timeRange: &datasource.TimeRange{
-				FromRaw: fmt.Sprintf("%v", time.Unix(0, 0).Unix()*1e3),
-				ToRaw:   fmt.Sprintf("%v", time.Unix(16, 0).Unix()*1e3),
+				FromEpochMs: time.Unix(0, 0).Unix() * 1e3,
+				ToEpochMs:   time.Unix(16, 0).Unix() * 1e3,
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -79,8 +78,8 @@ func TestResampleSeries(t *testing.T) {
 			name:     "resample series: upsampling (bfill)",
 			interval: "2S",
 			timeRange: &datasource.TimeRange{
-				FromRaw: fmt.Sprintf("%v", time.Unix(0, 0).Unix()*1e3),
-				ToRaw:   fmt.Sprintf("%v", time.Unix(11, 0).Unix()*1e3),
+				FromEpochMs: time.Unix(0, 0).Unix() * 1e3,
+				ToEpochMs:   time.Unix(11, 0).Unix() * 1e3,
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
