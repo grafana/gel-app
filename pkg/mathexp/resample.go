@@ -72,7 +72,6 @@ func (s Series) Resample(rule string, tr *datasource.TimeRange) (Series, error) 
 	to := time.Unix(0, tr.ToEpochMs*int64(time.Millisecond))
 
 	newSeriesLength := int(float64(to.Sub(from).Nanoseconds()) / float64(interval.Nanoseconds()))
-	fmt.Println(">>>>>>", float64(to.Sub(from).Nanoseconds())/float64(interval.Nanoseconds()), newSeriesLength)
 	if newSeriesLength <= 0 {
 		return s, fmt.Errorf("The series cannot be sampled further; the time range is shorter than the interval")
 	}
@@ -107,11 +106,9 @@ func (s Series) Resample(rule string, tr *datasource.TimeRange) (Series, error) 
 			value = &tmp
 		}
 		tv := t // his is required otherwise all points keep the latest timestamp; anything better?
-		fmt.Println(">>>> >>>", idx, tv)
 		resampled.SetPoint(idx, &tv, value)
 		t = t.Add(interval)
 		idx++
-		fmt.Println("<<<", idx, t, to, !t.After(to), idx < newSeriesLength, !t.After(to) && idx < newSeriesLength)
 	}
 	return resampled, nil
 }
