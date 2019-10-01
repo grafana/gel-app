@@ -62,7 +62,7 @@ func parseRule(rule string) (time.Duration, error) {
 }
 
 // Resample turns the Series into a Number based on the given reduction function
-func (s Series) Resample(rule string, downsampler string, tr *datasource.TimeRange) (Series, error) {
+func (s Series) Resample(rule string, downsampler string, upsampler string, tr *datasource.TimeRange) (Series, error) {
 	interval, err := parseRule(rule)
 	if err != nil {
 		return s, fmt.Errorf(`failed to parse "rule" field "%v": %v`, rule, err)
@@ -97,9 +97,24 @@ func (s Series) Resample(rule string, downsampler string, tr *datasource.TimeRan
 			vals = append(vals, *v)
 		}
 		var value *float64
-		if len(values) == 0 { // upsampling
-			if lastSeen != nil { // only bfill for now
-				value = lastSeen
+		if len(vals) == 0 { // upsampling
+			switch upsampler {
+			case "pad":
+				if lastSeen != nil {
+					value = lastSeen
+				} else {
+					value = nil
+				}
+			case "backfilling":
+				if sIdx == s.Len() { // no vals left
+					value = nil
+				} else {
+					_, value = s.GetPoint(sIdx)
+				}
+			case "fillna":
+				value = nil
+			default:
+				return s, fmt.Errorf("Upsampling %v not implemented", upsampler)
 			}
 		} else { // downsampling
 			fVec := data.ToFloat64Vector(vals)

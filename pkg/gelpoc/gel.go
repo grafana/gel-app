@@ -132,16 +132,18 @@ type ResampleCommand struct {
 	Rule          string
 	VarToResample string
 	Downsampler   string
+	Upsampler     string
 	TimeRange     *datasource.TimeRange
 }
 
 // NewResampleCommand creates a new ResampleCMD.
-func NewResampleCommand(rule, varToResample string, downsampler string, tr *datasource.TimeRange) *ResampleCommand {
+func NewResampleCommand(rule, varToResample string, downsampler string, upsampler string, tr *datasource.TimeRange) *ResampleCommand {
 	// TODO: validate reducer here, before execution
 	return &ResampleCommand{
 		Rule:          rule,
 		VarToResample: varToResample,
 		Downsampler:   downsampler,
+		Upsampler:     upsampler,
 		TimeRange:     tr,
 	}
 }
@@ -177,7 +179,15 @@ func UnmarshalResampleCommand(rn *rawNode, tr *datasource.TimeRange) (*ResampleC
 		return nil, fmt.Errorf("expected downsampler to be a string, got %T for refId %v", downsampler, rn.RefID)
 	}
 
-	return NewResampleCommand(rule, varToResample, downsampler, tr), nil
+	rawUpsampler, ok := rn.Query["upsampler"]
+	if !ok {
+		return nil, fmt.Errorf("no downsampler specified in gel command for refId %v", rn.RefID)
+	}
+	upsampler, ok := rawUpsampler.(string)
+	if !ok {
+		return nil, fmt.Errorf("expected downsampler to be a string, got %T for refId %v", upsampler, rn.RefID)
+	}
+	return NewResampleCommand(rule, varToResample, downsampler, upsampler, tr), nil
 }
 
 // NeedsVars returns the variable names (refIds) that are dependencies
@@ -195,7 +205,7 @@ func (gr *ResampleCommand) Execute(ctx context.Context, vars mathexp.Vars) (math
 		if !ok {
 			return newRes, fmt.Errorf("can only resample type series, got type %v", val.Type())
 		}
-		num, err := series.Resample(gr.Rule, gr.Downsampler, gr.TimeRange)
+		num, err := series.Resample(gr.Rule, gr.Downsampler, gr.Upsampler, gr.TimeRange)
 		if err != nil {
 			return newRes, err
 		}
