@@ -147,3 +147,13 @@ func (fv *Float64Vector) Max() *float64 {
 	}
 	return &f
 }
+
+func ToFloat64Vector(vals []float64) *Float64Vector {
+	fVec := Float64Vector{}
+	(&fVec).Make(len(vals))
+	for i, v := range vals {
+		tmp := v
+		(&fVec).SetValue(i, &tmp)
+	}
+	return &fVec
+}

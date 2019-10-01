@@ -27,6 +27,13 @@ const reducerTypes: Array<SelectableValue<string>> = [
   { value: ReducerID.count, label: 'Count', description: 'Get the number of values' },
 ];
 
+const downsamplingTypes: Array<SelectableValue<string>> = [
+  { value: ReducerID.min, label: 'Min', description: 'Fill with the minimum value' },
+  { value: ReducerID.max, label: 'Max', description: 'Fill with the maximum value' },
+  { value: ReducerID.mean, label: 'Mean', description: 'Fill with the average value' },
+  { value: ReducerID.sum, label: 'Sum', description: 'Fill with the sum of all values' },
+];
+
 export class GELQueryNode extends PureComponent<Props, State> {
   state: State = {};
 
@@ -42,6 +49,11 @@ export class GELQueryNode extends PureComponent<Props, State> {
         q.reducer = ReducerID.mean;
       }
       q.expression = undefined;
+    } else if (q.type === GELQueryType.resample) {
+      if (!q.downsampler) {
+        q.downsampler = ReducerID.mean;
+      }
+      q.reducer = undefined;
     } else {
       q.reducer = undefined;
     }
@@ -54,6 +66,14 @@ export class GELQueryNode extends PureComponent<Props, State> {
     onChange({
       ...query,
       reducer: item.value!,
+    });
+  };
+
+  onSelectDownsampler = (item: SelectableValue<string>) => {
+    const { query, onChange } = this.props;
+    onChange({
+      ...query,
+      downsampler: item.value!,
     });
   };
 
@@ -85,6 +105,7 @@ export class GELQueryNode extends PureComponent<Props, State> {
     const { query } = this.props;
     const selected = gelTypes.find(o => o.value === query.type);
     const reducer = reducerTypes.find(o => o.value === query.reducer);
+    const downsampler = downsamplingTypes.find(o => o.value === query.downsampler);
 
     return (
       <div>
@@ -103,6 +124,8 @@ export class GELQueryNode extends PureComponent<Props, State> {
             <>
               <FormField label="Series:" labelWidth={5} onChange={this.onExpressionChange} value={query.expression} />
               <FormField label="Rule:" labelWidth={5} onChange={this.onRuleChange} value={query.rule} />
+              <FormLabel width={8}>Downsample Function:</FormLabel>
+              <Select options={downsamplingTypes} value={downsampler} onChange={this.onSelectDownsampler} />
             </>
           )}
         </div>

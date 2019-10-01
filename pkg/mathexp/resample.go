@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/grafana/gel-app/pkg/data"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
-	"gonum.org/v1/gonum/stat"
 )
 
 var aliasToDuration = map[string]time.Duration{
@@ -62,7 +62,7 @@ func parseRule(rule string) (time.Duration, error) {
 }
 
 // Resample turns the Series into a Number based on the given reduction function
-func (s Series) Resample(rule string, tr *datasource.TimeRange) (Series, error) {
+func (s Series) Resample(rule string, downsampler string, tr *datasource.TimeRange) (Series, error) {
 	interval, err := parseRule(rule)
 	if err != nil {
 		return s, fmt.Errorf(`failed to parse "rule" field "%v": %v`, rule, err)
@@ -81,7 +81,7 @@ func (s Series) Resample(rule string, tr *datasource.TimeRange) (Series, error) 
 	idx := 0
 	t := from
 	for !t.After(to) && idx <= newSeriesLength {
-		values := make([]float64, 0)
+		vals := make([]float64, 0)
 		sIdx := bookmark
 		for {
 			if sIdx == s.Len() {
@@ -94,7 +94,7 @@ func (s Series) Resample(rule string, tr *datasource.TimeRange) (Series, error) 
 			bookmark++
 			sIdx++
 			lastSeen = v
-			values = append(values, *v)
+			vals = append(vals, *v)
 		}
 		var value *float64
 		if len(values) == 0 { // upsampling
@@ -102,8 +102,21 @@ func (s Series) Resample(rule string, tr *datasource.TimeRange) (Series, error) 
 				value = lastSeen
 			}
 		} else { // downsampling
-			tmp := stat.Mean(values, nil) // only mean for now
-			value = &tmp
+			fVec := data.ToFloat64Vector(vals)
+			var tmp *float64
+			switch downsampler {
+			case "sum":
+				tmp = fVec.Sum()
+			case "mean":
+				tmp = fVec.Avg()
+			case "min":
+				tmp = fVec.Min()
+			case "max":
+				tmp = fVec.Max()
+			default:
+				return s, fmt.Errorf("Downsampling %v not implemented", downsampler)
+			}
+			value = tmp
 		}
 		tv := t // his is required otherwise all points keep the latest timestamp; anything better?
 		resampled.SetPoint(idx, &tv, value)

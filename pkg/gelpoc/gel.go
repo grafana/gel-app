@@ -129,18 +129,20 @@ func (gr *ReduceCommand) Execute(ctx context.Context, vars mathexp.Vars) (mathex
 
 // ResampleCommand is a GEL command for resampling of a timeseries
 type ResampleCommand struct {
-	Rule        string
-	VarToReduce string
-	TimeRange   *datasource.TimeRange
+	Rule          string
+	VarToResample string
+	Downsampler   string
+	TimeRange     *datasource.TimeRange
 }
 
 // NewResampleCommand creates a new ResampleCMD.
-func NewResampleCommand(rule, varToReduce string, tr *datasource.TimeRange) *ResampleCommand {
+func NewResampleCommand(rule, varToResample string, downsampler string, tr *datasource.TimeRange) *ResampleCommand {
 	// TODO: validate reducer here, before execution
 	return &ResampleCommand{
-		Rule:        rule,
-		VarToReduce: varToReduce,
-		TimeRange:   tr,
+		Rule:          rule,
+		VarToResample: varToResample,
+		Downsampler:   downsampler,
+		TimeRange:     tr,
 	}
 }
 
@@ -155,6 +157,7 @@ func UnmarshalResampleCommand(rn *rawNode, tr *datasource.TimeRange) (*ResampleC
 		return nil, fmt.Errorf("expected variable to be a string, got %T for refId %v", rawVar, rn.RefID)
 	}
 	varToReduce = strings.TrimPrefix(varToReduce, "$")
+	varToResample := varToReduce
 
 	rawRule, ok := rn.Query["rule"]
 	if !ok {
@@ -165,25 +168,34 @@ func UnmarshalResampleCommand(rn *rawNode, tr *datasource.TimeRange) (*ResampleC
 		return nil, fmt.Errorf("expected reducer to be a string, got %T for refId %v", rawRule, rn.RefID)
 	}
 
-	return NewResampleCommand(rule, varToReduce, tr), nil
+	rawDownsampler, ok := rn.Query["downsampler"]
+	if !ok {
+		return nil, fmt.Errorf("no downsampler specified in gel command for refId %v", rn.RefID)
+	}
+	downsampler, ok := rawDownsampler.(string)
+	if !ok {
+		return nil, fmt.Errorf("expected downsampler to be a string, got %T for refId %v", downsampler, rn.RefID)
+	}
+
+	return NewResampleCommand(rule, varToResample, downsampler, tr), nil
 }
 
 // NeedsVars returns the variable names (refIds) that are dependencies
 // to execute the command and allows the command to fulfill the Command interface.
 func (gr *ResampleCommand) NeedsVars() []string {
-	return []string{gr.VarToReduce}
+	return []string{gr.VarToResample}
 }
 
 // Execute runs the command and returns the results or an error if the command
 // failed to execute.
 func (gr *ResampleCommand) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 	newRes := mathexp.Results{}
-	for _, val := range vars[gr.VarToReduce].Values {
+	for _, val := range vars[gr.VarToResample].Values {
 		series, ok := val.(mathexp.Series)
 		if !ok {
 			return newRes, fmt.Errorf("can only resample type series, got type %v", val.Type())
 		}
-		num, err := series.Resample(gr.Rule, gr.TimeRange)
+		num, err := series.Resample(gr.Rule, gr.Downsampler, gr.TimeRange)
 		if err != nil {
 			return newRes, err
 		}

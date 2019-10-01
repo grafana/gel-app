@@ -24,6 +24,7 @@ export interface GELQuery extends DataQuery {
   reducer?: string;
   expression?: string;
   rule?: string;
+  downsampler?: string;
 }
 
 export interface GELDataSourceOptions extends DataSourceJsonData {
