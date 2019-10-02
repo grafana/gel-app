@@ -3,6 +3,7 @@ package gelpoc
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/grafana/gel-app/pkg/data"
 	"github.com/grafana/gel-app/pkg/mathexp"
@@ -40,11 +41,34 @@ type Service struct {
 	DatasourceAPI datasource.GrafanaAPI
 }
 
+func strToEpochMs(ms string) (int64, error) {
+	msInt, err := strconv.ParseInt(ms, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return msInt, nil
+}
+
 // BuildPipeline builds a pipeline from a request.
 func (s *Service) BuildPipeline(req GelAppReq) (DataPipeline, error) {
+	from := req.DataSourceReq.TimeRange.GetFromRaw()
+	to := req.DataSourceReq.TimeRange.GetToRaw()
+
+	fromEpochMs, err := strToEpochMs(from)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to parse "from" field "%v": %v`, from, err)
+	}
+
+	toEpochMs, err := strToEpochMs(to)
+	if err != nil {
+		return nil, fmt.Errorf(`failed to parse "from" field "%v": %v`, to, err)
+	}
+
 	timeRange := &datasource.TimeRange{
-		FromRaw: req.DataSourceReq.TimeRange.GetFromRaw(),
-		ToRaw:   req.DataSourceReq.TimeRange.GetToRaw(),
+		FromRaw:     from,
+		ToRaw:       to,
+		FromEpochMs: fromEpochMs,
+		ToEpochMs:   toEpochMs,
 	}
 	return buildPipeline(
 		req.DataSourceReq.Queries,

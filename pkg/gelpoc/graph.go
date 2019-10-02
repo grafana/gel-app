@@ -137,7 +137,7 @@ func buildGraph(queries []*datasource.Query, tr *datasource.TimeRange, dsAPI dat
 		var node graph.Node
 		switch dsName {
 		case gelDataSourceName:
-			node, err = buildGELNode(dp, rn)
+			node, err = buildGELNode(dp, tr, rn)
 		default: // If it's not a GEL query, it's a data source query.
 			node, err = buildDSNode(dp, rn, tr, dsAPI)
 		}
