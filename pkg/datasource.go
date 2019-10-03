@@ -1,11 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 
-	"github.com/grafana/gel-app/pkg/data"
 	"github.com/grafana/gel-app/pkg/gelpoc"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 	hclog "github.com/hashicorp/go-hclog"
 	plugin "github.com/hashicorp/go-plugin"
 	"golang.org/x/net/context"
@@ -47,7 +48,7 @@ func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRe
 	}
 
 	if len(hidden) != 0 {
-		filteredFrames := make([]*data.Frame, 0, len(frames)-len(hidden))
+		filteredFrames := make([]*dataframe.Frame, 0, len(frames)-len(hidden))
 		for _, frame := range frames {
 			if _, ok := hidden[frame.RefID]; !ok {
 				filteredFrames = append(filteredFrames, frame)
@@ -60,11 +61,17 @@ func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRe
 	byteFrames := make([][]byte, len(frames))
 
 	for i, frame := range frames {
-		b, err := frame.ToArrow()
-		if err != nil {
+		w := dataframe.Writer{
+			RefID: frame.RefID,
+			Frame: frame,
+		}
+
+		var buf bytes.Buffer
+		if err := w.Write(&buf); err != nil {
 			return nil, err
 		}
-		byteFrames[i] = b
+
+		byteFrames[i] = buf.Bytes()
 	}
 
 	jBFrames, err := json.Marshal(byteFrames) // json.Marshal b64 encodes []byte

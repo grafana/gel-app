@@ -3,11 +3,12 @@ package gelpoc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strconv"
 
-	"github.com/grafana/gel-app/pkg/data"
 	"github.com/grafana/gel-app/pkg/mathexp"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 )
 
 type GelAppReq struct {
@@ -78,9 +79,9 @@ func (s *Service) BuildPipeline(req GelAppReq) (DataPipeline, error) {
 }
 
 // ExecutePipeline executes a GEL data pipeline and returns all the results
-// as a slice of *data.Frame. Queries that are marked has hidden should be executed
+// as a slice of *dataframe.Frame. Queries that are marked has hidden should be executed
 // but should not returned (TODO: currently hidden is ignored).
-func (s *Service) ExecutePipeline(ctx context.Context, pipeline DataPipeline) ([]*data.Frame, error) {
+func (s *Service) ExecutePipeline(ctx context.Context, pipeline DataPipeline) ([]*dataframe.Frame, error) {
 	vars, err := pipeline.execute(ctx)
 	if err != nil {
 		return nil, err
@@ -91,8 +92,8 @@ func (s *Service) ExecutePipeline(ctx context.Context, pipeline DataPipeline) ([
 }
 
 // BuildAndExecutePipeline builds and executes a GEL data pipeline and returns all the results
-// as a slice of *data.Frame.
-func (s *Service) BuildAndExecutePipeline(ctx context.Context, req GelAppReq) ([]*data.Frame, error) {
+// as a slice of *dataframe.Frame.
+func (s *Service) BuildAndExecutePipeline(ctx context.Context, req GelAppReq) ([]*dataframe.Frame, error) {
 	pipeline, err := s.BuildPipeline(req)
 	if err != nil {
 		return nil, err
@@ -100,12 +101,12 @@ func (s *Service) BuildAndExecutePipeline(ctx context.Context, req GelAppReq) ([
 	return s.ExecutePipeline(ctx, pipeline)
 }
 
-func extractDataFrames(vars mathexp.Vars) []*data.Frame {
-	res := []*data.Frame{}
-	for refID, results := range vars {
+func extractDataFrames(vars mathexp.Vars) []*dataframe.Frame {
+	res := []*dataframe.Frame{}
+	for _, results := range vars {
 		for _, val := range results.Values {
 			df := val.AsDataFrame()
-			df.RefID = refID
+			//df.RefID = refID
 			res = append(res, df)
 		}
 	}
