@@ -11,10 +11,10 @@ replace google.golang.org/genproto => google.golang.org/genproto v0.0.0-20180514
 go 1.12
 
 require (
-	github.com/apache/arrow/go/arrow v0.0.0-20191003185745-cc05a89e8448
+	github.com/apache/arrow/go/arrow v0.0.0-20191004105443-1e2cf1f95df0
 	github.com/google/go-cmp v0.3.1
 	github.com/grafana/grafana-plugin-model v0.0.0-20190925141336-5d93412845bc
-	github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191003192648-9140dfe2dd94
+	github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191004114449-2aa3c1124792
 	github.com/hashicorp/go-hclog v0.8.0
 	github.com/hashicorp/go-plugin v1.0.1
 	github.com/mattetti/filebuffer v1.0.0

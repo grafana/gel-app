@@ -7,6 +7,8 @@ github.com/apache/arrow/go/arrow v0.0.0-20191003174609-b5ccbd284166 h1:NJMuCUxsI
 github.com/apache/arrow/go/arrow v0.0.0-20191003174609-b5ccbd284166/go.mod h1:VTxUBvSJ3s3eHAg65PNgrsn5BtqCRPdmyXh6rAfdxN0=
 github.com/apache/arrow/go/arrow v0.0.0-20191003185745-cc05a89e8448 h1:GDMzLiXVOcjcffEB8ih+ZnJEa05wFCBON4ymKC3yLHI=
 github.com/apache/arrow/go/arrow v0.0.0-20191003185745-cc05a89e8448/go.mod h1:VTxUBvSJ3s3eHAg65PNgrsn5BtqCRPdmyXh6rAfdxN0=
+github.com/apache/arrow/go/arrow v0.0.0-20191004105443-1e2cf1f95df0 h1:ZFpZ+XZ0EncAOQaxkSZ8G2RQZI3M1ofIc2fuq/NJciY=
+github.com/apache/arrow/go/arrow v0.0.0-20191004105443-1e2cf1f95df0/go.mod h1:VTxUBvSJ3s3eHAg65PNgrsn5BtqCRPdmyXh6rAfdxN0=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
@@ -40,6 +42,8 @@ github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191003192508-21b7a0e11b0c h1:n
 github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191003192508-21b7a0e11b0c/go.mod h1:PGe7Yit+vFwVwEbgqpDbYwWoGFh+gvpncrByH49Iwrw=
 github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191003192648-9140dfe2dd94 h1:HGecHmw6Q9xneMeoQtzU4+RMW+2c7CIBx9EY/hCqPJ8=
 github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191003192648-9140dfe2dd94/go.mod h1:PGe7Yit+vFwVwEbgqpDbYwWoGFh+gvpncrByH49Iwrw=
+github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191004114449-2aa3c1124792 h1:zD9SBbhtzeqQ/3HkzTIC67whACe7k1DkWWCzEw8Zsr4=
+github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191004114449-2aa3c1124792/go.mod h1:PGe7Yit+vFwVwEbgqpDbYwWoGFh+gvpncrByH49Iwrw=
 github.com/hashicorp/go-hclog v0.0.0-20180402200405-69ff559dc25f h1:t34t/ySFIGsPOLQ/dCcKeCoErlqhXlNLYvPn7mVogzo=
 github.com/hashicorp/go-hclog v0.0.0-20180402200405-69ff559dc25f/go.mod h1:9bjs9uLqI8l75knNv3lV1kA55veR+WUPSiKIWcQHudI=
 github.com/hashicorp/go-plugin v0.0.0-20180331002553-e8d22c780116 h1:Y4V/yReWjQo/Ngyc0w6C3EKXKincp4YgvXeo8lI4LrI=

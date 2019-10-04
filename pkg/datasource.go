@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 
 	"github.com/grafana/gel-app/pkg/gelpoc"
@@ -61,17 +60,11 @@ func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRe
 	byteFrames := make([][]byte, len(frames))
 
 	for i, frame := range frames {
-		w := dataframe.Writer{
-			RefID: frame.RefID,
-			Frame: frame,
-		}
-
-		var buf bytes.Buffer
-		if err := w.Write(&buf); err != nil {
+		b, err := dataframe.MarshalArrow(frame)
+		if err != nil {
 			return nil, err
 		}
-
-		byteFrames[i] = buf.Bytes()
+		byteFrames[i] = b
 	}
 
 	jBFrames, err := json.Marshal(byteFrames) // json.Marshal b64 encodes []byte
