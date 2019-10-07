@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/grafana/gel-app/pkg/data"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 )
 
 var aliasToDuration = map[string]time.Duration{
@@ -75,7 +75,7 @@ func (s Series) Resample(rule string, downsampler string, upsampler string, tr *
 	if newSeriesLength <= 0 {
 		return s, fmt.Errorf("The series cannot be sampled further; the time range is shorter than the interval")
 	}
-	resampled := NewSeries(s.Name, s.Labels, newSeriesLength+1)
+	resampled := NewSeries(s.GetName(), s.GetLabels(), newSeriesLength+1)
 	bookmark := 0
 	var lastSeen *float64
 	idx := 0
@@ -117,17 +117,17 @@ func (s Series) Resample(rule string, downsampler string, upsampler string, tr *
 				return s, fmt.Errorf("Upsampling %v not implemented", upsampler)
 			}
 		} else { // downsampling
-			fVec := data.ToFloat64Vector(vals)
+			fVec := dataframe.NewField("", dataframe.FieldTypeNumber, vals).Vector
 			var tmp *float64
 			switch downsampler {
 			case "sum":
-				tmp = fVec.Sum()
+				tmp = Sum(fVec)
 			case "mean":
-				tmp = fVec.Avg()
+				tmp = Avg(fVec)
 			case "min":
-				tmp = fVec.Min()
+				tmp = Min(fVec)
 			case "max":
-				tmp = fVec.Max()
+				tmp = Max(fVec)
 			default:
 				return s, fmt.Errorf("Downsampling %v not implemented", downsampler)
 			}
