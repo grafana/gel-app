@@ -103,10 +103,10 @@ func (s *Service) BuildAndExecutePipeline(ctx context.Context, req GelAppReq) ([
 
 func extractDataFrames(vars mathexp.Vars) []*dataframe.Frame {
 	res := []*dataframe.Frame{}
-	for _, results := range vars {
+	for refID, results := range vars {
 		for _, val := range results.Values {
 			df := val.AsDataFrame()
-			//df.RefID = refID
+			df.RefID = refID
 			res = append(res, df)
 		}
 	}

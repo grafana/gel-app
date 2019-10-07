@@ -8,10 +8,11 @@ replace github.com/hashicorp/go-plugin => github.com/hashicorp/go-plugin v0.0.0-
 
 replace google.golang.org/genproto => google.golang.org/genproto v0.0.0-20180514194645-7bb2a897381c
 
+replace github.com/apache/arrow/go/arrow => github.com/apache/arrow/go/arrow v0.0.0-20190716210558-5f564424c71c
+
 go 1.12
 
 require (
-	github.com/apache/arrow/go/arrow v0.0.0-20191004105443-1e2cf1f95df0
 	github.com/google/go-cmp v0.3.1
 	github.com/grafana/grafana-plugin-model v0.0.0-20190925141336-5d93412845bc
 	github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191004114449-2aa3c1124792
