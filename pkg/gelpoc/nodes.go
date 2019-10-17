@@ -2,7 +2,9 @@ package gelpoc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
 	"github.com/grafana/grafana-plugin-sdk-go"
@@ -118,13 +120,13 @@ const (
 // DSNode is a DPNode that holds a datasource request.
 type DSNode struct {
 	baseNode
-	query        interface{}
+	query        json.RawMessage
 	datasourceID int64
 	orgID        int64
 	timeRange    grafana.TimeRange
 	intervalMS   int64
 	maxDP        int64
-	dsAPI        grafana.GrafanaAPI
+	dsAPI        grafana.GrafanaAPIHandler
 }
 
 // NodeType returns the data pipeline node type.
@@ -132,13 +134,18 @@ func (dn *DSNode) NodeType() NodeType {
 	return TypeDatasourceNode
 }
 
-func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr grafana.TimeRange, dsAPI grafana.GrafanaAPI) (*DSNode, error) {
+func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr grafana.TimeRange, dsAPI grafana.GrafanaAPIHandler) (*DSNode, error) {
+	encodedQuery, err := json.Marshal(rn.Query)
+	if err != nil {
+		return nil, err
+	}
+
 	dsNode := &DSNode{
 		baseNode: baseNode{
 			id:    dp.NewNode().ID(),
 			refID: rn.RefID,
 		},
-		query:      rn.Query,
+		query:      json.RawMessage(encodedQuery),
 		timeRange:  tr,
 		intervalMS: defaultIntervalMS,
 		maxDP:      defaultMaxDP,
@@ -189,37 +196,28 @@ func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr grafana.TimeRange, ds
 // already by in vars.
 func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 
-	// dn.query TO datasource.QueryDatasourceRequest
-	// qBytes, err := json.Marshal(dn.query)
-	// if err != nil {
-	// 	return mathexp.Results{}, fmt.Errorf("failed to marshal query model: %v", err)
-	// }
+	q := []grafana.Query{
+		grafana.Query{
+			RefID:         dn.refID,
+			MaxDataPoints: dn.maxDP,
+			Interval:      time.Duration(int64(time.Millisecond) * dn.intervalMS),
+			ModelJSON:     dn.query,
+		},
+	}
 
-	// queries := []*datasource.Query{
-	// 	&datasource.Query{
-	// 		RefId:         dn.refID,
-	// 		IntervalMs:    dn.intervalMS,
-	// 		MaxDataPoints: dn.maxDP,
-	// 		ModelJson:     string(qBytes),
-	// 	},
-	// }
+	resp, err := dn.dsAPI.QueryDatasource(ctx, dn.orgID, dn.datasourceID, dn.timeRange, q)
 
-	// qd := &datasource.QueryDatasourceRequest{
-	// 	TimeRange:    dn.timeRange,
-	// 	Queries:      queries,
-	// 	DatasourceId: dn.datasourceID,
-	// 	OrgId:        dn.orgID,
-	// }
-
-	// resp, err := dn.dsAPI.QueryDatasource(ctx, qd)
-	// if err != nil {
-	// 	return mathexp.Results{}, err
-	// }
+	if err != nil {
+		return mathexp.Results{}, err
+	}
 
 	vals := make([]mathexp.Value, 0)
-	//for _, dsRes := range resp.Results {
-	//	vals = append(vals, mathexp.FromGRPC(dsRes.GetSeries()).Values...)
-	//}
+	for _, res := range resp {
+		for _, frame := range res.DataFrames {
+			vals = append(vals, mathexp.Series{Frame: frame})
+		}
+		//vals = append(vals, mathexp.FromGRPC(dsRes.GetSeries()).Values...)
+	}
 
 	return mathexp.Results{
 		Values: vals,

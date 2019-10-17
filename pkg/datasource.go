@@ -19,7 +19,7 @@ type GELPlugin struct {
 	logger hclog.Logger
 }
 
-func (gp *GELPlugin) Query(ctx context.Context, tr grafana.TimeRange, ds grafana.DataSourceInfo, queries []grafana.Query) ([]grafana.QueryResult, error) {
+func (gp *GELPlugin) Query(ctx context.Context, tr grafana.TimeRange, ds grafana.DataSourceInfo, queries []grafana.Query, api grafana.GrafanaAPIHandler) ([]grafana.QueryResult, error) {
 	svc := gelpoc.Service{}
 
 	// Build Pipeline from Request

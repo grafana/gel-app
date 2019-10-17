@@ -54,7 +54,7 @@ const gelDataSourceName = "-- GEL --"
 
 // BuildPipeline builds a graph of the nodes, and returns the nodes in an
 // executable order
-func buildPipeline(queries []grafana.Query, tr grafana.TimeRange, cache grafana.GrafanaAPI) (DataPipeline, error) {
+func buildPipeline(queries []grafana.Query, tr grafana.TimeRange, cache grafana.GrafanaAPIHandler) (DataPipeline, error) {
 	graph, err := buildDependencyGraph(queries, tr, cache)
 	if err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func buildPipeline(queries []grafana.Query, tr grafana.TimeRange, cache grafana.
 }
 
 // buildDependencyGraph returns a dependency graph for a set of queries.
-func buildDependencyGraph(queries []grafana.Query, tr grafana.TimeRange, cache grafana.GrafanaAPI) (*simple.DirectedGraph, error) {
+func buildDependencyGraph(queries []grafana.Query, tr grafana.TimeRange, cache grafana.GrafanaAPIHandler) (*simple.DirectedGraph, error) {
 	graph, err := buildGraph(queries, tr, cache)
 	if err != nil {
 		return nil, err
@@ -115,7 +115,7 @@ func buildNodeRegistry(g *simple.DirectedGraph) map[string]Node {
 }
 
 // buildGraph creates a new graph populated with nodes for every query.
-func buildGraph(queries []grafana.Query, tr grafana.TimeRange, dsAPI grafana.GrafanaAPI) (*simple.DirectedGraph, error) {
+func buildGraph(queries []grafana.Query, tr grafana.TimeRange, dsAPI grafana.GrafanaAPIHandler) (*simple.DirectedGraph, error) {
 	dp := simple.NewDirectedGraph()
 
 	for _, query := range queries {

@@ -10,7 +10,7 @@ import (
 
 // Service is service representation for GEL.
 type Service struct {
-	GrafanaAPI grafana.GrafanaAPI
+	GrafanaAPI grafana.GrafanaAPIHandler
 }
 
 // BuildPipeline builds a pipeline from a request.
