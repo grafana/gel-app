@@ -10,16 +10,17 @@ replace google.golang.org/genproto => google.golang.org/genproto v0.0.0-20180514
 
 replace github.com/apache/arrow/go/arrow => github.com/apache/arrow/go/arrow v0.0.0-20190716210558-5f564424c71c
 
+replace github.com/grafana/grafana-plugin-sdk-go => /home/kbrandt/go/github.com/grafana/grafana-plugin-sdk-go
+
 go 1.12
 
 require (
 	github.com/google/go-cmp v0.3.1
-	github.com/grafana/grafana v6.1.6+incompatible
-	github.com/grafana/grafana-plugin-model v0.0.0-20190925141336-5d93412845bc
+	github.com/grafana/grafana v6.1.6+incompatible // indirect
+	github.com/grafana/grafana-plugin-model v0.0.0-20190925141336-5d93412845bc // indirect
 	github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191004114449-2aa3c1124792
 	github.com/hashicorp/go-hclog v0.8.0
 	github.com/hashicorp/go-plugin v1.0.1
-	github.com/mattetti/filebuffer v1.0.0
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/net v0.0.0-20190909003024-a7b16738d86b

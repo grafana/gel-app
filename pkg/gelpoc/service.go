@@ -10,12 +10,12 @@ import (
 
 // Service is service representation for GEL.
 type Service struct {
-	DataSourceRegistry grafana.DataSourceRegistry
+	GrafanaAPI grafana.GrafanaAPI
 }
 
 // BuildPipeline builds a pipeline from a request.
 func (s *Service) BuildPipeline(tr grafana.TimeRange, queries []grafana.Query) (DataPipeline, error) {
-	return buildPipeline(queries, tr, s.DatasourceAPI)
+	return buildPipeline(queries, tr, s.GrafanaAPI)
 }
 
 // ExecutePipeline executes a GEL data pipeline and returns all the results

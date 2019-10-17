@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
-	"github.com/grafana/grafana-plugin-model/go/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go"
 	"gonum.org/v1/gonum/graph/simple"
 )
@@ -125,7 +124,7 @@ type DSNode struct {
 	timeRange    grafana.TimeRange
 	intervalMS   int64
 	maxDP        int64
-	dsAPI        datasource.GrafanaAPI
+	dsAPI        grafana.GrafanaAPI
 }
 
 // NodeType returns the data pipeline node type.
@@ -133,7 +132,7 @@ func (dn *DSNode) NodeType() NodeType {
 	return TypeDatasourceNode
 }
 
-func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr grafana.TimeRange, dsAPI datasource.GrafanaAPI) (*DSNode, error) {
+func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr grafana.TimeRange, dsAPI grafana.GrafanaAPI) (*DSNode, error) {
 	dsNode := &DSNode{
 		baseNode: baseNode{
 			id:    dp.NewNode().ID(),
@@ -191,31 +190,31 @@ func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr grafana.TimeRange, ds
 func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 
 	// dn.query TO datasource.QueryDatasourceRequest
-	//qBytes, err := json.Marshal(dn.query)
-	//if err != nil {
-	//	return mathexp.Results{}, fmt.Errorf("failed to marshal query model: %v", err)
-	//}
+	// qBytes, err := json.Marshal(dn.query)
+	// if err != nil {
+	// 	return mathexp.Results{}, fmt.Errorf("failed to marshal query model: %v", err)
+	// }
 
-	//queries := []*datasource.Query{
-	//	&datasource.Query{
-	//		RefId:         dn.refID,
-	//		IntervalMs:    dn.intervalMS,
-	//		MaxDataPoints: dn.maxDP,
-	//		ModelJson:     string(qBytes),
-	//	},
-	//}
+	// queries := []*datasource.Query{
+	// 	&datasource.Query{
+	// 		RefId:         dn.refID,
+	// 		IntervalMs:    dn.intervalMS,
+	// 		MaxDataPoints: dn.maxDP,
+	// 		ModelJson:     string(qBytes),
+	// 	},
+	// }
 
-	//qd := &datasource.QueryDatasourceRequest{
-	//	TimeRange:    dn.timeRange,
-	//	Queries:      queries,
-	//	DatasourceId: dn.datasourceID,
-	//	OrgId:        dn.orgID,
-	//}
+	// qd := &datasource.QueryDatasourceRequest{
+	// 	TimeRange:    dn.timeRange,
+	// 	Queries:      queries,
+	// 	DatasourceId: dn.datasourceID,
+	// 	OrgId:        dn.orgID,
+	// }
 
-	//resp, err := dn.dsAPI.QueryDatasource(ctx, qd)
-	//if err != nil {
-	//	return mathexp.Results{}, err
-	//}
+	// resp, err := dn.dsAPI.QueryDatasource(ctx, qd)
+	// if err != nil {
+	// 	return mathexp.Results{}, err
+	// }
 
 	vals := make([]mathexp.Value, 0)
 	//for _, dsRes := range resp.Results {

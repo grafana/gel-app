@@ -5,6 +5,7 @@
   "metrics": true,
   "executable": "gel",
   "backend": true,
+  "sdk": true,
 
   "hiddenQueries": true,
 
