@@ -2,11 +2,11 @@ package gelpoc
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go"
 	"gonum.org/v1/gonum/graph/simple"
 )
 
@@ -80,7 +80,7 @@ func (gn *GELNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resu
 	return gn.GELCommand.Execute(ctx, vars)
 }
 
-func buildGELNode(dp *simple.DirectedGraph, tr *datasource.TimeRange, rn *rawNode) (*GELNode, error) {
+func buildGELNode(dp *simple.DirectedGraph, tr grafana.TimeRange, rn *rawNode) (*GELNode, error) {
 
 	commandType, err := rn.GetGELType()
 	if err != nil {
@@ -122,7 +122,7 @@ type DSNode struct {
 	query        interface{}
 	datasourceID int64
 	orgID        int64
-	timeRange    *datasource.TimeRange
+	timeRange    grafana.TimeRange
 	intervalMS   int64
 	maxDP        int64
 	dsAPI        datasource.GrafanaAPI
@@ -133,7 +133,7 @@ func (dn *DSNode) NodeType() NodeType {
 	return TypeDatasourceNode
 }
 
-func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr *datasource.TimeRange, dsAPI datasource.GrafanaAPI) (*DSNode, error) {
+func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr grafana.TimeRange, dsAPI datasource.GrafanaAPI) (*DSNode, error) {
 	dsNode := &DSNode{
 		baseNode: baseNode{
 			id:    dp.NewNode().ID(),
@@ -191,36 +191,36 @@ func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr *datasource.TimeRange
 func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 
 	// dn.query TO datasource.QueryDatasourceRequest
-	qBytes, err := json.Marshal(dn.query)
-	if err != nil {
-		return mathexp.Results{}, fmt.Errorf("failed to marshal query model: %v", err)
-	}
+	//qBytes, err := json.Marshal(dn.query)
+	//if err != nil {
+	//	return mathexp.Results{}, fmt.Errorf("failed to marshal query model: %v", err)
+	//}
 
-	queries := []*datasource.Query{
-		&datasource.Query{
-			RefId:         dn.refID,
-			IntervalMs:    dn.intervalMS,
-			MaxDataPoints: dn.maxDP,
-			ModelJson:     string(qBytes),
-		},
-	}
+	//queries := []*datasource.Query{
+	//	&datasource.Query{
+	//		RefId:         dn.refID,
+	//		IntervalMs:    dn.intervalMS,
+	//		MaxDataPoints: dn.maxDP,
+	//		ModelJson:     string(qBytes),
+	//	},
+	//}
 
-	qd := &datasource.QueryDatasourceRequest{
-		TimeRange:    dn.timeRange,
-		Queries:      queries,
-		DatasourceId: dn.datasourceID,
-		OrgId:        dn.orgID,
-	}
+	//qd := &datasource.QueryDatasourceRequest{
+	//	TimeRange:    dn.timeRange,
+	//	Queries:      queries,
+	//	DatasourceId: dn.datasourceID,
+	//	OrgId:        dn.orgID,
+	//}
 
-	resp, err := dn.dsAPI.QueryDatasource(ctx, qd)
-	if err != nil {
-		return mathexp.Results{}, err
-	}
+	//resp, err := dn.dsAPI.QueryDatasource(ctx, qd)
+	//if err != nil {
+	//	return mathexp.Results{}, err
+	//}
 
-	vals := make([]mathexp.Value, 0, len(resp.Results))
-	for _, dsRes := range resp.Results {
-		vals = append(vals, mathexp.FromGRPC(dsRes.GetSeries()).Values...)
-	}
+	vals := make([]mathexp.Value, 0)
+	//for _, dsRes := range resp.Results {
+	//	vals = append(vals, mathexp.FromGRPC(dsRes.GetSeries()).Values...)
+	//}
 
 	return mathexp.Results{
 		Values: vals,

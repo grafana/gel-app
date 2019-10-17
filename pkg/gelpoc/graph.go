@@ -7,6 +7,7 @@ import (
 
 	"github.com/grafana/gel-app/pkg/mathexp"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go"
 
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
@@ -54,7 +55,7 @@ const gelDataSourceName = "-- GEL --"
 
 // BuildPipeline builds a graph of the nodes, and returns the nodes in an
 // executable order
-func buildPipeline(queries []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (DataPipeline, error) {
+func buildPipeline(queries []grafana.Query, tr grafana.TimeRange, cache datasource.GrafanaAPI) (DataPipeline, error) {
 	graph, err := buildDependencyGraph(queries, tr, cache)
 	if err != nil {
 		return nil, err
@@ -69,7 +70,7 @@ func buildPipeline(queries []*datasource.Query, tr *datasource.TimeRange, cache 
 }
 
 // buildDependencyGraph returns a dependency graph for a set of queries.
-func buildDependencyGraph(queries []*datasource.Query, tr *datasource.TimeRange, cache datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
+func buildDependencyGraph(queries []grafana.Query, tr grafana.TimeRange, cache datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
 	graph, err := buildGraph(queries, tr, cache)
 	if err != nil {
 		return nil, err
@@ -115,18 +116,18 @@ func buildNodeRegistry(g *simple.DirectedGraph) map[string]Node {
 }
 
 // buildGraph creates a new graph populated with nodes for every query.
-func buildGraph(queries []*datasource.Query, tr *datasource.TimeRange, dsAPI datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
+func buildGraph(queries []grafana.Query, tr grafana.TimeRange, dsAPI datasource.GrafanaAPI) (*simple.DirectedGraph, error) {
 	dp := simple.NewDirectedGraph()
 
 	for _, query := range queries {
 		rawQueryProp := make(map[string]interface{})
-		err := json.Unmarshal([]byte(query.GetModelJson()), &rawQueryProp)
+		err := json.Unmarshal(query.ModelJSON, &rawQueryProp)
 		if err != nil {
 			return nil, err
 		}
 		rn := &rawNode{
 			Query: rawQueryProp,
-			RefID: query.RefId,
+			RefID: query.RefID,
 		}
 
 		dsName, err := rn.GetDatasourceName()

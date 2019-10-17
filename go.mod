@@ -14,6 +14,7 @@ go 1.12
 
 require (
 	github.com/google/go-cmp v0.3.1
+	github.com/grafana/grafana v6.1.6+incompatible
 	github.com/grafana/grafana-plugin-model v0.0.0-20190925141336-5d93412845bc
 	github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191004114449-2aa3c1124792
 	github.com/hashicorp/go-hclog v0.8.0

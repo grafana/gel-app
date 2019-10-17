@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go"
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 )
 
@@ -62,16 +62,13 @@ func parseRule(rule string) (time.Duration, error) {
 }
 
 // Resample turns the Series into a Number based on the given reduction function
-func (s Series) Resample(rule string, downsampler string, upsampler string, tr *datasource.TimeRange) (Series, error) {
+func (s Series) Resample(rule string, downsampler string, upsampler string, tr grafana.TimeRange) (Series, error) {
 	interval, err := parseRule(rule)
 	if err != nil {
 		return s, fmt.Errorf(`failed to parse "rule" field "%v": %v`, rule, err)
 	}
 
-	from := time.Unix(0, tr.FromEpochMs*int64(time.Millisecond))
-	to := time.Unix(0, tr.ToEpochMs*int64(time.Millisecond))
-
-	newSeriesLength := int(float64(to.Sub(from).Nanoseconds()) / float64(interval.Nanoseconds()))
+	newSeriesLength := int(float64(tr.To.Sub(tr.From).Nanoseconds()) / float64(interval.Nanoseconds()))
 	if newSeriesLength <= 0 {
 		return s, fmt.Errorf("The series cannot be sampled further; the time range is shorter than the interval")
 	}
@@ -79,8 +76,8 @@ func (s Series) Resample(rule string, downsampler string, upsampler string, tr *
 	bookmark := 0
 	var lastSeen *float64
 	idx := 0
-	t := from
-	for !t.After(to) && idx <= newSeriesLength {
+	t := tr.From
+	for !t.After(tr.To) && idx <= newSeriesLength {
 		vals := make([]float64, 0)
 		sIdx := bookmark
 		for {
