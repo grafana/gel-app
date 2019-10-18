@@ -97,46 +97,58 @@ func (s Series) Resample(rule string, downsampler string, upsampler string, tr *
 			vals = append(vals, *v)
 		}
 		var value *float64
+		var err error
 		if len(vals) == 0 { // upsampling
-			switch upsampler {
-			case "pad":
-				if lastSeen != nil {
-					value = lastSeen
-				} else {
-					value = nil
-				}
-			case "backfilling":
-				if sIdx == s.Len() { // no vals left
-					value = nil
-				} else {
-					_, value = s.GetPoint(sIdx)
-				}
-			case "fillna":
-				value = nil
-			default:
-				return s, fmt.Errorf("Upsampling %v not implemented", upsampler)
-			}
+			value, err = s.upsample(upsampler, sIdx, lastSeen)
 		} else { // downsampling
-			fVec := dataframe.NewField("", dataframe.FieldTypeNumber, vals).Vector
-			var tmp *float64
-			switch downsampler {
-			case "sum":
-				tmp = Sum(fVec)
-			case "mean":
-				tmp = Avg(fVec)
-			case "min":
-				tmp = Min(fVec)
-			case "max":
-				tmp = Max(fVec)
-			default:
-				return s, fmt.Errorf("Downsampling %v not implemented", downsampler)
-			}
-			value = tmp
+			value, err = s.downsample(downsampler, vals)
 		}
+		if err != nil {
+			return resampled, err
+		}
+
 		tv := t // his is required otherwise all points keep the latest timestamp; anything better?
 		resampled.SetPoint(idx, &tv, value)
 		t = t.Add(interval)
 		idx++
 	}
 	return resampled, nil
+}
+
+func (s Series) upsample(method string, sIdx int, lastSeen *float64) (*float64, error) {
+	switch method {
+	case "pad":
+		if lastSeen != nil {
+			return lastSeen, nil
+		} else {
+			return nil, nil
+		}
+	case "backfilling":
+		if sIdx == s.Len() { // no vals left
+			return nil, nil
+		} else {
+			_, v := s.GetPoint(sIdx)
+			return v, nil
+		}
+	case "fillna":
+		return nil, nil
+	default:
+		return nil, fmt.Errorf("Upsampling method %q not implemented", method)
+	}
+}
+
+func (s Series) downsample(method string, vals []float64) (*float64, error) {
+	fVec := dataframe.NewField("", dataframe.FieldTypeNumber, vals).Vector
+	switch method {
+	case "sum":
+		return Sum(fVec), nil
+	case "mean":
+		return Avg(fVec), nil
+	case "min":
+		return Min(fVec), nil
+	case "max":
+		return Max(fVec), nil
+	default:
+		return nil, fmt.Errorf("Upsampling method %q not implemented", method)
+	}
 }
