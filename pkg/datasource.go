@@ -20,7 +20,9 @@ type GELPlugin struct {
 }
 
 func (gp *GELPlugin) Query(ctx context.Context, tr grafana.TimeRange, ds grafana.DataSourceInfo, queries []grafana.Query, api grafana.GrafanaAPIHandler) ([]grafana.QueryResult, error) {
-	svc := gelpoc.Service{}
+	svc := gelpoc.Service{
+		GrafanaAPI: api,
+	}
 
 	// Build Pipeline from Request
 	pipeline, err := svc.BuildPipeline(tr, queries)
