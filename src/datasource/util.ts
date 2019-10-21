@@ -69,7 +69,7 @@ export function arrowTableToDataFrame(table: Table): DataFrame {
 export function gelResponseToDataFrames(rsp: any): DataFrame[] {
   const frames: DataFrame[] = [];
   for (const res of Object.values(rsp.results)) {
-    for (const b of (res as any).meta) {
+    for (const b of (res as any).dataframes) {
       const t = base64StringToArrowTable(b as string);
       frames.push(arrowTableToDataFrame(t));
     }
