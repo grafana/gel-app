@@ -782,6 +782,7 @@
   resolved "https://registry.yarnpkg.com/@emotion/utils/-/utils-0.8.2.tgz#576ff7fb1230185b619a75d258cbc98f0867a8dc"
   integrity sha512-rLu3wcBWH4P5q1CGoSSH/i9hrXs7SlbRLkoq9IGuoPYNGQvDJ3pt/wmOM+XgYjIDRMVIdkUWt0RsfzF50JfnCw==
 
+
 "@grafana/data@6.5.0-pre-6edc91aca8", "@grafana/data@^6.5.0-pre-6edc91aca8", "@grafana/data@canary":
   version "6.5.0-pre-6edc91aca8"
   resolved "https://registry.yarnpkg.com/@grafana/data/-/data-6.5.0-pre-6edc91aca8.tgz#89c8ed35ab898dd96693ba9c71d7481e5a2635a9"
