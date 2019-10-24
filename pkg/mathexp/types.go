@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/grafana/gel-app/pkg/mathexp/parse"
-	"github.com/grafana/grafana-plugin-model/go/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 )
 
@@ -231,27 +230,27 @@ func (s Series) Reduce(rFunc string) (Number, error) {
 
 // FromGRPC converts time series only (at the moment) from a
 // GRPC TimeSeries type to a Series Type
-func FromGRPC(seriesCollection []*datasource.TimeSeries) Results {
-	results := Results{[]Value{}}
-	results.Values = make([]Value, len(seriesCollection))
-	for seriesIdx, series := range seriesCollection {
-		s := NewSeries(series.Name, dataframe.Labels(series.Tags), len(series.Points))
-		for pointIdx, point := range series.Points {
-			t, f := convertDSTimePoint(point)
-			s.SetPoint(pointIdx, t, f)
-		}
-		results.Values[seriesIdx] = s
-	}
-	return results
-}
+//func FromGRPC(seriesCollection []*datasource.TimeSeries) Results {
+//	results := Results{[]Value{}}
+//	results.Values = make([]Value, len(seriesCollection))
+//	for seriesIdx, series := range seriesCollection {
+//		s := NewSeries(series.Name, dataframe.Labels(series.Tags), len(series.Points))
+//		for pointIdx, point := range series.Points {
+//			t, f := convertDSTimePoint(point)
+//			s.SetPoint(pointIdx, t, f)
+//		}
+//		results.Values[seriesIdx] = s
+//	}
+//	return results
+//}
 
-func convertDSTimePoint(point *datasource.Point) (t *time.Time, f *float64) {
-	tI := int64(point.Timestamp)
-	uT := time.Unix(tI/int64(1e+3), (tI%int64(1e+3))*int64(1e+6)) // time.Time from millisecond unix ts
-	t = &uT
-	f = &point.Value
-	return t, f
-}
+//func convertDSTimePoint(point *datasource.Point) (t *time.Time, f *float64) {
+//	tI := int64(point.Timestamp)
+//	uT := time.Unix(tI/int64(1e+3), (tI%int64(1e+3))*int64(1e+6)) // time.Time from millisecond unix ts
+//	t = &uT
+//	f = &point.Value
+//	return t, f
+//}
 
 // SortByTime sorts the series by the time from oldest to newest.
 // If desc is true, it will sort from newest to oldest.
