@@ -53,7 +53,7 @@ jobs:
         - ci
   build_backend:
     docker:
-    - image: circleci/golang:1.12
+    - image: circleci/golang:1.13
     working_directory: ~/plugin
     steps:
     - checkout
@@ -61,7 +61,7 @@ jobs:
         keys:
         - yarn-packages-{{ checksum "yarn.lock" }}
     - run:
-        name: Install yarn and Go
+        name: Install node and yarn
         command: |
           curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
           sudo apt-get install -y nodejs
@@ -78,6 +78,15 @@ jobs:
         root: .
         paths:
         - ci/jobs/build_backend
+  test_backend:
+    docker:
+    - image: circleci/golang:1.13
+    working_directory: ~/plugin
+    steps:
+    - checkout
+    - run:
+        name: Test backend
+        command: make test
   package:
     docker:
     - image: circleci/node:10
@@ -197,11 +206,13 @@ workflows:
     jobs:
     - build_plugin
     - build_backend
+    - test_backend
     - build_docs
     - package:
         requires:
         - build_plugin
         - build_backend
+        - test_backend
         - build_docs
     - test_6_2_5:
         requires:
