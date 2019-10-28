@@ -65,7 +65,7 @@ func parseRule(rule string) (time.Duration, error) {
 func (s Series) Resample(rule string, downsampler string, upsampler string, tr grafana.TimeRange) (Series, error) {
 	interval, err := parseRule(rule)
 	if err != nil {
-		return s, fmt.Errorf(`failed to parse "rule" field "%v": %v`, rule, err)
+		return s, fmt.Errorf(`failed to parse "rule" field %q: %w`, rule, err)
 	}
 
 	newSeriesLength := int(float64(tr.To.Sub(tr.From).Nanoseconds()) / float64(interval.Nanoseconds()))

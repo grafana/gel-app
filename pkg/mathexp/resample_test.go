@@ -26,7 +26,7 @@ func TestResampleSeries(t *testing.T) {
 			upsampler:   "fillna",
 			timeRange: grafana.TimeRange{
 				From: time.Unix(0, 0),
-				To:   time.Unix(11, 0),
+				To:   time.Unix(4, 0),
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
