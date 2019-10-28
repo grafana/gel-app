@@ -6,6 +6,7 @@ import (
 
 	"github.com/grafana/grafana-plugin-sdk-go"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestResampleSeries(t *testing.T) {
@@ -16,8 +17,6 @@ func TestResampleSeries(t *testing.T) {
 		upsampler        string
 		timeRange        grafana.TimeRange
 		seriesToResample Series
-		errIs            assert.ErrorAssertionFunc
-		seriesIs         assert.ComparisonAssertionFunc
 		series           Series
 	}{
 		{
@@ -34,7 +33,6 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(7, 0), float64Pointer(1),
 			}),
-			errIs: assert.Error,
 		},
 		{
 			name:        "resample series: invalid time range",
@@ -50,7 +48,6 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(7, 0), float64Pointer(1),
 			}),
-			errIs: assert.Error,
 		},
 		{
 			name:        "resample series: downsampling (mean / pad)",
@@ -70,8 +67,6 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(9, 0), float64Pointer(2),
 			}),
-			errIs:    assert.NoError,
-			seriesIs: assert.Equal,
 			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), nil,
 			}, tp{
@@ -100,8 +95,6 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(9, 0), float64Pointer(2),
 			}),
-			errIs:    assert.NoError,
-			seriesIs: assert.Equal,
 			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), nil,
 			}, tp{
@@ -130,8 +123,6 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(9, 0), float64Pointer(2),
 			}),
-			errIs:    assert.NoError,
-			seriesIs: assert.Equal,
 			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), nil,
 			}, tp{
@@ -160,8 +151,6 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(9, 0), float64Pointer(2),
 			}),
-			errIs:    assert.NoError,
-			seriesIs: assert.Equal,
 			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), nil,
 			}, tp{
@@ -190,8 +179,6 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(9, 0), float64Pointer(2),
 			}),
-			errIs:    assert.NoError,
-			seriesIs: assert.Equal,
 			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), nil,
 			}, tp{
@@ -216,8 +203,6 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(7, 0), float64Pointer(1),
 			}),
-			errIs:    assert.NoError,
-			seriesIs: assert.Equal,
 			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), nil,
 			}, tp{
@@ -246,8 +231,6 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(7, 0), float64Pointer(1),
 			}),
-			errIs:    assert.NoError,
-			seriesIs: assert.Equal,
 			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), float64Pointer(2),
 			}, tp{
@@ -266,9 +249,11 @@ func TestResampleSeries(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			series, err := tt.seriesToResample.Resample(tt.interval, tt.downsampler, tt.upsampler, tt.timeRange)
-			tt.errIs(t, err)
-			if err == nil {
-				tt.seriesIs(t, tt.series, series)
+			if tt.series.Frame == nil {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tt.series, series)
 			}
 		})
 	}
