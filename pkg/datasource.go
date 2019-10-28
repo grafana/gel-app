@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/grafana/gel-app/pkg/gelpoc"
-	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go"
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 	hclog "github.com/hashicorp/go-hclog"
 	plugin "github.com/hashicorp/go-plugin"
@@ -19,29 +19,24 @@ type GELPlugin struct {
 	logger hclog.Logger
 }
 
-// Query Primary method called by grafana-server
-func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRequest, api datasource.GrafanaAPI) (*datasource.DatasourceResponse, error) {
-	gService := gelpoc.Service{
-		DatasourceAPI: api,
-	}
-
-	gReq := gelpoc.GelAppReq{
-		DataSourceReq: tsdbReq,
+func (gp *GELPlugin) Query(ctx context.Context, tr grafana.TimeRange, ds grafana.DataSourceInfo, queries []grafana.Query, api grafana.GrafanaAPIHandler) ([]grafana.QueryResult, error) {
+	svc := gelpoc.Service{
+		GrafanaAPI: api,
 	}
 
 	// Build Pipeline from Request
-	pipeline, err := gService.BuildPipeline(gReq)
+	pipeline, err := svc.BuildPipeline(tr, queries)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	// Execute Pipeline
-	frames, err := gService.ExecutePipeline(ctx, pipeline)
+	frames, err := svc.ExecutePipeline(ctx, pipeline)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
-	hidden, err := gReq.HiddenRefIDs()
+	hidden, err := hiddenRefIDs(queries)
 	if err != nil {
 		return nil, status.Error((codes.Internal), err.Error())
 	}
@@ -56,27 +51,30 @@ func (gp *GELPlugin) Query(ctx context.Context, tsdbReq *datasource.DatasourceRe
 		frames = filteredFrames
 	}
 
-	// Each Frame as a byte representation of an arrow table
-	byteFrames := make([][]byte, len(frames))
+	res := []grafana.QueryResult{
+		{
+			DataFrames: frames,
+		},
+	}
 
-	for i, frame := range frames {
-		b, err := dataframe.MarshalArrow(frame)
-		if err != nil {
+	return res, nil
+}
+
+func hiddenRefIDs(queries []grafana.Query) (map[string]struct{}, error) {
+	hidden := make(map[string]struct{})
+
+	for _, query := range queries {
+		hide := struct {
+			Hide bool `json:"hide"`
+		}{}
+
+		if err := json.Unmarshal(query.ModelJSON, &hide); err != nil {
 			return nil, err
 		}
-		byteFrames[i] = b
-	}
 
-	jBFrames, err := json.Marshal(byteFrames) // json.Marshal b64 encodes []byte
-	if err != nil {
-		return nil, err
+		if hide.Hide {
+			hidden[query.RefID] = struct{}{}
+		}
 	}
-
-	return &datasource.DatasourceResponse{
-		Results: []*datasource.QueryResult{
-			&datasource.QueryResult{
-				MetaJson: string(jBFrames),
-			},
-		},
-	}, nil
+	return hidden, nil
 }

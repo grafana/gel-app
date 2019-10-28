@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/grafana/grafana-plugin-model/go/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,7 +14,7 @@ func TestResampleSeries(t *testing.T) {
 		interval         string
 		downsampler      string
 		upsampler        string
-		timeRange        *datasource.TimeRange
+		timeRange        grafana.TimeRange
 		seriesToResample Series
 		errIs            assert.ErrorAssertionFunc
 		seriesIs         assert.ComparisonAssertionFunc
@@ -25,9 +25,9 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "mean",
 			upsampler:   "fillna",
-			timeRange: &datasource.TimeRange{
-				FromEpochMs: time.Unix(0, 0).Unix() + 1e3,
-				ToEpochMs:   time.Unix(11, 0).Unix() + 1e3,
+			timeRange: grafana.TimeRange{
+				From: time.Unix(0, 0),
+				To:   time.Unix(11, 0),
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -41,9 +41,9 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "mean",
 			upsampler:   "fillna",
-			timeRange: &datasource.TimeRange{
-				FromEpochMs: time.Unix(11, 0).Unix() * 1e3,
-				ToEpochMs:   time.Unix(0, 0).Unix() * 1e3,
+			timeRange: grafana.TimeRange{
+				From: time.Unix(11, 0),
+				To:   time.Unix(0, 0),
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -57,9 +57,9 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "mean",
 			upsampler:   "pad",
-			timeRange: &datasource.TimeRange{
-				FromEpochMs: time.Unix(0, 0).Unix() * 1e3,
-				ToEpochMs:   time.Unix(16, 0).Unix() * 1e3,
+			timeRange: grafana.TimeRange{
+				From: time.Unix(0, 0),
+				To:   time.Unix(16, 0),
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -87,9 +87,9 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "max",
 			upsampler:   "fillna",
-			timeRange: &datasource.TimeRange{
-				FromEpochMs: time.Unix(0, 0).Unix() * 1e3,
-				ToEpochMs:   time.Unix(16, 0).Unix() * 1e3,
+			timeRange: grafana.TimeRange{
+				From: time.Unix(0, 0),
+				To:   time.Unix(16, 0),
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -117,9 +117,9 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "min",
 			upsampler:   "fillna",
-			timeRange: &datasource.TimeRange{
-				FromEpochMs: time.Unix(0, 0).Unix() * 1e3,
-				ToEpochMs:   time.Unix(16, 0).Unix() * 1e3,
+			timeRange: grafana.TimeRange{
+				From: time.Unix(0, 0),
+				To:   time.Unix(16, 0),
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -147,9 +147,9 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "sum",
 			upsampler:   "fillna",
-			timeRange: &datasource.TimeRange{
-				FromEpochMs: time.Unix(0, 0).Unix() * 1e3,
-				ToEpochMs:   time.Unix(16, 0).Unix() * 1e3,
+			timeRange: grafana.TimeRange{
+				From: time.Unix(0, 0),
+				To:   time.Unix(16, 0),
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -177,9 +177,9 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "mean",
 			upsampler:   "fillna",
-			timeRange: &datasource.TimeRange{
-				FromEpochMs: time.Unix(0, 0).Unix() * 1e3,
-				ToEpochMs:   time.Unix(16, 0).Unix() * 1e3,
+			timeRange: grafana.TimeRange{
+				From: time.Unix(0, 0),
+				To:   time.Unix(16, 0),
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -207,9 +207,9 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "2S",
 			downsampler: "mean",
 			upsampler:   "pad",
-			timeRange: &datasource.TimeRange{
-				FromEpochMs: time.Unix(0, 0).Unix() * 1e3,
-				ToEpochMs:   time.Unix(11, 0).Unix() * 1e3,
+			timeRange: grafana.TimeRange{
+				From: time.Unix(0, 0),
+				To:   time.Unix(11, 0),
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -237,9 +237,9 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "2S",
 			downsampler: "mean",
 			upsampler:   "backfilling",
-			timeRange: &datasource.TimeRange{
-				FromEpochMs: time.Unix(0, 0).Unix() * 1e3,
-				ToEpochMs:   time.Unix(11, 0).Unix() * 1e3,
+			timeRange: grafana.TimeRange{
+				From: time.Unix(0, 0),
+				To:   time.Unix(11, 0),
 			},
 			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
