@@ -51,7 +51,7 @@ func (dp *DataPipeline) execute(c context.Context) (mathexp.Vars, error) {
 	return vars, nil
 }
 
-const gelDataSourceName = "-- GEL --"
+const gelDataSourceName = "__expr__"
 
 // BuildPipeline builds a graph of the nodes, and returns the nodes in an
 // executable order
