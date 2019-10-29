@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 
 	"github.com/grafana/gel-app/pkg/gelpoc"
-	"github.com/grafana/grafana-plugin-sdk-go"
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
+	"github.com/grafana/grafana-plugin-sdk-go/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go/transform"
 	hclog "github.com/hashicorp/go-hclog"
 	plugin "github.com/hashicorp/go-plugin"
 	"golang.org/x/net/context"
@@ -19,7 +20,7 @@ type GELPlugin struct {
 	logger hclog.Logger
 }
 
-func (gp *GELPlugin) Query(ctx context.Context, tr grafana.TimeRange, ds grafana.DataSourceInfo, queries []grafana.Query, api grafana.GrafanaAPIHandler) ([]grafana.QueryResult, error) {
+func (gp *GELPlugin) Transform(ctx context.Context, tr datasource.TimeRange, ds datasource.DataSourceInfo, queries []transform.Query, api transform.GrafanaAPIHandler) ([]transform.QueryResult, error) {
 	svc := gelpoc.Service{
 		GrafanaAPI: api,
 	}
@@ -51,7 +52,7 @@ func (gp *GELPlugin) Query(ctx context.Context, tr grafana.TimeRange, ds grafana
 		frames = filteredFrames
 	}
 
-	res := []grafana.QueryResult{
+	res := []transform.QueryResult{
 		{
 			DataFrames: frames,
 		},
@@ -60,7 +61,7 @@ func (gp *GELPlugin) Query(ctx context.Context, tr grafana.TimeRange, ds grafana
 	return res, nil
 }
 
-func hiddenRefIDs(queries []grafana.Query) (map[string]struct{}, error) {
+func hiddenRefIDs(queries []transform.Query) (map[string]struct{}, error) {
 	hidden := make(map[string]struct{})
 
 	for _, query := range queries {

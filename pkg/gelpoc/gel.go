@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
-	"github.com/grafana/grafana-plugin-sdk-go"
+	"github.com/grafana/grafana-plugin-sdk-go/datasource"
 )
 
 // Command is an interface for all GEL commands.
@@ -133,11 +133,11 @@ type ResampleCommand struct {
 	VarToResample string
 	Downsampler   string
 	Upsampler     string
-	TimeRange     grafana.TimeRange
+	TimeRange     datasource.TimeRange
 }
 
 // NewResampleCommand creates a new ResampleCMD.
-func NewResampleCommand(rule, varToResample string, downsampler string, upsampler string, tr grafana.TimeRange) *ResampleCommand {
+func NewResampleCommand(rule, varToResample string, downsampler string, upsampler string, tr datasource.TimeRange) *ResampleCommand {
 	// TODO: validate reducer here, before execution
 	return &ResampleCommand{
 		Rule:          rule,
@@ -149,7 +149,7 @@ func NewResampleCommand(rule, varToResample string, downsampler string, upsample
 }
 
 // UnmarshalResampleCommand creates a ResampleCMD from Grafana's frontend query.
-func UnmarshalResampleCommand(rn *rawNode, tr grafana.TimeRange) (*ResampleCommand, error) {
+func UnmarshalResampleCommand(rn *rawNode, tr datasource.TimeRange) (*ResampleCommand, error) {
 	rawVar, ok := rn.Query["expression"]
 	if !ok {
 		return nil, fmt.Errorf("no variable to resample in gel command for refId %v", rn.RefID)

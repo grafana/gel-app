@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
-	"github.com/grafana/grafana-plugin-sdk-go"
+	"github.com/grafana/grafana-plugin-sdk-go/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go/transform"
 	"gonum.org/v1/gonum/graph/simple"
 )
 
@@ -81,7 +82,7 @@ func (gn *GELNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resu
 	return gn.GELCommand.Execute(ctx, vars)
 }
 
-func buildGELNode(dp *simple.DirectedGraph, tr grafana.TimeRange, rn *rawNode) (*GELNode, error) {
+func buildGELNode(dp *simple.DirectedGraph, tr datasource.TimeRange, rn *rawNode) (*GELNode, error) {
 
 	commandType, err := rn.GetGELType()
 	if err != nil {
@@ -123,10 +124,10 @@ type DSNode struct {
 	query        json.RawMessage
 	datasourceID int64
 	orgID        int64
-	timeRange    grafana.TimeRange
+	timeRange    datasource.TimeRange
 	intervalMS   int64
 	maxDP        int64
-	dsAPI        grafana.GrafanaAPIHandler
+	dsAPI        transform.GrafanaAPIHandler
 }
 
 // NodeType returns the data pipeline node type.
@@ -134,7 +135,7 @@ func (dn *DSNode) NodeType() NodeType {
 	return TypeDatasourceNode
 }
 
-func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr grafana.TimeRange, dsAPI grafana.GrafanaAPIHandler) (*DSNode, error) {
+func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr datasource.TimeRange, dsAPI transform.GrafanaAPIHandler) (*DSNode, error) {
 	encodedQuery, err := json.Marshal(rn.Query)
 	if err != nil {
 		return nil, err
@@ -196,8 +197,8 @@ func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr grafana.TimeRange, ds
 // already by in vars.
 func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 
-	q := []grafana.Query{
-		grafana.Query{
+	q := []datasource.Query{
+		datasource.Query{
 			RefID:         dn.refID,
 			MaxDataPoints: dn.maxDP,
 			Interval:      time.Duration(int64(time.Millisecond) * dn.intervalMS),
