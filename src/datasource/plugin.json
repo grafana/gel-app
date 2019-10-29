@@ -1,11 +1,10 @@
 {
-  "type": "datasource",
+  "type": "transform",
   "name": "GEL Data",
   "id": "gel-datasource",
   "metrics": true,
   "executable": "gel",
   "backend": true,
-  "sdk": true,
 
   "hiddenQueries": true,
 

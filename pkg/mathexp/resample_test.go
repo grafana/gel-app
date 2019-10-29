@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/grafana/grafana-plugin-sdk-go"
+	"github.com/grafana/grafana-plugin-sdk-go/datasource"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,7 +14,7 @@ func TestResampleSeries(t *testing.T) {
 		interval         string
 		downsampler      string
 		upsampler        string
-		timeRange        grafana.TimeRange
+		timeRange        datasource.TimeRange
 		seriesToResample Series
 		errIs            assert.ErrorAssertionFunc
 		seriesIs         assert.ComparisonAssertionFunc
@@ -25,7 +25,7 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "mean",
 			upsampler:   "fillna",
-			timeRange: grafana.TimeRange{
+			timeRange: datasource.TimeRange{
 				From: time.Unix(0, 0),
 				To:   time.Unix(11, 0),
 			},
@@ -41,7 +41,7 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "mean",
 			upsampler:   "fillna",
-			timeRange: grafana.TimeRange{
+			timeRange: datasource.TimeRange{
 				From: time.Unix(11, 0),
 				To:   time.Unix(0, 0),
 			},
@@ -57,7 +57,7 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "mean",
 			upsampler:   "pad",
-			timeRange: grafana.TimeRange{
+			timeRange: datasource.TimeRange{
 				From: time.Unix(0, 0),
 				To:   time.Unix(16, 0),
 			},
@@ -87,7 +87,7 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "max",
 			upsampler:   "fillna",
-			timeRange: grafana.TimeRange{
+			timeRange: datasource.TimeRange{
 				From: time.Unix(0, 0),
 				To:   time.Unix(16, 0),
 			},
@@ -117,7 +117,7 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "min",
 			upsampler:   "fillna",
-			timeRange: grafana.TimeRange{
+			timeRange: datasource.TimeRange{
 				From: time.Unix(0, 0),
 				To:   time.Unix(16, 0),
 			},
@@ -147,7 +147,7 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "sum",
 			upsampler:   "fillna",
-			timeRange: grafana.TimeRange{
+			timeRange: datasource.TimeRange{
 				From: time.Unix(0, 0),
 				To:   time.Unix(16, 0),
 			},
@@ -177,7 +177,7 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "5S",
 			downsampler: "mean",
 			upsampler:   "fillna",
-			timeRange: grafana.TimeRange{
+			timeRange: datasource.TimeRange{
 				From: time.Unix(0, 0),
 				To:   time.Unix(16, 0),
 			},
@@ -207,7 +207,7 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "2S",
 			downsampler: "mean",
 			upsampler:   "pad",
-			timeRange: grafana.TimeRange{
+			timeRange: datasource.TimeRange{
 				From: time.Unix(0, 0),
 				To:   time.Unix(11, 0),
 			},
@@ -237,7 +237,7 @@ func TestResampleSeries(t *testing.T) {
 			interval:    "2S",
 			downsampler: "mean",
 			upsampler:   "backfilling",
-			timeRange: grafana.TimeRange{
+			timeRange: datasource.TimeRange{
 				From: time.Unix(0, 0),
 				To:   time.Unix(11, 0),
 			},

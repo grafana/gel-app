@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 
-	"github.com/grafana/grafana-plugin-sdk-go"
+	"github.com/grafana/grafana-plugin-sdk-go/transform"
 	"github.com/hashicorp/go-hclog"
 )
 
@@ -38,13 +38,10 @@ func main() {
 		}
 	}()
 
-	srv := grafana.NewServer()
-
-	srv.HandleDataSource("gel-app", &GELPlugin{
+	err := transform.Serve("gel-app", &GELPlugin{
 		logger: pluginLogger,
 	})
-
-	if err := srv.Serve(); err != nil {
+	if err != nil {
 		pluginLogger.Error(err.Error())
 	}
 }
