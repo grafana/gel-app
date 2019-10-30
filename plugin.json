@@ -1,7 +1,7 @@
 {
   "type": "transform",
   "name": "GEL Data",
-  "id": "gel-datasource",
+  "id": "gel",
   "metrics": true,
   "executable": "gel",
   "backend": true,
@@ -9,9 +9,9 @@
   "hiddenQueries": true,
 
   "info": {
-    "logos": {
-      "small": "img/pipeline.svg",
-      "large": "img/pipeline.svg"
+    "author": {
+      "name": "Grafana Project",
+      "url": "https://grafana.com"
     }
   }
 }
