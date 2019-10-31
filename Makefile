@@ -21,11 +21,12 @@ test-in-docker: build-container
 		plugin-builder make test
 
 copy-pluginj:
+	mkdir -p dist
 	cp ./plugin.json ./dist/plugin.json
 
 # TODO: This should build for the current arch, not linux
 build: copy-pluginj
-	$(GO) build -i -o ./dist/${DSNAME}_linux_amd64 -tags netgo -ldflags '-w' ./pkg
+	$(GO) build -o ./dist/${DSNAME}_linux_amd64 -tags netgo -ldflags '-w' ./pkg
 
 build-darwin:
 	$(GO) build -o ./dist/${DSNAME}_darwin_amd64 -tags netgo -ldflags '-w' ./pkg

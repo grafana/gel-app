@@ -57,23 +57,9 @@ jobs:
     working_directory: ~/plugin
     steps:
     - checkout
-    - restore_cache:
-        keys:
-        - yarn-packages-{{ checksum "yarn.lock" }}
     - run:
-        name: Install node and yarn
-        command: |
-          curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-          sudo apt-get install -y nodejs
-          sudo npm install -g yarn --quiet
-          yarn install --pure-lockfile
-    - run:
-        name: Run Toolkit CI
-        command: npx grafana-toolkit plugin:ci-build --backend
-    - save_cache:
-        paths:
-        - node_modules
-        key: yarn-packages-{{ checksum "yarn.lock" }}
+        name: Build GEL plugin
+        command: make
     - persist_to_workspace:
         root: .
         paths:
@@ -204,16 +190,12 @@ workflows:
   version: 2
   plugin_workflow:
     jobs:
-    - build_plugin
     - build_backend
     - test_backend
-    - build_docs
     - package:
         requires:
-        - build_plugin
         - build_backend
         - test_backend
-        - build_docs
     - test_6_2_5:
         requires:
         - package
