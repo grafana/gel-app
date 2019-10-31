@@ -10,7 +10,7 @@ jobs:
             command: make test
         - run:
             name: Build GEL plugin
-            command: make build-in-circleci
+            command: make
         - store_artifacts:
             path: dist
         - store_artifacts:
