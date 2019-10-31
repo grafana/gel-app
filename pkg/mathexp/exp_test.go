@@ -282,6 +282,41 @@ func TestSeriesExpr(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "series Op series with sparse time join (currently fails)",
+			expr: "$A + $B",
+			vars: Vars{
+				"A": Results{
+					[]Value{
+						makeSeries("temp", dataframe.Labels{}, tp{
+							unixTimePointer(5, 0), float64Pointer(1),
+						}, tp{
+							unixTimePointer(10, 0), float64Pointer(2),
+						}),
+					},
+				},
+				"B": Results{
+					[]Value{
+						makeSeries("efficiency", dataframe.Labels{}, tp{
+							unixTimePointer(5, 0), float64Pointer(3),
+						}, tp{
+							unixTimePointer(9, 0), float64Pointer(4),
+						}),
+					},
+				},
+			},
+
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			resultIs:  assert.Equal,
+			results: Results{
+				[]Value{
+					makeSeries("", nil, tp{ // Not sure about preservering names...
+						unixTimePointer(5, 0), float64Pointer(4),
+					}),
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
