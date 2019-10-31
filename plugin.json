@@ -2,11 +2,8 @@
   "type": "transform",
   "name": "GEL Data",
   "id": "gel",
-  "metrics": true,
   "executable": "gel",
   "backend": true,
-
-  "hiddenQueries": true,
 
   "info": {
     "author": {

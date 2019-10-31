@@ -23,6 +23,7 @@ test-in-docker: build-container
 copy-pluginj:
 	mkdir -p dist
 	cp ./plugin.json ./dist/plugin.json
+	cp ./README.md ./dist/README.md
 
 # TODO: This should build for the current arch, not linux
 build: copy-pluginj
