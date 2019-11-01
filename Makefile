@@ -20,19 +20,23 @@ test-in-docker: build-container
 		-w /go/src/github.com/grafana/${DSNAME} \
 		plugin-builder make test
 
+copy-pluginj:
+	mkdir -p dist
+	cp ./plugin.json ./dist/plugin.json
+	cp ./README.md ./dist/README.md
 
 # TODO: This should build for the current arch, not linux
-build:
-	$(GO) build -i -o ./dist/datasource/${DSNAME}_linux_amd64 -tags netgo -ldflags '-w' ./pkg
+build: copy-pluginj
+	$(GO) build -o ./dist/${DSNAME}_linux_amd64 -tags netgo -ldflags '-w' ./pkg
 
 build-darwin:
-	$(GO) build -o ./dist/datasource/${DSNAME}_darwin_amd64 -tags netgo -ldflags '-w' ./pkg
+	$(GO) build -o ./dist/${DSNAME}_darwin_amd64 -tags netgo -ldflags '-w' ./pkg
 
 build-dev:
-	$(GO) build -o ./dist/datasource/${DSNAME}_linux_amd64 ./pkg
+	$(GO) build -o ./dist/${DSNAME}_linux_amd64 ./pkg
 
 build-win:
-	$(GO) build -o ./dist/datasource/${DSNAME}_windows_amd64.exe -tags netgo -ldflags '-w' ./pkg
+	$(GO) build -o ./dist/${DSNAME}_windows_amd64.exe -tags netgo -ldflags '-w' ./pkg
 
 build-in-circleci: build-in-circleci-linux build-in-circleci-windows
 

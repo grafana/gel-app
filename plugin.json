@@ -1,0 +1,14 @@
+{
+  "type": "transform",
+  "name": "GEL Data",
+  "id": "gel",
+  "executable": "gel",
+  "backend": true,
+
+  "info": {
+    "author": {
+      "name": "Grafana Project",
+      "url": "https://grafana.com"
+    }
+  }
+}
