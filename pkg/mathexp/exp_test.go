@@ -155,7 +155,6 @@ func TestSeriesExpr(t *testing.T) {
 		vars      Vars
 		newErrIs  assert.ErrorAssertionFunc
 		execErrIs assert.ErrorAssertionFunc
-		resultIs  assert.ComparisonAssertionFunc
 		results   Results
 	}{
 		{
@@ -164,7 +163,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      aSeries,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("", nil, tp{ // Not sure about preservering names...
@@ -181,7 +179,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      aSeries,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("", nil, tp{ // Not sure about preservering names...
@@ -198,7 +195,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      aSeries,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("", nil, tp{ // Not sure about preservering names...
@@ -215,7 +211,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      aSeries,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("", nil, tp{ // Not sure about preservering names...
@@ -232,7 +227,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      aSeriesbNumber,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("id=1", dataframe.Labels{"id": "1"}, tp{
@@ -249,7 +243,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      aSeriesbNumber,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("id=1", dataframe.Labels{"id": "1"}, tp{
@@ -266,7 +259,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      twoSeriesSets,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("sensor=a, turbine=1", dataframe.Labels{"sensor": "a", "turbine": "1"}, tp{
@@ -282,8 +274,10 @@ func TestSeriesExpr(t *testing.T) {
 				},
 			},
 		},
+		// Length of resulting series is A when A + B. However, only points where the time matches
+		// for A and B are added to the result
 		{
-			name: "series Op series with sparse time join (currently fails)",
+			name: "series Op series with sparse time join",
 			expr: "$A + $B",
 			vars: Vars{
 				"A": Results{
@@ -308,10 +302,9 @@ func TestSeriesExpr(t *testing.T) {
 
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
-					makeSeries("", nil, tp{ // Not sure about preservering names...
+					makeSeries("", nil, tp{ // Not sure about preserving names...
 						unixTimePointer(5, 0), float64Pointer(4),
 					}),
 				},
@@ -325,7 +318,9 @@ func TestSeriesExpr(t *testing.T) {
 			if e != nil {
 				res, err := e.Execute(tt.vars)
 				tt.execErrIs(t, err)
-				tt.resultIs(t, tt.results, res)
+				if diff := cmp.Diff(tt.results, res); diff != "" {
+					t.Errorf("Result mismatch (-want +got):\n%s", diff)
+				}
 			}
 		})
 	}
