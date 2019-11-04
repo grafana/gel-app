@@ -51,12 +51,12 @@ func (dp *DataPipeline) execute(c context.Context) (mathexp.Vars, error) {
 	return vars, nil
 }
 
-const gelDataSourceName = "__expr__"
+const gelNodeName = "__expr__"
 
 // BuildPipeline builds a graph of the nodes, and returns the nodes in an
 // executable order
-func buildPipeline(queries []transform.Query, tr datasource.TimeRange, cache transform.GrafanaAPIHandler) (DataPipeline, error) {
-	graph, err := buildDependencyGraph(queries, tr, cache)
+func buildPipeline(queries []transform.Query, tr datasource.TimeRange, dsAPI transform.GrafanaAPIHandler) (DataPipeline, error) {
+	graph, err := buildDependencyGraph(queries, tr, dsAPI)
 	if err != nil {
 		return nil, err
 	}
@@ -70,8 +70,8 @@ func buildPipeline(queries []transform.Query, tr datasource.TimeRange, cache tra
 }
 
 // buildDependencyGraph returns a dependency graph for a set of queries.
-func buildDependencyGraph(queries []transform.Query, tr datasource.TimeRange, cache transform.GrafanaAPIHandler) (*simple.DirectedGraph, error) {
-	graph, err := buildGraph(queries, tr, cache)
+func buildDependencyGraph(queries []transform.Query, tr datasource.TimeRange, dsAPI transform.GrafanaAPIHandler) (*simple.DirectedGraph, error) {
+	graph, err := buildGraph(queries, tr, dsAPI)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func buildGraph(queries []transform.Query, tr datasource.TimeRange, dsAPI transf
 
 		var node graph.Node
 		switch dsName {
-		case gelDataSourceName:
+		case gelNodeName:
 			node, err = buildGELNode(dp, tr, rn)
 		default: // If it's not a GEL query, it's a data source query.
 			node, err = buildDSNode(dp, rn, tr, dsAPI)

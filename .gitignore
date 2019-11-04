@@ -12,3 +12,5 @@ work/
 ci/
 
 node_modules/
+
+vendor/

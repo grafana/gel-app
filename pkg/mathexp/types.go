@@ -1,7 +1,6 @@
 package mathexp
 
 import (
-	"fmt"
 	"sort"
 	"time"
 
@@ -159,99 +158,6 @@ func NewSeries(name string, labels dataframe.Labels, size int) Series {
 	}
 }
 
-func Sum(v dataframe.Vector) *float64 {
-	var sum float64
-	for i := 0; i < v.Len(); i++ {
-		if f, ok := v.At(i).(*float64); ok {
-			sum += *f
-		}
-	}
-	return &sum
-}
-
-func Avg(v dataframe.Vector) *float64 {
-	sum := Sum(v)
-	f := *sum / float64(v.Len())
-	return &f
-}
-
-func Min(fv dataframe.Vector) *float64 {
-	var f float64
-	for i := 0; i < fv.Len(); i++ {
-		if v, ok := fv.At(i).(*float64); ok {
-			if i == 0 || *v < f {
-				f = *v
-			}
-		}
-	}
-	return &f
-}
-
-func Max(fv dataframe.Vector) *float64 {
-	var f float64
-	for i := 0; i < fv.Len(); i++ {
-		if v, ok := fv.At(i).(*float64); ok {
-			if i == 0 || *v > f {
-				f = *v
-			}
-		}
-	}
-	return &f
-}
-
-func Count(fv dataframe.Vector) *float64 {
-	f := float64(fv.Len())
-	return &f
-}
-
-// Reduce turns the Series into a Number based on the given reduction function
-func (s Series) Reduce(rFunc string) (Number, error) {
-	// TODO Labels....
-	number := NewNumber(fmt.Sprintf("%v_%v", rFunc, s.GetName()), nil)
-	var f *float64
-	fVec := s.Frame.Fields[1].Vector
-	switch rFunc {
-	case "sum":
-		f = Sum(fVec)
-	case "mean":
-		f = Avg(fVec)
-	case "min":
-		f = Min(fVec)
-	case "max":
-		f = Max(fVec)
-	case "count":
-		f = Count(fVec)
-	default:
-		return number, fmt.Errorf("reduction %v not implemented", rFunc)
-	}
-	number.SetValue(f)
-	return number, nil
-}
-
-// FromGRPC converts time series only (at the moment) from a
-// GRPC TimeSeries type to a Series Type
-//func FromGRPC(seriesCollection []*datasource.TimeSeries) Results {
-//	results := Results{[]Value{}}
-//	results.Values = make([]Value, len(seriesCollection))
-//	for seriesIdx, series := range seriesCollection {
-//		s := NewSeries(series.Name, dataframe.Labels(series.Tags), len(series.Points))
-//		for pointIdx, point := range series.Points {
-//			t, f := convertDSTimePoint(point)
-//			s.SetPoint(pointIdx, t, f)
-//		}
-//		results.Values[seriesIdx] = s
-//	}
-//	return results
-//}
-
-//func convertDSTimePoint(point *datasource.Point) (t *time.Time, f *float64) {
-//	tI := int64(point.Timestamp)
-//	uT := time.Unix(tI/int64(1e+3), (tI%int64(1e+3))*int64(1e+6)) // time.Time from millisecond unix ts
-//	t = &uT
-//	f = &point.Value
-//	return t, f
-//}
-
 // SortByTime sorts the series by the time from oldest to newest.
 // If desc is true, it will sort from newest to oldest.
 // If any time values are nil, it will panic.
@@ -281,35 +187,3 @@ func (ss SortSeriesByTime) Less(i, j int) bool {
 	jTimeVal := Series(ss).GetTime(j)
 	return iTimeVal.Before(*jTimeVal)
 }
-
-// Kept for reference of difference Series types, commented out to avoid import
-
-// FromTSDB converts Grafana's existing tsdb.TimeSeriesSlice type to Series stored in a dataframe.FrameCollection
-// func FromTSDB(seriesCollection tsdb.TimeSeriesSlice) Results {
-// 	results := Results{[]Value{}}
-// 	results.Values = make([]Value, len(seriesCollection))
-// 	for seriesIdx, series := range seriesCollection {
-// 		s := NewSeries(series.Name, dataframe.Labels(series.Tags), len(series.Points))
-// 		for pointIdx, point := range series.Points {
-// 			t, f := convertTSDBTimePoint(point)
-// 			s.SetPoint(pointIdx, t, f)
-// 		}
-// 		results.Values[seriesIdx] = s
-// 	}
-// 	return results
-// }
-
-// convertTSDBTimePoint coverts a tsdb.TimePoint into two values appropriate
-// for Series values.
-// func convertTSDBTimePoint(point tsdb.TimePoint) (t *time.Time, f *float64) {
-// 	timeIdx, valueIdx := 1, 0
-// 	if point[timeIdx].Valid { // Assuming valid is null?
-// 		tI := int64(point[timeIdx].Float64)
-// 		uT := time.Unix(tI/int64(1e+3), (tI%int64(1e+3))*int64(1e+6)) // time.Time from millisecond unix ts
-// 		t = &uT
-// 	}
-// 	if point[valueIdx].Valid {
-// 		f = &point[valueIdx].Float64
-// 	}
-// 	return
-// }
