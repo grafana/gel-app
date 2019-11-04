@@ -8,6 +8,7 @@ import (
 
 	"github.com/grafana/grafana-plugin-sdk-go/transform"
 	"github.com/hashicorp/go-hclog"
+	plugin "github.com/hashicorp/go-plugin"
 )
 
 var pluginLogger = hclog.New(&hclog.LoggerOptions{
@@ -26,6 +27,12 @@ func registerPProfHandlers(r *http.ServeMux) {
 	r.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	r.HandleFunc("/debug/pprof/trace", pprof.Trace)
+}
+
+// GELPlugin stores reference to plugin and logger
+type GELPlugin struct {
+	plugin.NetRPCUnsupportedPlugin
+	logger hclog.Logger
 }
 
 func main() {

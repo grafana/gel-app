@@ -217,7 +217,6 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 		for _, frame := range res.DataFrames {
 			vals = append(vals, mathexp.Series{Frame: frame})
 		}
-		//vals = append(vals, mathexp.FromGRPC(dsRes.GetSeries()).Values...)
 	}
 
 	return mathexp.Results{

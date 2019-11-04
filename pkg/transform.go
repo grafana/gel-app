@@ -7,36 +7,35 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 	"github.com/grafana/grafana-plugin-sdk-go/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/transform"
-	hclog "github.com/hashicorp/go-hclog"
-	plugin "github.com/hashicorp/go-plugin"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-// GELPlugin stores reference to plugin and logger
-type GELPlugin struct {
-	plugin.NetRPCUnsupportedPlugin
-	logger hclog.Logger
-}
-
-func (gp *GELPlugin) Transform(ctx context.Context, tr datasource.TimeRange, ds datasource.DataSourceInfo, queries []transform.Query, api transform.GrafanaAPIHandler) ([]transform.QueryResult, error) {
+// Transform is currently the only the method called for the the plugin.
+// It takes Queries which are either GEL nodes (a.k.a expressions/transforms)
+// or are datasource requests. The transform.GrafanaAPIHandler allows callbacks
+// to grafana to fulfill datasource requests.
+func (gp *GELPlugin) Transform(ctx context.Context, tr datasource.TimeRange, _ datasource.DataSourceInfo, queries []transform.Query, api transform.GrafanaAPIHandler) ([]transform.QueryResult, error) {
 	svc := gelpoc.Service{
 		GrafanaAPI: api,
 	}
 
-	// Build Pipeline from Request
+	// Build the pipeline from the request, checking for ordering issues (e.g. loops)
+	// and parsing graph nodes from the queries.
 	pipeline, err := svc.BuildPipeline(tr, queries)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	// Execute Pipeline
+	// Execute the pipeline
 	frames, err := svc.ExecutePipeline(ctx, pipeline)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
+	// Get which queries have the Hide property so they those queries' results
+	// can be excluded from the response.
 	hidden, err := hiddenRefIDs(queries)
 	if err != nil {
 		return nil, status.Error((codes.Internal), err.Error())
