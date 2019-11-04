@@ -134,6 +134,12 @@ func (s Series) SetPoint(pointIdx int, t *time.Time, f *float64) {
 	s.Frame.Fields[1].Vector.Set(pointIdx, f)
 }
 
+// AppendPoint appends a point (time/value).
+func (s Series) AppendPoint(pointIdx int, t *time.Time, f *float64) {
+	s.Frame.Fields[0].Vector.Append(t)
+	s.Frame.Fields[1].Vector.Append(f)
+}
+
 // Len returns the length of the series.
 func (s Series) Len() int {
 	return s.Frame.Fields[0].Vector.Len()

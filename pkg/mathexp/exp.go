@@ -5,6 +5,7 @@ import (
 	"math"
 	"reflect"
 	"runtime"
+	"time"
 
 	"github.com/grafana/gel-app/pkg/mathexp/parse"
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
@@ -51,7 +52,7 @@ func (e *Expr) Execute(vars Vars) (r Results, err error) {
 }
 
 func (e *Expr) executeState(s *State) (r Results, err error) {
-	defer errRecover(&err, s)
+	//defer errRecover(&err, s)
 	r, err = s.walk(e.Tree.Root)
 	return
 }
@@ -75,16 +76,21 @@ func errRecover(errp *error, s *State) {
 // walk is the top level function to walk a parsed expression
 // with its associate variables
 func (e *State) walk(node parse.Node) (res Results, err error) {
+	fmt.Printf("Walking node %s\n", node)
 	switch node := node.(type) {
 	case *parse.ScalarNode:
+		fmt.Printf("Scalar node\n")
 		res = NewScalarResults(&node.Float64)
 	case *parse.VarNode:
+		fmt.Printf("Var node %q\n", node.Name)
 		res = e.Vars[node.Name]
 	case *parse.BinaryNode:
 		res, err = e.walkBinary(node)
 	case *parse.UnaryNode:
+		fmt.Printf("Unary node %s\n", node)
 		res, err = e.walkUnary(node)
 	case *parse.FuncNode:
+		fmt.Printf("Func node %q\n", node.Name)
 		res, err = e.walkFunc(node)
 	default:
 		return res, fmt.Errorf("expr: can not walk node type: %s", node.Type())
@@ -178,7 +184,7 @@ func unaryOp(op string, a float64) (r float64, err error) {
 	return
 }
 
-// Union holds to Values from Two sets where there labels are compatible (TODO: define compatible).
+// Union holds to Values from Two sets where their labels are compatible (TODO: define compatible).
 // This is a intermediate container for Binary operations such (e.g. A + B).
 type Union struct {
 	Labels dataframe.Labels
@@ -226,18 +232,24 @@ func union(aResults, bResults Results) []*Union {
 }
 
 func (e *State) walkBinary(node *parse.BinaryNode) (Results, error) {
+	fmt.Printf("Walking binary node %s\n", node)
 	res := Results{Values{}}
+	fmt.Printf("Walking lhs node\n")
 	ar, err := e.walk(node.Args[0])
 	if err != nil {
 		return res, err
 	}
+	fmt.Printf("Walking rhs node\n")
 	br, err := e.walk(node.Args[1])
 	if err != nil {
 		return res, err
 	}
+	fmt.Printf("Making union of lhs and rhs\n")
 	unions := union(ar, br)
+	fmt.Printf("Got %d unions\n", len(unions))
 	for _, uni := range unions {
 		name := uni.Labels.String()
+		fmt.Printf("The union name is %q\n", name)
 		var value Value
 		switch at := uni.A.(type) {
 		case Scalar:
@@ -246,6 +258,7 @@ func (e *State) walkBinary(node *parse.BinaryNode) (Results, error) {
 			// Scalar op Scalar
 			case Scalar:
 				bFloat := bt.GetFloat64Value()
+				fmt.Printf("Scalar (%v) op Scalar (%v) \n", aFloat, bFloat)
 				if aFloat == nil || bFloat == nil {
 					value = NewScalar(nil)
 					break
@@ -279,6 +292,7 @@ func (e *State) walkBinary(node *parse.BinaryNode) (Results, error) {
 				value, err = biSeriesNumber(name, uni.Labels, node.OpStr, at, bFloat, true)
 			// case Series op Series
 			case Series:
+				fmt.Printf("Series op Series\n")
 				value, err = biSeriesSeries(name, uni.Labels, node.OpStr, at, bt)
 			default:
 				return res, fmt.Errorf("not implemented: binary %v on %T and %T", node.OpStr, uni.A, uni.B)
@@ -440,25 +454,29 @@ func biSeriesNumber(name string, labels dataframe.Labels, op string, series Seri
 // biSeriesSeries performs a the binary operation for each value in the two series where the times
 // are equal. If there are datapoints in A or B that do not share a time, they will be dropped.
 func biSeriesSeries(name string, labels dataframe.Labels, op string, aSeries, bSeries Series) (Series, error) {
-	newSeries := NewSeries(name, labels, aSeries.Len())
+	fmt.Printf("biSeriesSeries, name %q, labels %s, op %q\n", name, labels, op)
+
+	bPoints := make(map[time.Time]float64)
+	for i := 0; i < bSeries.Len(); i++ {
+		t, f := bSeries.GetPoint(i)
+		if t != nil && f != nil {
+			bPoints[*t] = *f
+		}
+	}
+
+	newSeries := NewSeries(name, labels, 0)
 	for aIdx := 0; aIdx < aSeries.Len(); aIdx++ {
 		aTime, aF := aSeries.GetPoint(aIdx)
-		for bIdx := 0; bIdx < bSeries.Len(); bIdx++ {
-			bTime := bSeries.GetTime(bIdx)
-			if *aTime == *bTime {
-				bF := bSeries.GetValue(bIdx)
-				if aF == nil || bF == nil {
-					newSeries.SetPoint(aIdx, aTime, nil)
-					break
-				}
-				nF, err := binaryOp(op, *aF, *bF)
-				if err != nil {
-					return newSeries, err
-				}
-				newSeries.SetPoint(aIdx, aTime, &nF)
-				break
-			}
+		bF, ok := bPoints[*aTime]
+		if !ok {
+			continue
 		}
+
+		nF, err := binaryOp(op, *aF, bF)
+		if err != nil {
+			return newSeries, err
+		}
+		newSeries.AppendPoint(aIdx, aTime, &nF)
 	}
 	return newSeries, nil
 }
