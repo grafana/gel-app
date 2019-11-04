@@ -762,112 +762,110 @@ func TestNaN(t *testing.T) {
 			execErrIs: assert.NoError,
 			results:   Results{[]Value{makeNumber("", nil, NaN)}},
 		},
-		/*
-			{
-				name:      "unary -: Op Number(NaN) is NaN",
-				expr:      "! $A",
-				vars:      Vars{"A": Results{[]Value{makeNumber("", nil, NaN)}}},
-				newErrIs:  assert.NoError,
-				execErrIs: assert.NoError,
-				results:   Results{[]Value{makeNumber("", nil, NaN)}},
-			},
-			{
-				name:      "binary: Scalar Op(Non-AND/OR) Number(NaN) is NaN",
-				expr:      "1 * $A",
-				vars:      Vars{"A": Results{[]Value{makeNumber("", nil, NaN)}}},
-				newErrIs:  assert.NoError,
-				execErrIs: assert.NoError,
-				results:   Results{[]Value{makeNumber("", nil, NaN)}},
-			},
-			{
-				name:      "binary: Scalar Op(AND/OR) Number(NaN) is 0/1",
-				expr:      "1 || $A",
-				vars:      Vars{"A": Results{[]Value{makeNumber("", nil, NaN)}}},
-				newErrIs:  assert.NoError,
-				execErrIs: assert.NoError,
-				results:   Results{[]Value{makeNumber("", nil, float64Pointer(1))}},
-			},
-			{
-				name: "binary: Scalar Op(Non-AND/OR) Series(with NaN value) is NaN)",
-				expr: "1 - $A",
-				vars: Vars{
-					"A": Results{
-						[]Value{
-							makeSeries("temp", nil, tp{
-								unixTimePointer(5, 0), float64Pointer(2),
-							}, tp{
-								unixTimePointer(10, 0), NaN,
-							}),
-						},
-					},
-				},
-				newErrIs:  assert.NoError,
-				execErrIs: assert.NoError,
-				results: Results{
+		{
+			name:      "unary -: Op Number(NaN) is NaN",
+			expr:      "! $A",
+			vars:      Vars{"A": Results{[]Value{makeNumber("", nil, NaN)}}},
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results:   Results{[]Value{makeNumber("", nil, NaN)}},
+		},
+		{
+			name:      "binary: Scalar Op(Non-AND/OR) Number(NaN) is NaN",
+			expr:      "1 * $A",
+			vars:      Vars{"A": Results{[]Value{makeNumber("", nil, NaN)}}},
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results:   Results{[]Value{makeNumber("", nil, NaN)}},
+		},
+		{
+			name:      "binary: Scalar Op(AND/OR) Number(NaN) is 0/1",
+			expr:      "1 || $A",
+			vars:      Vars{"A": Results{[]Value{makeNumber("", nil, NaN)}}},
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results:   Results{[]Value{makeNumber("", nil, float64Pointer(1))}},
+		},
+		{
+			name: "binary: Scalar Op(Non-AND/OR) Series(with NaN value) is NaN)",
+			expr: "1 - $A",
+			vars: Vars{
+				"A": Results{
 					[]Value{
-						makeSeries("", nil, tp{
-							unixTimePointer(5, 0), float64Pointer(-1),
+						makeSeries("temp", nil, tp{
+							unixTimePointer(5, 0), float64Pointer(2),
 						}, tp{
 							unixTimePointer(10, 0), NaN,
 						}),
 					},
 				},
 			},
-			{
-				name: "binary: Number Op(Non-AND/OR) Series(with NaN value) is Series with NaN",
-				expr: "$A == $B",
-				vars: Vars{
-					"A": Results{
-						[]Value{
-							makeSeries("temp", nil, tp{
-								unixTimePointer(5, 0), float64Pointer(2),
-							}, tp{
-								unixTimePointer(10, 0), NaN,
-							}),
-						},
-					},
-					"B": Results{[]Value{makeNumber("", nil, float64Pointer(0))}},
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results: Results{
+				[]Value{
+					makeSeries("", nil, tp{
+						unixTimePointer(5, 0), float64Pointer(-1),
+					}, tp{
+						unixTimePointer(10, 0), NaN,
+					}),
 				},
-				newErrIs:  assert.NoError,
-				execErrIs: assert.NoError,
-				results: Results{
+			},
+		},
+		{
+			name: "binary: Number Op(Non-AND/OR) Series(with NaN value) is Series with NaN",
+			expr: "$A == $B",
+			vars: Vars{
+				"A": Results{
 					[]Value{
-						makeSeries("", nil, tp{
-							unixTimePointer(5, 0), float64Pointer(0),
+						makeSeries("temp", nil, tp{
+							unixTimePointer(5, 0), float64Pointer(2),
 						}, tp{
 							unixTimePointer(10, 0), NaN,
 						}),
 					},
 				},
+				"B": Results{[]Value{makeNumber("", nil, float64Pointer(0))}},
 			},
-			{
-				name: "binary: Number(NaN) Op Series(with NaN value) is Series with NaN",
-				expr: "$A + $B",
-				vars: Vars{
-					"A": Results{
-						[]Value{
-							makeSeries("temp", nil, tp{
-								unixTimePointer(5, 0), float64Pointer(2),
-							}, tp{
-								unixTimePointer(10, 0), NaN,
-							}),
-						},
-					},
-					"B": Results{[]Value{makeNumber("", nil, NaN)}},
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results: Results{
+				[]Value{
+					makeSeries("", nil, tp{
+						unixTimePointer(5, 0), float64Pointer(0),
+					}, tp{
+						unixTimePointer(10, 0), NaN,
+					}),
 				},
-				newErrIs:  assert.NoError,
-				execErrIs: assert.NoError,
-				results: Results{
+			},
+		},
+		{
+			name: "binary: Number(NaN) Op Series(with NaN value) is Series with NaN",
+			expr: "$A + $B",
+			vars: Vars{
+				"A": Results{
 					[]Value{
-						makeSeries("", nil, tp{
-							unixTimePointer(5, 0), NaN,
+						makeSeries("temp", nil, tp{
+							unixTimePointer(5, 0), float64Pointer(2),
 						}, tp{
 							unixTimePointer(10, 0), NaN,
 						}),
 					},
 				},
+				"B": Results{[]Value{makeNumber("", nil, NaN)}},
 			},
-		*/
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results: Results{
+				[]Value{
+					makeSeries("", nil, tp{
+						unixTimePointer(5, 0), NaN,
+					}, tp{
+						unixTimePointer(10, 0), NaN,
+					}),
+				},
+			},
+		},
 	}
 
 	// go-cmp instead of testify assert is used to compare results here
