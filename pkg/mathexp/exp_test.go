@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 	"github.com/stretchr/testify/assert"
@@ -154,7 +155,6 @@ func TestSeriesExpr(t *testing.T) {
 		vars      Vars
 		newErrIs  assert.ErrorAssertionFunc
 		execErrIs assert.ErrorAssertionFunc
-		resultIs  assert.ComparisonAssertionFunc
 		results   Results
 	}{
 		{
@@ -163,7 +163,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      aSeries,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("", nil, tp{ // Not sure about preservering names...
@@ -180,7 +179,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      aSeries,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("", nil, tp{ // Not sure about preservering names...
@@ -197,7 +195,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      aSeries,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("", nil, tp{ // Not sure about preservering names...
@@ -214,7 +211,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      aSeries,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("", nil, tp{ // Not sure about preservering names...
@@ -231,7 +227,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      aSeriesbNumber,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("id=1", dataframe.Labels{"id": "1"}, tp{
@@ -248,7 +243,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      aSeriesbNumber,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("id=1", dataframe.Labels{"id": "1"}, tp{
@@ -265,7 +259,6 @@ func TestSeriesExpr(t *testing.T) {
 			vars:      twoSeriesSets,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
-			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
 					makeSeries("sensor=a, turbine=1", dataframe.Labels{"sensor": "a", "turbine": "1"}, tp{
@@ -281,6 +274,42 @@ func TestSeriesExpr(t *testing.T) {
 				},
 			},
 		},
+		// Length of resulting series is A when A + B. However, only points where the time matches
+		// for A and B are added to the result
+		{
+			name: "series Op series with sparse time join",
+			expr: "$A + $B",
+			vars: Vars{
+				"A": Results{
+					[]Value{
+						makeSeries("temp", dataframe.Labels{}, tp{
+							unixTimePointer(5, 0), float64Pointer(1),
+						}, tp{
+							unixTimePointer(10, 0), float64Pointer(2),
+						}),
+					},
+				},
+				"B": Results{
+					[]Value{
+						makeSeries("efficiency", dataframe.Labels{}, tp{
+							unixTimePointer(5, 0), float64Pointer(3),
+						}, tp{
+							unixTimePointer(9, 0), float64Pointer(4),
+						}),
+					},
+				},
+			},
+
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results: Results{
+				[]Value{
+					makeSeries("", nil, tp{ // Not sure about preserving names...
+						unixTimePointer(5, 0), float64Pointer(4),
+					}),
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -289,7 +318,9 @@ func TestSeriesExpr(t *testing.T) {
 			if e != nil {
 				res, err := e.Execute(tt.vars)
 				tt.execErrIs(t, err)
-				tt.resultIs(t, tt.results, res)
+				if diff := cmp.Diff(tt.results, res, cmpopts.EquateEmpty()); diff != "" {
+					t.Errorf("Result mismatch (-want +got):\n%s", diff)
+				}
 			}
 		})
 	}
@@ -1069,15 +1100,15 @@ func TestNull(t *testing.T) {
 				if e != nil {
 					res, err := e.Execute(tt.vars)
 					tt.execErrIs(t, err)
-					if !cmp.Equal(res, tt.results, opt) {
-						assert.FailNow(t, tt.name, cmp.Diff(res, tt.results, opt))
+					if diff := cmp.Diff(tt.results, res, opt); diff != "" {
+						t.Errorf("Result mismatch (-want +got):\n%s", diff)
 					}
 				}
 			}
 			if tt.willPanic {
 				assert.Panics(t, testBlock)
 			} else {
-				assert.NotPanics(t, testBlock)
+				testBlock()
 			}
 		})
 	}

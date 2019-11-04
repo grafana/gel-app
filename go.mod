@@ -6,7 +6,7 @@ go 1.12
 
 require (
 	github.com/google/go-cmp v0.3.1
-	github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191029155514-4d93894a3f7a
+	github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191104152607-a12a2aab5545
 	github.com/hashicorp/go-hclog v0.8.0
 	github.com/hashicorp/go-plugin v1.0.1
 	github.com/kr/pretty v0.1.0 // indirect

@@ -5,6 +5,7 @@ import (
 	"math"
 	"reflect"
 	"runtime"
+	"time"
 
 	"github.com/grafana/gel-app/pkg/mathexp/parse"
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
@@ -178,7 +179,7 @@ func unaryOp(op string, a float64) (r float64, err error) {
 	return
 }
 
-// Union holds to Values from Two sets where there labels are compatible (TODO: define compatible).
+// Union holds to Values from Two sets where their labels are compatible (TODO: define compatible).
 // This is a intermediate container for Binary operations such (e.g. A + B).
 type Union struct {
 	Labels dataframe.Labels
@@ -440,25 +441,30 @@ func biSeriesNumber(name string, labels dataframe.Labels, op string, series Seri
 // biSeriesSeries performs a the binary operation for each value in the two series where the times
 // are equal. If there are datapoints in A or B that do not share a time, they will be dropped.
 func biSeriesSeries(name string, labels dataframe.Labels, op string, aSeries, bSeries Series) (Series, error) {
-	newSeries := NewSeries(name, labels, aSeries.Len())
+	bPoints := make(map[time.Time]*float64)
+	for i := 0; i < bSeries.Len(); i++ {
+		t, f := bSeries.GetPoint(i)
+		if t != nil {
+			bPoints[*t] = f
+		}
+	}
+
+	newSeries := NewSeries(name, labels, 0)
 	for aIdx := 0; aIdx < aSeries.Len(); aIdx++ {
 		aTime, aF := aSeries.GetPoint(aIdx)
-		for bIdx := 0; bIdx < bSeries.Len(); bIdx++ {
-			bTime := bSeries.GetTime(bIdx)
-			if *aTime == *bTime {
-				bF := bSeries.GetValue(bIdx)
-				if aF == nil || bF == nil {
-					newSeries.SetPoint(aIdx, aTime, nil)
-					break
-				}
-				nF, err := binaryOp(op, *aF, *bF)
-				if err != nil {
-					return newSeries, err
-				}
-				newSeries.SetPoint(aIdx, aTime, &nF)
-				break
-			}
+		bF, ok := bPoints[*aTime]
+		if !ok {
+			continue
 		}
+		if aF == nil || bF == nil {
+			newSeries.AppendPoint(aIdx, aTime, nil)
+			continue
+		}
+		nF, err := binaryOp(op, *aF, *bF)
+		if err != nil {
+			return newSeries, err
+		}
+		newSeries.AppendPoint(aIdx, aTime, &nF)
 	}
 	return newSeries, nil
 }
