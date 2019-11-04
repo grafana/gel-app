@@ -456,11 +456,11 @@ func biSeriesNumber(name string, labels dataframe.Labels, op string, series Seri
 func biSeriesSeries(name string, labels dataframe.Labels, op string, aSeries, bSeries Series) (Series, error) {
 	fmt.Printf("biSeriesSeries, name %q, labels %s, op %q\n", name, labels, op)
 
-	bPoints := make(map[time.Time]float64)
+	bPoints := make(map[time.Time]*float64)
 	for i := 0; i < bSeries.Len(); i++ {
 		t, f := bSeries.GetPoint(i)
-		if t != nil && f != nil {
-			bPoints[*t] = *f
+		if t != nil {
+			bPoints[*t] = f
 		}
 	}
 
@@ -471,8 +471,11 @@ func biSeriesSeries(name string, labels dataframe.Labels, op string, aSeries, bS
 		if !ok {
 			continue
 		}
-
-		nF, err := binaryOp(op, *aF, bF)
+		if aF == nil || bF == nil {
+			newSeries.AppendPoint(aIdx, aTime, nil)
+			continue
+		}
+		nF, err := binaryOp(op, *aF, *bF)
 		if err != nil {
 			return newSeries, err
 		}
