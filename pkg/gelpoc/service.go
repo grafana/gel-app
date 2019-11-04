@@ -20,8 +20,7 @@ func (s *Service) BuildPipeline(tr datasource.TimeRange, queries []transform.Que
 }
 
 // ExecutePipeline executes a GEL data pipeline and returns all the results
-// as a slice of *dataframe.Frame. Queries that are marked has hidden should be executed
-// but should not returned (TODO: currently hidden is ignored).
+// as a slice of *dataframe.Frame.
 func (s *Service) ExecutePipeline(ctx context.Context, pipeline DataPipeline) ([]*dataframe.Frame, error) {
 	vars, err := pipeline.execute(ctx)
 	if err != nil {
