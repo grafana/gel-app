@@ -10,11 +10,7 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 	"github.com/grafana/grafana-plugin-sdk-go/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/transform"
-)
-
-var (
-	pluginID = "test-plugin"
-	dsRefID  = "GA"
+	"github.com/stretchr/testify/require"
 )
 
 func TestService(t *testing.T) {
@@ -43,15 +39,10 @@ func TestService(t *testing.T) {
 	}
 
 	pl, err := s.BuildPipeline(tr, queries)
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	res, err := s.ExecutePipeline(context.Background(), pl)
-
-	if err != nil {
-		t.Error(err)
-	}
+	require.NoError(t, err)
 
 	bDF := dataframe.New("", nil,
 		dataframe.NewField("Time", dataframe.FieldTypeTime, []*time.Time{utp(1)}),
