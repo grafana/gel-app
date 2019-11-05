@@ -16,7 +16,7 @@ import (
 // It takes Queries which are either GEL nodes (a.k.a expressions/transforms)
 // or are datasource requests. The transform.GrafanaAPIHandler allows callbacks
 // to grafana to fulfill datasource requests.
-func (gp *GELPlugin) Transform(ctx context.Context, tr datasource.TimeRange, _ datasource.DataSourceInfo, queries []transform.Query, api transform.GrafanaAPIHandler) ([]transform.QueryResult, error) {
+func (gp *GELPlugin) Transform(ctx context.Context, tr datasource.TimeRange, queries []transform.Query, api transform.GrafanaAPIHandler) ([]transform.QueryResult, error) {
 	svc := gelpoc.Service{
 		GrafanaAPI: api,
 	}
