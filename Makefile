@@ -17,6 +17,7 @@ copy-artifacts:
 	mkdir -p dist
 	cp ./plugin.json ./dist/plugin.json
 	cp ./README.md ./dist/README.md
+	cp -r ./img ./dist/
 
 # TODO: This should build for the current arch, not linux
 build: copy-artifacts

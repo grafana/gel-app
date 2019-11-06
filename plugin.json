@@ -9,6 +9,10 @@
     "author": {
       "name": "Grafana Project",
       "url": "https://grafana.com"
+    },
+    "logos": {
+      "small": "img/pipeline.svg",
+      "large": "img/pipeline.svg"
     }
   }
 }
