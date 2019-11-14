@@ -26,8 +26,6 @@ enable = expressions
 
 The plugin will need to be added to grafana's `data/plugins` through your preferred method. One way is to create a symlink, in the `data/plugins` directory something like `ln -s /home/kbrandt/src/github.com/grafana/gel-app/ gel-app`.
 
-In Grafana's UI enable the GEL plugin in. (TODO: Needs verification, not sure this step is needed?)
-
 If you enable debug logging in Grafana's ini you should see the plugin executed (or errors/problems). You should also see a gel process running after grafana starts `ps aux | grep gel | grep -v grep` or task manager or something :-).
 
 ### Using GEL
