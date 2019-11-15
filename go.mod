@@ -6,14 +6,12 @@ go 1.12
 
 require (
 	github.com/google/go-cmp v0.3.1
-	github.com/grafana/grafana-plugin-sdk-go v0.0.0-20191105165811-c4e9ecfec89f
+	github.com/grafana/grafana-plugin-model v0.0.0-20190930120109-1fc953a61fb4 // indirect
+	github.com/grafana/grafana-plugin-sdk-go v0.1.1-0.20191115194829-9bfc5937b406
 	github.com/hashicorp/go-hclog v0.8.0
 	github.com/hashicorp/go-plugin v1.0.1
-	github.com/kr/pretty v0.1.0 // indirect
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/net v0.0.0-20190909003024-a7b16738d86b
+	golang.org/x/net v0.0.0-20190923162816-aa69164e4478
 	gonum.org/v1/gonum v0.0.0-20190923210107-40fa6a493b3d
 	google.golang.org/grpc v1.24.0
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	gopkg.in/yaml.v2 v2.2.4 // indirect
 )

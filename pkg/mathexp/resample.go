@@ -78,7 +78,7 @@ func (s Series) Resample(rule string, downsampler string, upsampler string, tr d
 	idx := 0
 	t := tr.From
 	for !t.After(tr.To) && idx <= newSeriesLength {
-		vals := make([]float64, 0)
+		vals := make([]*float64, 0)
 		sIdx := bookmark
 		for {
 			if sIdx == s.Len() {
@@ -91,7 +91,7 @@ func (s Series) Resample(rule string, downsampler string, upsampler string, tr d
 			bookmark++
 			sIdx++
 			lastSeen = v
-			vals = append(vals, *v)
+			vals = append(vals, v)
 		}
 		var value *float64
 		if len(vals) == 0 { // upsampling
@@ -114,7 +114,7 @@ func (s Series) Resample(rule string, downsampler string, upsampler string, tr d
 				return s, fmt.Errorf("Upsampling %v not implemented", upsampler)
 			}
 		} else { // downsampling
-			fVec := dataframe.NewField("", dataframe.FieldTypeNumber, vals).Vector
+			fVec := dataframe.NewField("", vals).Vector
 			var tmp *float64
 			switch downsampler {
 			case "sum":
