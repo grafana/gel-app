@@ -16,8 +16,8 @@ import (
 func TestService(t *testing.T) {
 
 	dsDF := dataframe.New("test", nil,
-		dataframe.NewField("time", dataframe.FieldTypeTime, []*time.Time{utp(1)}),
-		dataframe.NewField("value", dataframe.FieldTypeNumber, []*float64{fp(2)}))
+		dataframe.NewField("time", []*time.Time{utp(1)}),
+		dataframe.NewField("value", []*float64{fp(2)}))
 
 	m := newMockGrafanaAPI(dsDF)
 
@@ -45,8 +45,8 @@ func TestService(t *testing.T) {
 	require.NoError(t, err)
 
 	bDF := dataframe.New("", nil,
-		dataframe.NewField("Time", dataframe.FieldTypeTime, []*time.Time{utp(1)}),
-		dataframe.NewField("", dataframe.FieldTypeNumber, []*float64{fp(4)}))
+		dataframe.NewField("Time", []*time.Time{utp(1)}),
+		dataframe.NewField("", []*float64{fp(4)}))
 	bDF.RefID = "B"
 
 	expect := []*dataframe.Frame{dsDF, bDF}
