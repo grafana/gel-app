@@ -50,7 +50,7 @@ func (s Scalar) AsDataFrame() *dataframe.Frame { return s.Frame }
 // NewScalar creates a Scalar holding value f.
 func NewScalar(f *float64) Scalar {
 	frame := dataframe.New("", nil,
-		dataframe.NewField("Scalar", dataframe.FieldTypeNumber, []*float64{f}),
+		dataframe.NewField("Scalar", []*float64{f}),
 	)
 	return Scalar{frame}
 }
@@ -99,7 +99,7 @@ func (n Number) GetFloat64Value() *float64 {
 func NewNumber(name string, labels dataframe.Labels) Number {
 	return Number{
 		dataframe.New("", labels,
-			dataframe.NewField(name, dataframe.FieldTypeNumber, make([]*float64, 1)),
+			dataframe.NewField(name, make([]*float64, 1)),
 		),
 	}
 }
@@ -158,8 +158,8 @@ func (s Series) GetValue(pointIdx int) *float64 {
 func NewSeries(name string, labels dataframe.Labels, size int) Series {
 	return Series{
 		dataframe.New("", labels,
-			dataframe.NewField("Time", dataframe.FieldTypeTime, make([]*time.Time, size)),
-			dataframe.NewField(name, dataframe.FieldTypeNumber, make([]*float64, size)),
+			dataframe.NewField("Time", make([]*time.Time, size)),
+			dataframe.NewField(name, make([]*float64, size)),
 		),
 	}
 }
