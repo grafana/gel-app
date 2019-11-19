@@ -3,6 +3,7 @@ package gelpoc
 import (
 	"context"
 	"encoding/json"
+	"sort"
 	"testing"
 	"time"
 
@@ -51,10 +52,17 @@ func TestService(t *testing.T) {
 
 	expect := []*dataframe.Frame{dsDF, bDF}
 
-	if diff := cmp.Diff(expect, res); diff != "" {
+	// Service currently doesn't care about order of dataframes in the return.
+	trans := cmp.Transformer("Sort", func(in []*dataframe.Frame) []*dataframe.Frame {
+		out := append([]*dataframe.Frame(nil), in...) // Copy input to avoid mutating it
+		sort.SliceStable(out, func(i, j int) bool {
+			return out[i].RefID > out[j].RefID
+		})
+		return out
+	})
+	if diff := cmp.Diff(expect, res, trans); diff != "" {
 		t.Errorf("Result mismatch (-want +got):\n%s", diff)
 	}
-
 }
 
 type mockGrafanaAPI struct {
