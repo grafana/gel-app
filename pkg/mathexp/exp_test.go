@@ -3,6 +3,7 @@ package mathexp
 import (
 	"math"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -159,15 +160,31 @@ func TestSeriesExpr(t *testing.T) {
 		{
 			name:      "unary series",
 			expr:      "! ! $A",
+			vars:      aSeriesNullableTime,
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results: Results{
+				[]Value{
+					makeSeriesNullableTime("", nil, nullTimeTP{ // Not sure about preservering names...
+						unixTimePointer(5, 0), float64Pointer(1),
+					}, nullTimeTP{
+						unixTimePointer(10, 0), float64Pointer(1),
+					}),
+				},
+			},
+		},
+		{
+			name:      "unary series: non-null time",
+			expr:      "! ! $A",
 			vars:      aSeries,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{ // Not sure about preservering names...
-						unixTimePointer(5, 0), float64Pointer(1),
+					makeSeries("", nil, tp{ // Not sure about preservering names...
+						time.Unix(5, 0), float64Pointer(1),
 					}, tp{
-						unixTimePointer(10, 0), float64Pointer(1),
+						time.Unix(10, 0), float64Pointer(1),
 					}),
 				},
 			},
@@ -175,14 +192,14 @@ func TestSeriesExpr(t *testing.T) {
 		{
 			name:      "binary scalar Op series",
 			expr:      "98 + $A",
-			vars:      aSeries,
+			vars:      aSeriesNullableTime,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{ // Not sure about preservering names...
+					makeSeriesNullableTime("", nil, nullTimeTP{ // Not sure about preservering names...
 						unixTimePointer(5, 0), float64Pointer(100),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), float64Pointer(99),
 					}),
 				},
@@ -191,14 +208,14 @@ func TestSeriesExpr(t *testing.T) {
 		{
 			name:      "binary series Op scalar",
 			expr:      "$A + 98",
-			vars:      aSeries,
+			vars:      aSeriesNullableTime,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{ // Not sure about preservering names...
+					makeSeriesNullableTime("", nil, nullTimeTP{ // Not sure about preservering names...
 						unixTimePointer(5, 0), float64Pointer(100),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), float64Pointer(99),
 					}),
 				},
@@ -207,15 +224,50 @@ func TestSeriesExpr(t *testing.T) {
 		{
 			name:      "series Op series",
 			expr:      "$A + $A",
-			vars:      aSeries,
+			vars:      aSeriesNullableTime,
 			newErrIs:  assert.NoError,
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{ // Not sure about preservering names...
+					makeSeriesNullableTime("", nil, nullTimeTP{ // Not sure about preservering names...
 						unixTimePointer(5, 0), float64Pointer(4),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), float64Pointer(2),
+					}),
+				},
+			},
+		},
+		{
+			name: "series Op series: nullable and non-nullable time",
+			expr: "$A + $B",
+			vars: Vars{
+				"A": Results{
+					[]Value{
+						makeSeries("temp", dataframe.Labels{}, tp{
+							time.Unix(5, 0), float64Pointer(1),
+						}, tp{
+							time.Unix(10, 0), float64Pointer(2),
+						}),
+					},
+				},
+				"B": Results{
+					[]Value{
+						makeSeriesNullableTime("efficiency", dataframe.Labels{}, nullTimeTP{
+							unixTimePointer(5, 0), float64Pointer(3),
+						}, nullTimeTP{
+							unixTimePointer(10, 0), float64Pointer(4),
+						}),
+					},
+				},
+			},
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results: Results{
+				[]Value{
+					makeSeriesNullableTime("", nil, nullTimeTP{
+						unixTimePointer(5, 0), float64Pointer(4),
+					}, nullTimeTP{
+						unixTimePointer(10, 0), float64Pointer(6),
 					}),
 				},
 			},
@@ -228,9 +280,9 @@ func TestSeriesExpr(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("id=1", dataframe.Labels{"id": "1"}, tp{
+					makeSeriesNullableTime("id=1", dataframe.Labels{"id": "1"}, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(9),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), float64Pointer(8),
 					}),
 				},
@@ -244,9 +296,9 @@ func TestSeriesExpr(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("id=1", dataframe.Labels{"id": "1"}, tp{
+					makeSeriesNullableTime("id=1", dataframe.Labels{"id": "1"}, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(9),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), float64Pointer(8),
 					}),
 				},
@@ -260,14 +312,14 @@ func TestSeriesExpr(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("sensor=a, turbine=1", dataframe.Labels{"sensor": "a", "turbine": "1"}, tp{
+					makeSeriesNullableTime("sensor=a, turbine=1", dataframe.Labels{"sensor": "a", "turbine": "1"}, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(6 * .5),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), float64Pointer(8 * .2),
 					}),
-					makeSeriesNullableTime("sensor=b, turbine=1", dataframe.Labels{"sensor": "b", "turbine": "1"}, tp{
+					makeSeriesNullableTime("sensor=b, turbine=1", dataframe.Labels{"sensor": "b", "turbine": "1"}, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(10 * .5),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), float64Pointer(16 * .2),
 					}),
 				},
@@ -281,18 +333,18 @@ func TestSeriesExpr(t *testing.T) {
 			vars: Vars{
 				"A": Results{
 					[]Value{
-						makeSeriesNullableTime("temp", dataframe.Labels{}, tp{
+						makeSeriesNullableTime("temp", dataframe.Labels{}, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(1),
-						}, tp{
+						}, nullTimeTP{
 							unixTimePointer(10, 0), float64Pointer(2),
 						}),
 					},
 				},
 				"B": Results{
 					[]Value{
-						makeSeriesNullableTime("efficiency", dataframe.Labels{}, tp{
+						makeSeriesNullableTime("efficiency", dataframe.Labels{}, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(3),
-						}, tp{
+						}, nullTimeTP{
 							unixTimePointer(9, 0), float64Pointer(4),
 						}),
 					},
@@ -303,7 +355,7 @@ func TestSeriesExpr(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{ // Not sure about preserving names...
+					makeSeriesNullableTime("", nil, nullTimeTP{ // Not sure about preserving names...
 						unixTimePointer(5, 0), float64Pointer(4),
 					}),
 				},
@@ -325,13 +377,25 @@ func TestSeriesExpr(t *testing.T) {
 	}
 }
 
+var aSeriesNullableTime = Vars{
+	"A": Results{
+		[]Value{
+			makeSeriesNullableTime("temp", nil, nullTimeTP{
+				unixTimePointer(5, 0), float64Pointer(2),
+			}, nullTimeTP{
+				unixTimePointer(10, 0), float64Pointer(1),
+			}),
+		},
+	},
+}
+
 var aSeries = Vars{
 	"A": Results{
 		[]Value{
-			makeSeriesNullableTime("temp", nil, tp{
-				unixTimePointer(5, 0), float64Pointer(2),
+			makeSeries("temp", nil, tp{
+				time.Unix(5, 0), float64Pointer(2),
 			}, tp{
-				unixTimePointer(10, 0), float64Pointer(1),
+				time.Unix(10, 0), float64Pointer(1),
 			}),
 		},
 	},
@@ -340,9 +404,9 @@ var aSeries = Vars{
 var aSeriesbNumber = Vars{
 	"A": Results{
 		[]Value{
-			makeSeriesNullableTime("temp", nil, tp{
+			makeSeriesNullableTime("temp", nil, nullTimeTP{
 				unixTimePointer(5, 0), float64Pointer(2),
-			}, tp{
+			}, nullTimeTP{
 				unixTimePointer(10, 0), float64Pointer(1),
 			}),
 		},
@@ -357,23 +421,23 @@ var aSeriesbNumber = Vars{
 var twoSeriesSets = Vars{
 	"A": Results{
 		[]Value{
-			makeSeriesNullableTime("temp", dataframe.Labels{"sensor": "a", "turbine": "1"}, tp{
+			makeSeriesNullableTime("temp", dataframe.Labels{"sensor": "a", "turbine": "1"}, nullTimeTP{
 				unixTimePointer(5, 0), float64Pointer(6),
-			}, tp{
+			}, nullTimeTP{
 				unixTimePointer(10, 0), float64Pointer(8),
 			}),
-			makeSeriesNullableTime("temp", dataframe.Labels{"sensor": "b", "turbine": "1"}, tp{
+			makeSeriesNullableTime("temp", dataframe.Labels{"sensor": "b", "turbine": "1"}, nullTimeTP{
 				unixTimePointer(5, 0), float64Pointer(10),
-			}, tp{
+			}, nullTimeTP{
 				unixTimePointer(10, 0), float64Pointer(16),
 			}),
 		},
 	},
 	"B": Results{
 		[]Value{
-			makeSeriesNullableTime("efficiency", dataframe.Labels{"turbine": "1"}, tp{
+			makeSeriesNullableTime("efficiency", dataframe.Labels{"turbine": "1"}, nullTimeTP{
 				unixTimePointer(5, 0), float64Pointer(.5),
-			}, tp{
+			}, nullTimeTP{
 				unixTimePointer(10, 0), float64Pointer(.2),
 			}),
 		},
@@ -433,9 +497,9 @@ func TestNaN(t *testing.T) {
 			vars: Vars{
 				"A": Results{
 					[]Value{
-						makeSeriesNullableTime("temp", nil, tp{
+						makeSeriesNullableTime("temp", nil, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(2),
-						}, tp{
+						}, nullTimeTP{
 							unixTimePointer(10, 0), NaN,
 						}),
 					},
@@ -445,9 +509,9 @@ func TestNaN(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{
+					makeSeriesNullableTime("", nil, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(-1),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), NaN,
 					}),
 				},
@@ -459,9 +523,9 @@ func TestNaN(t *testing.T) {
 			vars: Vars{
 				"A": Results{
 					[]Value{
-						makeSeriesNullableTime("temp", nil, tp{
+						makeSeriesNullableTime("temp", nil, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(2),
-						}, tp{
+						}, nullTimeTP{
 							unixTimePointer(10, 0), NaN,
 						}),
 					},
@@ -472,9 +536,9 @@ func TestNaN(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{
+					makeSeriesNullableTime("", nil, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(0),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), NaN,
 					}),
 				},
@@ -486,9 +550,9 @@ func TestNaN(t *testing.T) {
 			vars: Vars{
 				"A": Results{
 					[]Value{
-						makeSeriesNullableTime("temp", nil, tp{
+						makeSeriesNullableTime("temp", nil, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(2),
-						}, tp{
+						}, nullTimeTP{
 							unixTimePointer(10, 0), NaN,
 						}),
 					},
@@ -499,9 +563,9 @@ func TestNaN(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{
+					makeSeriesNullableTime("", nil, nullTimeTP{
 						unixTimePointer(5, 0), NaN,
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), NaN,
 					}),
 				},
@@ -575,9 +639,9 @@ func TestNullValues(t *testing.T) {
 			vars: Vars{
 				"A": Results{
 					[]Value{
-						makeSeriesNullableTime("", nil, tp{
+						makeSeriesNullableTime("", nil, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(1),
-						}, tp{
+						}, nullTimeTP{
 							unixTimePointer(10, 0), nil,
 						}),
 					},
@@ -587,9 +651,9 @@ func TestNullValues(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{
+					makeSeriesNullableTime("", nil, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(-1),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), nil,
 					}),
 				},
@@ -601,9 +665,9 @@ func TestNullValues(t *testing.T) {
 			vars: Vars{
 				"A": Results{
 					[]Value{
-						makeSeriesNullableTime("", nil, tp{
+						makeSeriesNullableTime("", nil, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(1),
-						}, tp{
+						}, nullTimeTP{
 							unixTimePointer(10, 0), nil,
 						}),
 					},
@@ -613,9 +677,9 @@ func TestNullValues(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{
+					makeSeriesNullableTime("", nil, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(0),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), nil,
 					}),
 				},
@@ -627,9 +691,9 @@ func TestNullValues(t *testing.T) {
 			vars: Vars{
 				"A": Results{
 					[]Value{
-						makeSeriesNullableTime("", nil, tp{
+						makeSeriesNullableTime("", nil, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(1),
-						}, tp{
+						}, nullTimeTP{
 							unixTimePointer(10, 0), nil,
 						}),
 					},
@@ -639,9 +703,9 @@ func TestNullValues(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{
+					makeSeriesNullableTime("", nil, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(0),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), nil,
 					}),
 				},
@@ -717,9 +781,9 @@ func TestNullValues(t *testing.T) {
 				},
 				"B": Results{
 					[]Value{
-						makeSeriesNullableTime("", nil, tp{
+						makeSeriesNullableTime("", nil, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(1),
-						}, tp{
+						}, nullTimeTP{
 							unixTimePointer(10, 0), nil,
 						}),
 					},
@@ -729,9 +793,9 @@ func TestNullValues(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{
+					makeSeriesNullableTime("", nil, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(1),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), nil,
 					}),
 				},
@@ -748,9 +812,9 @@ func TestNullValues(t *testing.T) {
 				},
 				"B": Results{
 					[]Value{
-						makeSeriesNullableTime("", nil, tp{
+						makeSeriesNullableTime("", nil, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(1),
-						}, tp{
+						}, nullTimeTP{
 							unixTimePointer(10, 0), nil,
 						}),
 					},
@@ -760,9 +824,9 @@ func TestNullValues(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{
+					makeSeriesNullableTime("", nil, nullTimeTP{
 						unixTimePointer(5, 0), nil,
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), nil,
 					}),
 				},

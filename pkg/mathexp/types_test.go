@@ -9,15 +9,31 @@ import (
 )
 
 // Common Test Constructor Utils
-type tp struct {
+type nullTimeTP struct {
 	t *time.Time
 	f *float64
 }
 
-func makeSeriesNullableTime(name string, labels dataframe.Labels, points ...tp) Series {
+type tp struct {
+	t time.Time
+	f *float64
+}
+
+func makeSeriesNullableTime(name string, labels dataframe.Labels, points ...nullTimeTP) Series {
 	newSeries := NewSeries(name, labels, true, len(points))
 	for idx, p := range points {
 		newSeries.SetPoint(idx, p.t, p.f)
+	}
+	return newSeries
+}
+
+func makeSeries(name string, labels dataframe.Labels, points ...tp) Series {
+	newSeries := NewSeries(name, labels, false, len(points))
+	for idx, p := range points {
+		err := newSeries.SetPoint(idx, &p.t, p.f)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return newSeries
 }
@@ -49,38 +65,38 @@ func TestSeriesSort(t *testing.T) {
 		{
 			name:       "unordered series should sort by time ascending",
 			descending: false,
-			series: makeSeriesNullableTime("", nil, tp{
+			series: makeSeriesNullableTime("", nil, nullTimeTP{
 				unixTimePointer(3, 0), float64Pointer(3),
-			}, tp{
+			}, nullTimeTP{
 				unixTimePointer(1, 0), float64Pointer(1),
-			}, tp{
+			}, nullTimeTP{
 				unixTimePointer(2, 0), float64Pointer(2),
 			}),
 			sortedSeriesIs: assert.Equal,
-			sortedSeries: makeSeriesNullableTime("", nil, tp{
+			sortedSeries: makeSeriesNullableTime("", nil, nullTimeTP{
 				unixTimePointer(1, 0), float64Pointer(1),
-			}, tp{
+			}, nullTimeTP{
 				unixTimePointer(2, 0), float64Pointer(2),
-			}, tp{
+			}, nullTimeTP{
 				unixTimePointer(3, 0), float64Pointer(3),
 			}),
 		},
 		{
 			name:       "unordered series should sort by time descending",
 			descending: true,
-			series: makeSeriesNullableTime("", nil, tp{
+			series: makeSeriesNullableTime("", nil, nullTimeTP{
 				unixTimePointer(3, 0), float64Pointer(3),
-			}, tp{
+			}, nullTimeTP{
 				unixTimePointer(1, 0), float64Pointer(1),
-			}, tp{
+			}, nullTimeTP{
 				unixTimePointer(2, 0), float64Pointer(2),
 			}),
 			sortedSeriesIs: assert.Equal,
-			sortedSeries: makeSeriesNullableTime("", nil, tp{
+			sortedSeries: makeSeriesNullableTime("", nil, nullTimeTP{
 				unixTimePointer(3, 0), float64Pointer(3),
-			}, tp{
+			}, nullTimeTP{
 				unixTimePointer(2, 0), float64Pointer(2),
-			}, tp{
+			}, nullTimeTP{
 				unixTimePointer(1, 0), float64Pointer(1),
 			}),
 		},

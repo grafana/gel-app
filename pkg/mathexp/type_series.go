@@ -78,15 +78,15 @@ func (s Series) GetPoint(pointIdx int) (*time.Time, *float64) {
 
 // SetPoint sets the time and value on the corresponding vectors at the specified index.
 func (s Series) SetPoint(pointIdx int, t *time.Time, f *float64) (err error) {
+	s.Frame.Fields[1].Vector.Set(pointIdx, f)
 	if s.TimeIsNullable {
 		s.Frame.Fields[0].Vector.Set(pointIdx, t)
-	} else {
-		if t == nil {
-			return fmt.Errorf("can not set null time value on non-nullable time field for series name %v", s.Frame.Name)
-		}
-		s.Frame.Fields[0].Vector.Set(pointIdx, *t)
+		return
 	}
-	s.Frame.Fields[1].Vector.Set(pointIdx, f)
+	if t == nil {
+		return fmt.Errorf("can not set null time value on non-nullable time field for series name %v", s.Frame.Name)
+	}
+	s.Frame.Fields[0].Vector.Set(pointIdx, *t)
 	return
 }
 

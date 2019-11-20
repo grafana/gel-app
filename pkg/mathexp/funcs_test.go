@@ -46,9 +46,9 @@ func TestFunc(t *testing.T) {
 			vars: Vars{
 				"A": Results{
 					[]Value{
-						makeSeriesNullableTime("", nil, tp{
+						makeSeriesNullableTime("", nil, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(-2),
-						}, tp{
+						}, nullTimeTP{
 							unixTimePointer(10, 0), float64Pointer(-1),
 						}),
 					},
@@ -59,9 +59,9 @@ func TestFunc(t *testing.T) {
 			resultIs:  assert.Equal,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("", nil, tp{
+					makeSeriesNullableTime("", nil, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(2),
-					}, tp{
+					}, nullTimeTP{
 						unixTimePointer(10, 0), float64Pointer(1),
 					}),
 				},
