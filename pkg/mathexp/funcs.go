@@ -89,7 +89,7 @@ func perFloat(val Value, floatF func(x float64) float64) Value {
 		newVal = NewScalar(&nF)
 	case parse.TypeSeriesSet:
 		resSeries := val.(Series)
-		newSeries := NewSeries(resSeries.GetName(), resSeries.GetLabels(), resSeries.Len())
+		newSeries := NewSeries(resSeries.GetName(), resSeries.GetLabels(), true, resSeries.Len())
 		for i := 0; i < resSeries.Len(); i++ {
 			t, f := resSeries.GetPoint(i)
 			nF := math.NaN()

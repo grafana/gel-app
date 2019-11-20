@@ -387,7 +387,7 @@ type tp struct {
 }
 
 func makeSeries(name string, labels dataframe.Labels, points ...tp) Series {
-	newSeries := NewSeries(name, labels, len(points))
+	newSeries := NewSeries(name, labels, true, len(points))
 	for idx, p := range points {
 		newSeries.SetPoint(idx, p.t, p.f)
 	}

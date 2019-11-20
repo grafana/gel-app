@@ -215,7 +215,11 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 	vals := make([]mathexp.Value, 0)
 	for _, res := range resp {
 		for _, frame := range res.DataFrames {
-			vals = append(vals, mathexp.Series{Frame: frame})
+			series, err := mathexp.SeriesFromFrame(frame)
+			if err != nil {
+				return mathexp.Results{}, err
+			}
+			vals = append(vals, series)
 		}
 	}
 

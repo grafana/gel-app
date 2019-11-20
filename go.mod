@@ -5,8 +5,9 @@ replace github.com/apache/arrow/go/arrow => github.com/apache/arrow/go/arrow v0.
 go 1.12
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/google/go-cmp v0.3.1
-	github.com/grafana/grafana-plugin-sdk-go v0.2.0
+	github.com/grafana/grafana-plugin-sdk-go v0.2.1-0.20191120150621-555ae32d7580
 	github.com/hashicorp/go-hclog v0.8.0
 	github.com/hashicorp/go-plugin v1.0.1
 	github.com/stretchr/testify v1.4.0

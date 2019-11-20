@@ -1,6 +1,7 @@
 package mathexp
 
 import (
+	"fmt"
 	"sort"
 	"time"
 
@@ -104,8 +105,52 @@ func NewNumber(name string, labels dataframe.Labels) Number {
 	}
 }
 
-// Series has *time.Time and *float64 fields.
-type Series struct{ Frame *dataframe.Frame }
+// Series has time.Time and ...? *float64 fields.
+type Series struct {
+	Frame          *dataframe.Frame
+	TimeIsNullable bool
+	// TODO:
+	// - Multiple Value Fields
+	// - Field Index of time column doesn't matter
+	// - Validate Method?
+	// - Value can be different number types
+}
+
+// SeriesFromFrame validates that the dataframe can be considered a Series type
+// and populate meta information on Series about the frame.
+func SeriesFromFrame(frame *dataframe.Frame) (s Series, err error) {
+	if len(frame.Fields) != 2 {
+		return s, fmt.Errorf("frame must have two fields to be a series, has %v", len(frame.Fields))
+	}
+
+	switch frame.Fields[0].Vector.PrimitiveType() {
+	case dataframe.VectorPTypeTime:
+		s.TimeIsNullable = false
+	case dataframe.VectorPTypeNullableTime:
+		s.TimeIsNullable = true
+	default:
+		return s, fmt.Errorf("first column of dataframe must be []time.Time or []*time.Time")
+	}
+	s.Frame = frame
+	return
+}
+
+// NewSeries returns a dataframe of type Series.
+func NewSeries(name string, labels dataframe.Labels, nullableTime bool, size int) Series {
+	var timeColumn *dataframe.Field
+	if nullableTime {
+		timeColumn = dataframe.NewField("Time", make([]*time.Time, size))
+	} else {
+		timeColumn = dataframe.NewField("Time", make([]time.Time, size))
+	}
+	return Series{
+		Frame: dataframe.New("", labels,
+			timeColumn,
+			dataframe.NewField(name, make([]*float64, size)),
+		),
+		TimeIsNullable: nullableTime,
+	}
+}
 
 // Type returns the Value type and allows it to fulfill the Value interface.
 func (s Series) Type() parse.ReturnType { return parse.TypeSeriesSet }
@@ -152,16 +197,6 @@ func (s Series) GetTime(pointIdx int) *time.Time {
 // GetValue returns the float value at the specified index.
 func (s Series) GetValue(pointIdx int) *float64 {
 	return s.Frame.Fields[1].Vector.At(pointIdx).(*float64)
-}
-
-// NewSeries returns a dataframe of type Series.
-func NewSeries(name string, labels dataframe.Labels, size int) Series {
-	return Series{
-		dataframe.New("", labels,
-			dataframe.NewField("Time", make([]*time.Time, size)),
-			dataframe.NewField(name, make([]*float64, size)),
-		),
-	}
 }
 
 // SortByTime sorts the series by the time from oldest to newest.
