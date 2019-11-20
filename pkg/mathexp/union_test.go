@@ -19,20 +19,20 @@ func Test_union(t *testing.T) {
 			name: "equal tags single union",
 			aResults: Results{
 				Values: Values{
-					makeSeries("a", dataframe.Labels{"id": "1"}),
+					makeSeries("a", dataframe.Labels{"id": "1"}, true),
 				},
 			},
 			bResults: Results{
 				Values: Values{
-					makeSeries("b", dataframe.Labels{"id": "1"}),
+					makeSeries("b", dataframe.Labels{"id": "1"}, true),
 				},
 			},
 			unionsAre: assert.EqualValues,
 			unions: []*Union{
 				{
 					Labels: dataframe.Labels{"id": "1"},
-					A:      makeSeries("a", dataframe.Labels{"id": "1"}),
-					B:      makeSeries("b", dataframe.Labels{"id": "1"}),
+					A:      makeSeries("a", dataframe.Labels{"id": "1"}, true),
+					B:      makeSeries("b", dataframe.Labels{"id": "1"}, true),
 				},
 			},
 		},
@@ -40,12 +40,12 @@ func Test_union(t *testing.T) {
 			name: "equal tags keys with no matching values will result in no unions",
 			aResults: Results{
 				Values: Values{
-					makeSeries("a", dataframe.Labels{"id": "1"}),
+					makeSeries("a", dataframe.Labels{"id": "1"}, true),
 				},
 			},
 			bResults: Results{
 				Values: Values{
-					makeSeries("b", dataframe.Labels{"id": "2"}),
+					makeSeries("b", dataframe.Labels{"id": "2"}, true),
 				},
 			},
 			unionsAre: assert.EqualValues,
@@ -62,12 +62,12 @@ func Test_union(t *testing.T) {
 			name: "incompatible tags of different length with will result in no unions",
 			aResults: Results{
 				Values: Values{
-					makeSeries("a", dataframe.Labels{"ID": "1"}),
+					makeSeries("a", dataframe.Labels{"ID": "1"}, true),
 				},
 			},
 			bResults: Results{
 				Values: Values{
-					makeSeries("b", dataframe.Labels{"id": "1", "fish": "red snapper"}),
+					makeSeries("b", dataframe.Labels{"id": "1", "fish": "red snapper"}, true),
 				},
 			},
 			unionsAre: assert.EqualValues,
@@ -77,20 +77,20 @@ func Test_union(t *testing.T) {
 			name: "A is subset of B results in single union with Labels of B",
 			aResults: Results{
 				Values: Values{
-					makeSeries("a", dataframe.Labels{"id": "1"}),
+					makeSeries("a", dataframe.Labels{"id": "1"}, true),
 				},
 			},
 			bResults: Results{
 				Values: Values{
-					makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}),
+					makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}, true),
 				},
 			},
 			unionsAre: assert.EqualValues,
 			unions: []*Union{
 				{
 					Labels: dataframe.Labels{"id": "1", "fish": "herring"}, // Union gets the labels that is not the subset
-					A:      makeSeries("a", dataframe.Labels{"id": "1"}),
-					B:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}),
+					A:      makeSeries("a", dataframe.Labels{"id": "1"}, true),
+					B:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}, true),
 				},
 			},
 		},
@@ -98,20 +98,20 @@ func Test_union(t *testing.T) {
 			name: "B is subset of A results in single union with Labels of A",
 			aResults: Results{
 				Values: Values{
-					makeSeries("a", dataframe.Labels{"id": "1", "fish": "herring"}),
+					makeSeries("a", dataframe.Labels{"id": "1", "fish": "herring"}, true),
 				},
 			},
 			bResults: Results{
 				Values: Values{
-					makeSeries("b", dataframe.Labels{"id": "1"}),
+					makeSeries("b", dataframe.Labels{"id": "1"}, true),
 				},
 			},
 			unionsAre: assert.EqualValues,
 			unions: []*Union{
 				{
 					Labels: dataframe.Labels{"id": "1", "fish": "herring"}, // Union gets the labels that is not the subset
-					A:      makeSeries("a", dataframe.Labels{"id": "1", "fish": "herring"}),
-					B:      makeSeries("b", dataframe.Labels{"id": "1"}),
+					A:      makeSeries("a", dataframe.Labels{"id": "1", "fish": "herring"}, true),
+					B:      makeSeries("b", dataframe.Labels{"id": "1"}, true),
 				},
 			},
 		},
@@ -119,26 +119,26 @@ func Test_union(t *testing.T) {
 			name: "single valued A is subset of many valued B, results in many union with Labels of B",
 			aResults: Results{
 				Values: Values{
-					makeSeries("a", dataframe.Labels{"id": "1"}),
+					makeSeries("a", dataframe.Labels{"id": "1"}, true),
 				},
 			},
 			bResults: Results{
 				Values: Values{
-					makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}),
-					makeSeries("b", dataframe.Labels{"id": "1", "fish": "red snapper"}),
+					makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}, true),
+					makeSeries("b", dataframe.Labels{"id": "1", "fish": "red snapper"}, true),
 				},
 			},
 			unionsAre: assert.EqualValues,
 			unions: []*Union{
 				{
 					Labels: dataframe.Labels{"id": "1", "fish": "herring"},
-					A:      makeSeries("a", dataframe.Labels{"id": "1"}),
-					B:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}),
+					A:      makeSeries("a", dataframe.Labels{"id": "1"}, true),
+					B:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}, true),
 				},
 				{
 					Labels: dataframe.Labels{"id": "1", "fish": "red snapper"},
-					A:      makeSeries("a", dataframe.Labels{"id": "1"}),
-					B:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "red snapper"}),
+					A:      makeSeries("a", dataframe.Labels{"id": "1"}, true),
+					B:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "red snapper"}, true),
 				},
 			},
 		},
@@ -148,32 +148,32 @@ func Test_union(t *testing.T) {
 			// be uniquely identifiable.
 			aResults: Results{
 				Values: Values{
-					makeSeries("a", dataframe.Labels{"id": "1"}),
-					makeSeries("aa", dataframe.Labels{"id": "1", "fish": "herring"}),
+					makeSeries("a", dataframe.Labels{"id": "1"}, true),
+					makeSeries("aa", dataframe.Labels{"id": "1", "fish": "herring"}, true),
 				},
 			},
 			bResults: Results{
 				Values: Values{
-					makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}),
-					makeSeries("bb", dataframe.Labels{"id": "1", "fish": "red snapper"}),
+					makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}, true),
+					makeSeries("bb", dataframe.Labels{"id": "1", "fish": "red snapper"}, true),
 				},
 			},
 			unionsAre: assert.EqualValues,
 			unions: []*Union{
 				{
 					Labels: dataframe.Labels{"id": "1", "fish": "herring"},
-					A:      makeSeries("a", dataframe.Labels{"id": "1"}),
-					B:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}),
+					A:      makeSeries("a", dataframe.Labels{"id": "1"}, true),
+					B:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}, true),
 				},
 				{
 					Labels: dataframe.Labels{"id": "1", "fish": "red snapper"},
-					A:      makeSeries("a", dataframe.Labels{"id": "1"}),
-					B:      makeSeries("bb", dataframe.Labels{"id": "1", "fish": "red snapper"}),
+					A:      makeSeries("a", dataframe.Labels{"id": "1"}, true),
+					B:      makeSeries("bb", dataframe.Labels{"id": "1", "fish": "red snapper"}, true),
 				},
 				{
 					Labels: dataframe.Labels{"id": "1", "fish": "herring"},
-					A:      makeSeries("aa", dataframe.Labels{"id": "1", "fish": "herring"}),
-					B:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}),
+					A:      makeSeries("aa", dataframe.Labels{"id": "1", "fish": "herring"}, true),
+					B:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}, true),
 				},
 			},
 		},
@@ -183,32 +183,32 @@ func Test_union(t *testing.T) {
 			// be uniquely identifiable.
 			aResults: Results{
 				Values: Values{
-					makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}),
-					makeSeries("bb", dataframe.Labels{"id": "1", "fish": "red snapper"}),
+					makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}, true),
+					makeSeries("bb", dataframe.Labels{"id": "1", "fish": "red snapper"}, true),
 				},
 			},
 			bResults: Results{
 				Values: Values{
-					makeSeries("a", dataframe.Labels{"id": "1"}),
-					makeSeries("aa", dataframe.Labels{"id": "1", "fish": "herring"}),
+					makeSeries("a", dataframe.Labels{"id": "1"}, true),
+					makeSeries("aa", dataframe.Labels{"id": "1", "fish": "herring"}, true),
 				},
 			},
 			unionsAre: assert.EqualValues,
 			unions: []*Union{
 				{
 					Labels: dataframe.Labels{"id": "1", "fish": "herring"},
-					A:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}),
-					B:      makeSeries("a", dataframe.Labels{"id": "1"}),
+					A:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}, true),
+					B:      makeSeries("a", dataframe.Labels{"id": "1"}, true),
 				},
 				{
 					Labels: dataframe.Labels{"id": "1", "fish": "herring"},
-					A:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}),
-					B:      makeSeries("aa", dataframe.Labels{"id": "1", "fish": "herring"}),
+					A:      makeSeries("b", dataframe.Labels{"id": "1", "fish": "herring"}, true),
+					B:      makeSeries("aa", dataframe.Labels{"id": "1", "fish": "herring"}, true),
 				},
 				{
 					Labels: dataframe.Labels{"id": "1", "fish": "red snapper"},
-					A:      makeSeries("bb", dataframe.Labels{"id": "1", "fish": "red snapper"}),
-					B:      makeSeries("a", dataframe.Labels{"id": "1"}),
+					A:      makeSeries("bb", dataframe.Labels{"id": "1", "fish": "red snapper"}, true),
+					B:      makeSeries("a", dataframe.Labels{"id": "1"}, true),
 				},
 			},
 		},
