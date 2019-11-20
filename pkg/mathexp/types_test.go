@@ -28,7 +28,7 @@ func TestSeriesSort(t *testing.T) {
 		{
 			name:       "unordered series should sort by time ascending",
 			descending: false,
-			series: makeSeries("", nil, true, tp{
+			series: makeSeries("", nil, tp{
 				unixTimePointer(3, 0), float64Pointer(3),
 			}, tp{
 				unixTimePointer(1, 0), float64Pointer(1),
@@ -36,7 +36,7 @@ func TestSeriesSort(t *testing.T) {
 				unixTimePointer(2, 0), float64Pointer(2),
 			}),
 			sortedSeriesIs: assert.Equal,
-			sortedSeries: makeSeries("", nil, true, tp{
+			sortedSeries: makeSeries("", nil, tp{
 				unixTimePointer(1, 0), float64Pointer(1),
 			}, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -47,7 +47,7 @@ func TestSeriesSort(t *testing.T) {
 		{
 			name:       "unordered series should sort by time descending",
 			descending: true,
-			series: makeSeries("", nil, true, tp{
+			series: makeSeries("", nil, tp{
 				unixTimePointer(3, 0), float64Pointer(3),
 			}, tp{
 				unixTimePointer(1, 0), float64Pointer(1),
@@ -55,7 +55,7 @@ func TestSeriesSort(t *testing.T) {
 				unixTimePointer(2, 0), float64Pointer(2),
 			}),
 			sortedSeriesIs: assert.Equal,
-			sortedSeries: makeSeries("", nil, true, tp{
+			sortedSeries: makeSeries("", nil, tp{
 				unixTimePointer(3, 0), float64Pointer(3),
 			}, tp{
 				unixTimePointer(2, 0), float64Pointer(2),

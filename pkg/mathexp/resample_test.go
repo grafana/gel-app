@@ -28,7 +28,7 @@ func TestResampleSeries(t *testing.T) {
 				From: time.Unix(0, 0),
 				To:   time.Unix(4, 0),
 			},
-			seriesToResample: makeSeries("", nil, true, tp{
+			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
 			}, tp{
 				unixTimePointer(7, 0), float64Pointer(1),
@@ -43,7 +43,7 @@ func TestResampleSeries(t *testing.T) {
 				From: time.Unix(11, 0),
 				To:   time.Unix(0, 0),
 			},
-			seriesToResample: makeSeries("", nil, true, tp{
+			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
 			}, tp{
 				unixTimePointer(7, 0), float64Pointer(1),
@@ -58,7 +58,7 @@ func TestResampleSeries(t *testing.T) {
 				From: time.Unix(0, 0),
 				To:   time.Unix(16, 0),
 			},
-			seriesToResample: makeSeries("", nil, true, tp{
+			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
 			}, tp{
 				unixTimePointer(4, 0), float64Pointer(3),
@@ -67,7 +67,7 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(9, 0), float64Pointer(2),
 			}),
-			series: makeSeries("", nil, true, tp{
+			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), nil,
 			}, tp{
 				unixTimePointer(5, 0), float64Pointer(2.5),
@@ -86,7 +86,7 @@ func TestResampleSeries(t *testing.T) {
 				From: time.Unix(0, 0),
 				To:   time.Unix(16, 0),
 			},
-			seriesToResample: makeSeries("", nil, true, tp{
+			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
 			}, tp{
 				unixTimePointer(4, 0), float64Pointer(3),
@@ -95,7 +95,7 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(9, 0), float64Pointer(2),
 			}),
-			series: makeSeries("", nil, true, tp{
+			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), nil,
 			}, tp{
 				unixTimePointer(5, 0), float64Pointer(3),
@@ -114,7 +114,7 @@ func TestResampleSeries(t *testing.T) {
 				From: time.Unix(0, 0),
 				To:   time.Unix(16, 0),
 			},
-			seriesToResample: makeSeries("", nil, true, tp{
+			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
 			}, tp{
 				unixTimePointer(4, 0), float64Pointer(3),
@@ -123,7 +123,7 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(9, 0), float64Pointer(2),
 			}),
-			series: makeSeries("", nil, true, tp{
+			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), nil,
 			}, tp{
 				unixTimePointer(5, 0), float64Pointer(2),
@@ -142,7 +142,7 @@ func TestResampleSeries(t *testing.T) {
 				From: time.Unix(0, 0),
 				To:   time.Unix(16, 0),
 			},
-			seriesToResample: makeSeries("", nil, true, tp{
+			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
 			}, tp{
 				unixTimePointer(4, 0), float64Pointer(3),
@@ -151,7 +151,7 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(9, 0), float64Pointer(2),
 			}),
-			series: makeSeries("", nil, true, tp{
+			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), nil,
 			}, tp{
 				unixTimePointer(5, 0), float64Pointer(5),
@@ -170,7 +170,7 @@ func TestResampleSeries(t *testing.T) {
 				From: time.Unix(0, 0),
 				To:   time.Unix(16, 0),
 			},
-			seriesToResample: makeSeries("", nil, true, tp{
+			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
 			}, tp{
 				unixTimePointer(4, 0), float64Pointer(3),
@@ -179,7 +179,7 @@ func TestResampleSeries(t *testing.T) {
 			}, tp{
 				unixTimePointer(9, 0), float64Pointer(2),
 			}),
-			series: makeSeries("", nil, true, tp{
+			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), nil,
 			}, tp{
 				unixTimePointer(5, 0), float64Pointer(2.5),
@@ -198,12 +198,12 @@ func TestResampleSeries(t *testing.T) {
 				From: time.Unix(0, 0),
 				To:   time.Unix(11, 0),
 			},
-			seriesToResample: makeSeries("", nil, true, tp{
+			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
 			}, tp{
 				unixTimePointer(7, 0), float64Pointer(1),
 			}),
-			series: makeSeries("", nil, true, tp{
+			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), nil,
 			}, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -226,12 +226,12 @@ func TestResampleSeries(t *testing.T) {
 				From: time.Unix(0, 0),
 				To:   time.Unix(11, 0),
 			},
-			seriesToResample: makeSeries("", nil, true, tp{
+			seriesToResample: makeSeries("", nil, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
 			}, tp{
 				unixTimePointer(7, 0), float64Pointer(1),
 			}),
-			series: makeSeries("", nil, true, tp{
+			series: makeSeries("", nil, tp{
 				unixTimePointer(0, 0), float64Pointer(2),
 			}, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
