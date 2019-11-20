@@ -4,8 +4,29 @@ import (
 	"testing"
 	"time"
 
+	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 	"github.com/stretchr/testify/assert"
 )
+
+// Common Test Constructor Utils
+type tp struct {
+	t *time.Time
+	f *float64
+}
+
+func makeSeriesNullableTime(name string, labels dataframe.Labels, points ...tp) Series {
+	newSeries := NewSeries(name, labels, true, len(points))
+	for idx, p := range points {
+		newSeries.SetPoint(idx, p.t, p.f)
+	}
+	return newSeries
+}
+
+func makeNumber(name string, labels dataframe.Labels, f *float64) Number {
+	newNumber := NewNumber(name, labels)
+	newNumber.SetValue(f)
+	return newNumber
+}
 
 func unixTimePointer(sec, nsec int64) *time.Time {
 	t := time.Unix(sec, nsec)
@@ -28,7 +49,7 @@ func TestSeriesSort(t *testing.T) {
 		{
 			name:       "unordered series should sort by time ascending",
 			descending: false,
-			series: makeSeries("", nil, tp{
+			series: makeSeriesNullableTime("", nil, tp{
 				unixTimePointer(3, 0), float64Pointer(3),
 			}, tp{
 				unixTimePointer(1, 0), float64Pointer(1),
@@ -36,7 +57,7 @@ func TestSeriesSort(t *testing.T) {
 				unixTimePointer(2, 0), float64Pointer(2),
 			}),
 			sortedSeriesIs: assert.Equal,
-			sortedSeries: makeSeries("", nil, tp{
+			sortedSeries: makeSeriesNullableTime("", nil, tp{
 				unixTimePointer(1, 0), float64Pointer(1),
 			}, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
@@ -47,7 +68,7 @@ func TestSeriesSort(t *testing.T) {
 		{
 			name:       "unordered series should sort by time descending",
 			descending: true,
-			series: makeSeries("", nil, tp{
+			series: makeSeriesNullableTime("", nil, tp{
 				unixTimePointer(3, 0), float64Pointer(3),
 			}, tp{
 				unixTimePointer(1, 0), float64Pointer(1),
@@ -55,7 +76,7 @@ func TestSeriesSort(t *testing.T) {
 				unixTimePointer(2, 0), float64Pointer(2),
 			}),
 			sortedSeriesIs: assert.Equal,
-			sortedSeries: makeSeries("", nil, tp{
+			sortedSeries: makeSeriesNullableTime("", nil, tp{
 				unixTimePointer(3, 0), float64Pointer(3),
 			}, tp{
 				unixTimePointer(2, 0), float64Pointer(2),
