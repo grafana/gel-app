@@ -13,6 +13,8 @@ import (
 type Series struct {
 	Frame          *dataframe.Frame
 	TimeIsNullable bool
+	TimeIdx        int
+	ValueIdx       int
 	// TODO:
 	// - Multiple Value Fields
 	// - Field Index of time column doesn't matter
@@ -24,35 +26,54 @@ type Series struct {
 // and populate meta information on Series about the frame.
 func SeriesFromFrame(frame *dataframe.Frame) (s Series, err error) {
 	if len(frame.Fields) != 2 {
-		return s, fmt.Errorf("frame must have two fields to be a series, has %v", len(frame.Fields))
+		return s, fmt.Errorf("frame must have exactly two fields to be a series, has %v", len(frame.Fields))
 	}
 
-	switch frame.Fields[0].Vector.PrimitiveType() {
-	case dataframe.VectorPTypeTime:
-		s.TimeIsNullable = false
-	case dataframe.VectorPTypeNullableTime:
-		s.TimeIsNullable = true
-	default:
-		return s, fmt.Errorf("first column of dataframe must be []time.Time or []*time.Time")
+	foundTime := false
+	foundValue := false
+	for i, field := range frame.Fields { //[0].Vector.PrimitiveType() {
+		switch field.Vector.PrimitiveType() {
+		case dataframe.VectorPTypeTime:
+			s.TimeIsNullable = false
+			foundTime = true
+			s.TimeIdx = i
+		case dataframe.VectorPTypeNullableTime:
+			s.TimeIsNullable = true
+			foundTime = true
+			s.TimeIdx = i
+
+		case dataframe.VectorPTypeNullableFloat64:
+			foundValue = true
+			s.ValueIdx = i
+		}
+	}
+	if !foundTime {
+		return s, fmt.Errorf("no time column found in frame %v", frame.Name)
+	}
+	if !foundValue {
+		return s, fmt.Errorf("no []*float64 value column found in frame %v", frame.Name)
 	}
 	s.Frame = frame
 	return
 }
 
 // NewSeries returns a dataframe of type Series.
-func NewSeries(name string, labels dataframe.Labels, nullableTime bool, size int) Series {
-	var timeColumn *dataframe.Field
+func NewSeries(name string, labels dataframe.Labels, timeIdx int, nullableTime bool, valueIdx, size int) Series {
+	fields := make([]*dataframe.Field, 2)
+	fields[valueIdx] = dataframe.NewField(name, make([]*float64, size))
 	if nullableTime {
-		timeColumn = dataframe.NewField("Time", make([]*time.Time, size))
+		fields[timeIdx] = dataframe.NewField("Time", make([]*time.Time, size))
 	} else {
-		timeColumn = dataframe.NewField("Time", make([]time.Time, size))
+		fields[timeIdx] = dataframe.NewField("Time", make([]time.Time, size))
 	}
+
 	return Series{
 		Frame: dataframe.New("", labels,
-			timeColumn,
-			dataframe.NewField(name, make([]*float64, size)),
+			fields...,
 		),
 		TimeIsNullable: nullableTime,
+		TimeIdx:        timeIdx,
+		ValueIdx:       valueIdx,
 	}
 }
 
@@ -78,30 +99,30 @@ func (s Series) GetPoint(pointIdx int) (*time.Time, *float64) {
 
 // SetPoint sets the time and value on the corresponding vectors at the specified index.
 func (s Series) SetPoint(pointIdx int, t *time.Time, f *float64) (err error) {
-	s.Frame.Fields[1].Vector.Set(pointIdx, f)
+	s.Frame.Fields[s.ValueIdx].Vector.Set(pointIdx, f)
 	if s.TimeIsNullable {
-		s.Frame.Fields[0].Vector.Set(pointIdx, t)
+		s.Frame.Fields[s.TimeIdx].Vector.Set(pointIdx, t)
 		return
 	}
 	if t == nil {
 		return fmt.Errorf("can not set null time value on non-nullable time field for series name %v", s.Frame.Name)
 	}
-	s.Frame.Fields[0].Vector.Set(pointIdx, *t)
+	s.Frame.Fields[s.TimeIdx].Vector.Set(pointIdx, *t)
 	return
 }
 
 // AppendPoint appends a point (time/value).
 func (s Series) AppendPoint(pointIdx int, t *time.Time, f *float64) (err error) {
 	if s.TimeIsNullable {
-		s.Frame.Fields[0].Vector.Append(t)
+		s.Frame.Fields[s.TimeIdx].Vector.Append(t)
 	} else {
 		if t == nil {
 			return fmt.Errorf("can not append null time value on non-nullable time field for series name %v", s.Frame.Name)
 		}
-		s.Frame.Fields[0].Vector.Append(*t)
+		s.Frame.Fields[s.TimeIdx].Vector.Append(*t)
 
 	}
-	s.Frame.Fields[1].Vector.Append(f)
+	s.Frame.Fields[s.ValueIdx].Vector.Append(f)
 	return
 }
 
@@ -113,15 +134,15 @@ func (s Series) Len() int {
 // GetTime returns the time at the specified index.
 func (s Series) GetTime(pointIdx int) *time.Time {
 	if s.TimeIsNullable {
-		return s.Frame.Fields[0].Vector.At(pointIdx).(*time.Time)
+		return s.Frame.Fields[s.TimeIdx].Vector.At(pointIdx).(*time.Time)
 	}
-	t := s.Frame.Fields[0].Vector.At(pointIdx).(time.Time)
+	t := s.Frame.Fields[s.TimeIdx].Vector.At(pointIdx).(time.Time)
 	return &t
 }
 
 // GetValue returns the float value at the specified index.
 func (s Series) GetValue(pointIdx int) *float64 {
-	return s.Frame.Fields[1].Vector.At(pointIdx).(*float64)
+	return s.Frame.Fields[s.ValueIdx].Vector.At(pointIdx).(*float64)
 }
 
 // SortByTime sorts the series by the time from oldest to newest.
