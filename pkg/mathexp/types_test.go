@@ -2,72 +2,9 @@ package mathexp
 
 import (
 	"testing"
-	"time"
 
-	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 	"github.com/stretchr/testify/assert"
 )
-
-// Common Test Constructor Utils
-type nullTimeTP struct {
-	t *time.Time
-	f *float64
-}
-
-type tp struct {
-	t time.Time
-	f *float64
-}
-
-type timeSecondtp struct {
-	f *float64
-	t time.Time
-}
-
-func makeSeriesNullableTime(name string, labels dataframe.Labels, points ...nullTimeTP) Series {
-	newSeries := NewSeries(name, labels, 0, true, 1, len(points))
-	for idx, p := range points {
-		newSeries.SetPoint(idx, p.t, p.f)
-	}
-	return newSeries
-}
-
-func makeSeries(name string, labels dataframe.Labels, points ...tp) Series {
-	newSeries := NewSeries(name, labels, 0, false, 1, len(points))
-	for idx, p := range points {
-		err := newSeries.SetPoint(idx, &p.t, p.f)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return newSeries
-}
-
-func makeSeriesTimeSecond(name string, labels dataframe.Labels, points ...tp) Series {
-	newSeries := NewSeries(name, labels, 1, false, 0, len(points))
-	for idx, p := range points {
-		err := newSeries.SetPoint(idx, &p.t, p.f)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return newSeries
-}
-
-func makeNumber(name string, labels dataframe.Labels, f *float64) Number {
-	newNumber := NewNumber(name, labels)
-	newNumber.SetValue(f)
-	return newNumber
-}
-
-func unixTimePointer(sec, nsec int64) *time.Time {
-	t := time.Unix(sec, nsec)
-	return &t
-}
-
-func float64Pointer(f float64) *float64 {
-	return &f
-}
 
 func TestSeriesSort(t *testing.T) {
 	var tests = []struct {
