@@ -24,7 +24,7 @@ type timeSecondTP struct {
 }
 
 func makeSeriesNullableTime(name string, labels dataframe.Labels, points ...nullTimeTP) Series {
-	newSeries := NewSeries(name, labels, 0, true, 1, len(points))
+	newSeries := NewSeries(name, labels, 0, true, 1, true, len(points))
 	for idx, p := range points {
 		newSeries.SetPoint(idx, p.t, p.f)
 	}
@@ -32,7 +32,7 @@ func makeSeriesNullableTime(name string, labels dataframe.Labels, points ...null
 }
 
 func makeSeries(name string, labels dataframe.Labels, points ...tp) Series {
-	newSeries := NewSeries(name, labels, 0, false, 1, len(points))
+	newSeries := NewSeries(name, labels, 0, false, 1, true, len(points))
 	for idx, p := range points {
 		err := newSeries.SetPoint(idx, &p.t, p.f)
 		if err != nil {
@@ -43,7 +43,7 @@ func makeSeries(name string, labels dataframe.Labels, points ...tp) Series {
 }
 
 func makeSeriesTimeSecond(name string, labels dataframe.Labels, points ...timeSecondTP) Series {
-	newSeries := NewSeries(name, labels, 1, false, 0, len(points))
+	newSeries := NewSeries(name, labels, 1, false, 0, true, len(points))
 	for idx, p := range points {
 		err := newSeries.SetPoint(idx, &p.t, p.f)
 		if err != nil {

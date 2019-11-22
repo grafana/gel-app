@@ -129,7 +129,7 @@ func (e *State) walkUnary(node *parse.UnaryNode) (Results, error) {
 }
 
 func unarySeries(s Series, op string) (Series, error) {
-	newSeries := NewSeries(s.GetName(), s.GetLabels(), s.TimeIdx, s.TimeIsNullable, s.ValueIdx, s.Len())
+	newSeries := NewSeries(s.GetName(), s.GetLabels(), s.TimeIdx, s.TimeIsNullable, s.ValueIdx, s.ValueIsNullabe, s.Len())
 	for i := 0; i < s.Len(); i++ {
 		t, f := s.GetPoint(i)
 		if f == nil {
@@ -414,12 +414,12 @@ func biScalarNumber(name string, labels dataframe.Labels, op string, number Numb
 	return newNumber, nil
 }
 
-func biSeriesNumber(name string, labels dataframe.Labels, op string, series Series, scalarVal *float64, seriesFirst bool) (Series, error) {
-	newSeries := NewSeries(name, labels, series.TimeIdx, series.TimeIsNullable, series.ValueIdx, series.Len())
+func biSeriesNumber(name string, labels dataframe.Labels, op string, s Series, scalarVal *float64, seriesFirst bool) (Series, error) {
+	newSeries := NewSeries(name, labels, s.TimeIdx, s.TimeIsNullable, s.ValueIdx, s.ValueIsNullabe, s.Len())
 	var err error
-	for i := 0; i < series.Len(); i++ {
+	for i := 0; i < s.Len(); i++ {
 		nF := math.NaN()
-		t, f := series.GetPoint(i)
+		t, f := s.GetPoint(i)
 		if f == nil || scalarVal == nil {
 			newSeries.SetPoint(i, t, nil)
 			continue
@@ -449,7 +449,7 @@ func biSeriesSeries(name string, labels dataframe.Labels, op string, aSeries, bS
 		}
 	}
 
-	newSeries := NewSeries(name, labels, aSeries.TimeIdx, aSeries.TimeIsNullable || bSeries.TimeIsNullable, aSeries.ValueIdx, 0)
+	newSeries := NewSeries(name, labels, aSeries.TimeIdx, aSeries.TimeIsNullable || bSeries.TimeIsNullable, aSeries.ValueIdx, aSeries.ValueIsNullabe || bSeries.ValueIsNullabe, 0)
 	for aIdx := 0; aIdx < aSeries.Len(); aIdx++ {
 		aTime, aF := aSeries.GetPoint(aIdx)
 		bF, ok := bPoints[*aTime]
