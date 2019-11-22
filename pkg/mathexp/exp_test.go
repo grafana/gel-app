@@ -18,7 +18,7 @@ type tp struct {
 	f *float64
 }
 
-type timeSecondtp struct {
+type timeSecondTP struct {
 	f *float64
 	t time.Time
 }
@@ -42,7 +42,7 @@ func makeSeries(name string, labels dataframe.Labels, points ...tp) Series {
 	return newSeries
 }
 
-func makeSeriesTimeSecond(name string, labels dataframe.Labels, points ...tp) Series {
+func makeSeriesTimeSecond(name string, labels dataframe.Labels, points ...timeSecondTP) Series {
 	newSeries := NewSeries(name, labels, 1, false, 0, len(points))
 	for idx, p := range points {
 		err := newSeries.SetPoint(idx, &p.t, p.f)
@@ -87,6 +87,18 @@ var aSeries = Vars{
 				time.Unix(5, 0), float64Pointer(2),
 			}, tp{
 				time.Unix(10, 0), float64Pointer(1),
+			}),
+		},
+	},
+}
+
+var aSeriesTimeSecond = Vars{
+	"A": Results{
+		[]Value{
+			makeSeriesTimeSecond("temp", nil, timeSecondTP{
+				float64Pointer(2), time.Unix(5, 0),
+			}, timeSecondTP{
+				float64Pointer(1), time.Unix(10, 0),
 			}),
 		},
 	},

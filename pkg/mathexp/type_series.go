@@ -17,8 +17,6 @@ type Series struct {
 	ValueIdx       int
 	// TODO:
 	// - Multiple Value Fields
-	// - Field Index of time column doesn't matter
-	// - Validate Method?
 	// - Value can be different number types
 }
 
