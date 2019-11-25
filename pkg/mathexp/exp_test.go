@@ -23,6 +23,11 @@ type timeSecondTP struct {
 	t time.Time
 }
 
+type noNullTP struct {
+	t time.Time
+	f float64
+}
+
 func makeSeriesNullableTime(name string, labels dataframe.Labels, points ...nullTimeTP) Series {
 	newSeries := NewSeries(name, labels, 0, true, 1, true, len(points))
 	for idx, p := range points {
@@ -35,6 +40,17 @@ func makeSeries(name string, labels dataframe.Labels, points ...tp) Series {
 	newSeries := NewSeries(name, labels, 0, false, 1, true, len(points))
 	for idx, p := range points {
 		err := newSeries.SetPoint(idx, &p.t, p.f)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return newSeries
+}
+
+func makeNoNullSeries(name string, labels dataframe.Labels, points ...noNullTP) Series {
+	newSeries := NewSeries(name, labels, 0, false, 1, false, len(points))
+	for idx, p := range points {
+		err := newSeries.SetPoint(idx, &p.t, &p.f)
 		if err != nil {
 			panic(err)
 		}
@@ -99,6 +115,18 @@ var aSeriesTimeSecond = Vars{
 				float64Pointer(2), time.Unix(5, 0),
 			}, timeSecondTP{
 				float64Pointer(1), time.Unix(10, 0),
+			}),
+		},
+	},
+}
+
+var aSeriesNoNull = Vars{
+	"A": Results{
+		[]Value{
+			makeNoNullSeries("temp", nil, noNullTP{
+				time.Unix(5, 0), 2,
+			}, noNullTP{
+				time.Unix(10, 0), 1,
 			}),
 		},
 	},

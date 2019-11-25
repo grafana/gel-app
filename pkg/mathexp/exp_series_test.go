@@ -198,7 +198,7 @@ func TestSeriesAlternateFormsExpr(t *testing.T) {
 		results   Results
 	}{
 		{
-			name:      "unary series: non-null time",
+			name:      "unary series: non-nullable time",
 			expr:      "! ! $A",
 			vars:      aSeries,
 			newErrIs:  assert.NoError,
@@ -214,7 +214,7 @@ func TestSeriesAlternateFormsExpr(t *testing.T) {
 			},
 		},
 		{
-			name:      "unary series: non-null time, time second",
+			name:      "unary series: non-nullable time, time second",
 			expr:      "! ! $A",
 			vars:      aSeriesTimeSecond,
 			newErrIs:  assert.NoError,
@@ -225,6 +225,22 @@ func TestSeriesAlternateFormsExpr(t *testing.T) {
 						float64Pointer(1), time.Unix(5, 0),
 					}, timeSecondTP{
 						float64Pointer(1), time.Unix(10, 0),
+					}),
+				},
+			},
+		},
+		{
+			name:      "unary series: non-nullable value",
+			expr:      "! ! $A",
+			vars:      aSeriesNoNull,
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results: Results{
+				[]Value{
+					makeNoNullSeries("", nil, noNullTP{ // Not sure about preservering names...
+						time.Unix(5, 0), 1,
+					}, noNullTP{
+						time.Unix(10, 0), 1,
 					}),
 				},
 			},
@@ -295,6 +311,41 @@ func TestSeriesAlternateFormsExpr(t *testing.T) {
 						unixTimePointer(5, 0), float64Pointer(4),
 					}, nullTimeTP{
 						unixTimePointer(10, 0), float64Pointer(6),
+					}),
+				},
+			},
+		},
+		{
+			name: "series Op series: nullable and non-nullable values",
+			expr: "$A + $B",
+			vars: Vars{
+				"A": Results{
+					[]Value{
+						makeSeries("temp", dataframe.Labels{}, tp{
+							time.Unix(5, 0), float64Pointer(1),
+						}, tp{
+							time.Unix(10, 0), float64Pointer(2),
+						}),
+					},
+				},
+				"B": Results{
+					[]Value{
+						makeNoNullSeries("efficiency", dataframe.Labels{}, noNullTP{
+							time.Unix(5, 0), 3,
+						}, noNullTP{
+							time.Unix(10, 0), 4,
+						}),
+					},
+				},
+			},
+			newErrIs:  assert.NoError,
+			execErrIs: assert.NoError,
+			results: Results{
+				[]Value{
+					makeSeries("", nil, tp{
+						time.Unix(5, 0), float64Pointer(4),
+					}, tp{
+						time.Unix(10, 0), float64Pointer(6),
 					}),
 				},
 			},
