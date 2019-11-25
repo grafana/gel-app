@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/grafana/gel-app/pkg/mathexp"
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 	"github.com/grafana/grafana-plugin-sdk-go/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/transform"
@@ -63,10 +64,23 @@ type mockGrafanaAPI struct {
 
 func newMockGrafanaAPI(df ...*dataframe.Frame) *mockGrafanaAPI {
 	return &mockGrafanaAPI{
-		QueryDatasourceFn: func() ([]datasource.DatasourceQueryResult, error) {
+		QueryDatasourceFn: func() (res []datasource.DatasourceQueryResult, err error) {
+			series := make([]mathexp.Series, 0, len(df))
+			for _, frame := range df {
+				s, err := mathexp.SeriesFromFrame(frame)
+				if err != nil {
+					return res, err
+				}
+				series = append(series, s)
+			}
+
+			frames := make([]*dataframe.Frame, len(series))
+			for idx, s := range series {
+				frames[idx] = s.AsDataFrame()
+			}
 			return []datasource.DatasourceQueryResult{
 				datasource.DatasourceQueryResult{
-					DataFrames: df,
+					DataFrames: frames,
 				},
 			}, nil
 

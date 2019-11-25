@@ -52,7 +52,7 @@ func SeriesFromFrame(frame *dataframe.Frame) (s Series, err error) {
 		return s, fmt.Errorf("no time column found in frame %v", frame.Name)
 	}
 	if !foundValue {
-		return s, fmt.Errorf("no []*float64 value column found in frame %v", frame.Name)
+		return s, fmt.Errorf("no float64 value column found in frame %v", frame.Name)
 	}
 	s.Frame = frame
 	return
