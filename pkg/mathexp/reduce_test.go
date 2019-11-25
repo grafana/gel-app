@@ -20,7 +20,7 @@ func TestSeriesReduce(t *testing.T) {
 			name:        "sum series",
 			red:         "sum",
 			varToReduce: "A",
-			vars:        aSeries,
+			vars:        aSeriesNullableTime,
 			errIs:       assert.NoError,
 			resultsIs:   assert.Equal,
 			results: Results{
@@ -33,7 +33,7 @@ func TestSeriesReduce(t *testing.T) {
 			name:        "mean series",
 			red:         "mean",
 			varToReduce: "A",
-			vars:        aSeries,
+			vars:        aSeriesNullableTime,
 			errIs:       assert.NoError,
 			resultsIs:   assert.Equal,
 			results: Results{
