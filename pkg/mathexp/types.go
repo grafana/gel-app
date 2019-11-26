@@ -35,9 +35,9 @@ func (s Scalar) Type() parse.ReturnType { return parse.TypeScalar }
 // Value returns the actual value allows it to fulfill the Value interface.
 func (s Scalar) Value() interface{} { return s }
 
-func (s Scalar) GetLabels() dataframe.Labels { return s.Frame.Labels }
+func (s Scalar) GetLabels() dataframe.Labels { return nil }
 
-func (s Scalar) SetLabels(ls dataframe.Labels) { s.Frame.Labels = ls }
+func (s Scalar) SetLabels(ls dataframe.Labels) { return }
 
 func (s Scalar) GetName() string { return s.Frame.Name }
 
@@ -46,8 +46,8 @@ func (s Scalar) AsDataFrame() *dataframe.Frame { return s.Frame }
 
 // NewScalar creates a Scalar holding value f.
 func NewScalar(f *float64) Scalar {
-	frame := dataframe.New("", nil,
-		dataframe.NewField("Scalar", []*float64{f}),
+	frame := dataframe.New("",
+		dataframe.NewField("Scalar", nil, []*float64{f}),
 	)
 	return Scalar{frame}
 }
@@ -73,9 +73,9 @@ func (n Number) Type() parse.ReturnType { return parse.TypeNumberSet }
 // Value returns the actual value allows it to fulfill the Value interface.
 func (n Number) Value() interface{} { return &n }
 
-func (n Number) GetLabels() dataframe.Labels { return n.Frame.Labels }
+func (n Number) GetLabels() dataframe.Labels { return n.Frame.Fields[0].Labels }
 
-func (n Number) SetLabels(ls dataframe.Labels) { n.Frame.Labels = ls }
+func (n Number) SetLabels(ls dataframe.Labels) { n.Frame.Fields[0].Labels = ls }
 
 func (n Number) GetName() string { return n.Frame.Name }
 
@@ -95,9 +95,8 @@ func (n Number) GetFloat64Value() *float64 {
 // NewNumber returns a dataframe that holds a float64Vector
 func NewNumber(name string, labels dataframe.Labels) Number {
 	return Number{
-		dataframe.New("", labels,
-			dataframe.NewField(name, make([]*float64, 1)),
+		dataframe.New("",
+			dataframe.NewField(name, labels, make([]*float64, 1)),
 		),
 	}
 }
-

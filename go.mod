@@ -7,7 +7,7 @@ go 1.12
 require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/google/go-cmp v0.3.1
-	github.com/grafana/grafana-plugin-sdk-go v0.3.0
+	github.com/grafana/grafana-plugin-sdk-go v0.3.1-0.20191125180836-d77f6ffe8e05
 	github.com/hashicorp/go-hclog v0.8.0
 	github.com/hashicorp/go-plugin v1.0.1
 	github.com/stretchr/testify v1.4.0

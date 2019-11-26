@@ -63,21 +63,19 @@ func NewSeries(name string, labels dataframe.Labels, timeIdx int, nullableTime b
 	fields := make([]*dataframe.Field, 2)
 
 	if nullableValue {
-		fields[valueIdx] = dataframe.NewField(name, make([]*float64, size))
+		fields[valueIdx] = dataframe.NewField(name, labels, make([]*float64, size))
 	} else {
-		fields[valueIdx] = dataframe.NewField(name, make([]float64, size))
+		fields[valueIdx] = dataframe.NewField(name, labels, make([]float64, size))
 	}
 
 	if nullableTime {
-		fields[timeIdx] = dataframe.NewField("Time", make([]*time.Time, size))
+		fields[timeIdx] = dataframe.NewField("Time", nil, make([]*time.Time, size))
 	} else {
-		fields[timeIdx] = dataframe.NewField("Time", make([]time.Time, size))
+		fields[timeIdx] = dataframe.NewField("Time", nil, make([]time.Time, size))
 	}
 
 	return Series{
-		Frame: dataframe.New("", labels,
-			fields...,
-		),
+		Frame:          dataframe.New("", fields...),
 		TimeIsNullable: nullableTime,
 		TimeIdx:        timeIdx,
 		ValueIsNullabe: nullableValue,
@@ -91,9 +89,9 @@ func (s Series) Type() parse.ReturnType { return parse.TypeSeriesSet }
 // Value returns the actual value allows it to fulfill the Value interface.
 func (s Series) Value() interface{} { return &s }
 
-func (s Series) GetLabels() dataframe.Labels { return s.Frame.Labels }
+func (s Series) GetLabels() dataframe.Labels { return s.Frame.Fields[s.ValueIdx].Labels }
 
-func (s Series) SetLabels(ls dataframe.Labels) { s.Frame.Labels = ls }
+func (s Series) SetLabels(ls dataframe.Labels) { s.Frame.Fields[s.ValueIdx].Labels = ls }
 
 func (s Series) GetName() string { return s.Frame.Name }
 
