@@ -114,7 +114,7 @@ func (s Series) Resample(rule string, downsampler string, upsampler string, tr d
 				return s, fmt.Errorf("Upsampling %v not implemented", upsampler)
 			}
 		} else { // downsampling
-			fVec := dataframe.NewField("", vals).Vector
+			fVec := dataframe.NewField("", s.GetLabels(), vals).Vector
 			var tmp *float64
 			switch downsampler {
 			case "sum":
