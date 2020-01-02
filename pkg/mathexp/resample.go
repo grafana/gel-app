@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
-	"github.com/grafana/grafana-plugin-sdk-go/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
 )
 
 var aliasToDuration = map[string]time.Duration{
@@ -62,7 +62,7 @@ func parseRule(rule string) (time.Duration, error) {
 }
 
 // Resample turns the Series into a Number based on the given reduction function
-func (s Series) Resample(rule string, downsampler string, upsampler string, tr datasource.TimeRange) (Series, error) {
+func (s Series) Resample(rule string, downsampler string, upsampler string, tr backend.TimeRange) (Series, error) {
 	interval, err := parseRule(rule)
 	if err != nil {
 		return s, fmt.Errorf(`failed to parse "rule" field %q: %w`, rule, err)

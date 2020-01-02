@@ -2,7 +2,9 @@ module github.com/grafana/gel-app
 
 replace github.com/apache/arrow/go/arrow => github.com/apache/arrow/go/arrow v0.0.0-20190716210558-5f564424c71c
 
-go 1.12
+replace github.com/grafana/grafana-plugin-sdk-go => ../grafana-plugin-sdk-go
+
+go 1.13
 
 require (
 	github.com/davecgh/go-spew v1.1.1

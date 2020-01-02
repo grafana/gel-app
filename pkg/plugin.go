@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 
-	"github.com/grafana/grafana-plugin-sdk-go/transform"
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/hashicorp/go-hclog"
 	plugin "github.com/hashicorp/go-plugin"
 )
@@ -45,7 +45,7 @@ func main() {
 		}
 	}()
 
-	err := transform.Serve("gel-app", &GELPlugin{
+	err := backend.Serve(nil, &GELPlugin{
 		logger: pluginLogger,
 	})
 	if err != nil {

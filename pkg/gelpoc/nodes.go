@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
-	"github.com/grafana/grafana-plugin-sdk-go/datasource"
-	"github.com/grafana/grafana-plugin-sdk-go/transform"
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
+
 	"gonum.org/v1/gonum/graph/simple"
 )
 
@@ -19,8 +19,9 @@ type baseNode struct {
 }
 
 type rawNode struct {
-	RefID string `json:"refId"`
-	Query map[string]interface{}
+	RefID     string `json:"refId"`
+	Query     map[string]interface{}
+	TimeRange backend.TimeRange
 }
 
 func (rn *rawNode) GetDatasourceName() (string, error) {
@@ -82,7 +83,7 @@ func (gn *GELNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resu
 	return gn.GELCommand.Execute(ctx, vars)
 }
 
-func buildGELNode(dp *simple.DirectedGraph, tr datasource.TimeRange, rn *rawNode) (*GELNode, error) {
+func buildGELNode(dp *simple.DirectedGraph, rn *rawNode) (*GELNode, error) {
 
 	commandType, err := rn.GetGELType()
 	if err != nil {
@@ -102,7 +103,7 @@ func buildGELNode(dp *simple.DirectedGraph, tr datasource.TimeRange, rn *rawNode
 	case TypeReduce:
 		node.GELCommand, err = UnmarshalReduceCommand(rn)
 	case TypeResample:
-		node.GELCommand, err = UnmarshalResampleCommand(rn, tr)
+		node.GELCommand, err = UnmarshalResampleCommand(rn)
 	default:
 		return nil, fmt.Errorf("gel type '%v' in '%v' not implemented", commandType, rn.RefID)
 	}
@@ -124,10 +125,10 @@ type DSNode struct {
 	query        json.RawMessage
 	datasourceID int64
 	orgID        int64
-	timeRange    datasource.TimeRange
+	timeRange    backend.TimeRange
 	intervalMS   int64
 	maxDP        int64
-	dsAPI        transform.GrafanaAPIHandler
+	callBack     backend.TransformCallBackHandler
 }
 
 // NodeType returns the data pipeline node type.
@@ -135,7 +136,7 @@ func (dn *DSNode) NodeType() NodeType {
 	return TypeDatasourceNode
 }
 
-func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr datasource.TimeRange, dsAPI transform.GrafanaAPIHandler) (*DSNode, error) {
+func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, callBack backend.TransformCallBackHandler) (*DSNode, error) {
 	encodedQuery, err := json.Marshal(rn.Query)
 	if err != nil {
 		return nil, err
@@ -147,10 +148,9 @@ func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr datasource.TimeRange,
 			refID: rn.RefID,
 		},
 		query:      json.RawMessage(encodedQuery),
-		timeRange:  tr,
 		intervalMS: defaultIntervalMS,
 		maxDP:      defaultMaxDP,
-		dsAPI:      dsAPI,
+		callBack:   callBack,
 	}
 
 	rawDsID, ok := rn.Query["datasourceId"]
@@ -197,30 +197,34 @@ func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, tr datasource.TimeRange,
 // already by in vars.
 func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 
-	q := []datasource.Query{
-		datasource.Query{
+	pc := backend.PluginConfig{
+		ID:    dn.datasourceID,
+		OrgID: dn.orgID,
+	}
+
+	q := []backend.DataQuery{
+		backend.DataQuery{
 			RefID:         dn.refID,
 			MaxDataPoints: dn.maxDP,
 			Interval:      time.Duration(int64(time.Millisecond) * dn.intervalMS),
-			ModelJSON:     dn.query,
+			JSON:          dn.query,
+			TimeRange:     dn.timeRange,
 		},
 	}
 
-	resp, err := dn.dsAPI.QueryDatasource(ctx, dn.orgID, dn.datasourceID, dn.timeRange, q)
+	resp, err := dn.callBack.DataQuery(ctx, pc, nil, q)
 
 	if err != nil {
 		return mathexp.Results{}, err
 	}
 
 	vals := make([]mathexp.Value, 0)
-	for _, res := range resp {
-		for _, frame := range res.DataFrames {
-			series, err := mathexp.SeriesFromFrame(frame)
-			if err != nil {
-				return mathexp.Results{}, err
-			}
-			vals = append(vals, series)
+	for _, frame := range resp.Frames {
+		series, err := mathexp.SeriesFromFrame(frame)
+		if err != nil {
+			return mathexp.Results{}, err
 		}
+		vals = append(vals, series)
 	}
 
 	return mathexp.Results{

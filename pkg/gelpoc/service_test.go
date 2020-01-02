@@ -9,9 +9,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/grafana/gel-app/pkg/mathexp"
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
-	"github.com/grafana/grafana-plugin-sdk-go/datasource"
-	"github.com/grafana/grafana-plugin-sdk-go/transform"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,26 +20,22 @@ func TestService(t *testing.T) {
 		dataframe.NewField("time", nil, []*time.Time{utp(1)}),
 		dataframe.NewField("value", nil, []*float64{fp(2)}))
 
-	m := newMockGrafanaAPI(dsDF)
+	m := newMockTransformCallBack(dsDF)
 
 	s := Service{m}
 
-	tr := datasource.TimeRange{
-		From: time.Unix(0, 0),
-		To:   time.Unix(1, 0),
-	}
-	queries := []transform.Query{
-		transform.Query{
-			RefID:     "A",
-			ModelJSON: json.RawMessage(`{ "datasource": "test", "datasourceId": 3, "orgId": 1, "intervalMs": 1000, "maxDataPoints": 1000 }`),
+	queries := []backend.DataQuery{
+		backend.DataQuery{
+			RefID: "A",
+			JSON:  json.RawMessage(`{ "datasource": "test", "datasourceId": 3, "orgId": 1, "intervalMs": 1000, "maxDataPoints": 1000 }`),
 		},
-		transform.Query{
-			RefID:     "B",
-			ModelJSON: json.RawMessage(`{ "datasource": "__expr__", "datasourceId": -100, "type": "math", "expression": "$A * 2" }`),
+		backend.DataQuery{
+			RefID: "B",
+			JSON:  json.RawMessage(`{ "datasource": "__expr__", "datasourceId": -100, "type": "math", "expression": "$A * 2" }`),
 		},
 	}
 
-	pl, err := s.BuildPipeline(tr, queries)
+	pl, err := s.BuildPipeline(queries)
 	require.NoError(t, err)
 
 	res, err := s.ExecutePipeline(context.Background(), pl)
@@ -66,13 +61,13 @@ func TestService(t *testing.T) {
 	}
 }
 
-type mockGrafanaAPI struct {
-	QueryDatasourceFn func() ([]datasource.DatasourceQueryResult, error)
+type mockTransformCallBack struct {
+	DataQueryFn func() (*backend.DataQueryResponse, error)
 }
 
-func newMockGrafanaAPI(df ...*dataframe.Frame) *mockGrafanaAPI {
-	return &mockGrafanaAPI{
-		QueryDatasourceFn: func() (res []datasource.DatasourceQueryResult, err error) {
+func newMockTransformCallBack(df ...*dataframe.Frame) *mockTransformCallBack {
+	return &mockTransformCallBack{
+		DataQueryFn: func() (res *backend.DataQueryResponse, err error) {
 			series := make([]mathexp.Series, 0, len(df))
 			for _, frame := range df {
 				s, err := mathexp.SeriesFromFrame(frame)
@@ -86,18 +81,16 @@ func newMockGrafanaAPI(df ...*dataframe.Frame) *mockGrafanaAPI {
 			for idx, s := range series {
 				frames[idx] = s.AsDataFrame()
 			}
-			return []datasource.DatasourceQueryResult{
-				datasource.DatasourceQueryResult{
-					DataFrames: frames,
-				},
+			return &backend.DataQueryResponse{
+				Frames: frames,
 			}, nil
 
 		},
 	}
 }
 
-func (m *mockGrafanaAPI) QueryDatasource(ctx context.Context, orgID int64, datasourceID int64, tr datasource.TimeRange, queries []datasource.Query) ([]datasource.DatasourceQueryResult, error) {
-	return m.QueryDatasourceFn()
+func (m *mockTransformCallBack) DataQuery(ctx context.Context, pc backend.PluginConfig, headers map[string]string, queries []backend.DataQuery) (*backend.DataQueryResponse, error) {
+	return m.DataQueryFn()
 }
 
 func utp(sec int64) *time.Time {
