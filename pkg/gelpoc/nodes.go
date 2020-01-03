@@ -151,6 +151,7 @@ func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, callBack backend.Transfo
 		intervalMS: defaultIntervalMS,
 		maxDP:      defaultMaxDP,
 		callBack:   callBack,
+		timeRange:  rn.TimeRange,
 	}
 
 	rawDsID, ok := rn.Query["datasourceId"]

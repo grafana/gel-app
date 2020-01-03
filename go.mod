@@ -7,7 +7,6 @@ replace github.com/grafana/grafana-plugin-sdk-go => ../grafana-plugin-sdk-go
 go 1.13
 
 require (
-	github.com/davecgh/go-spew v1.1.1
 	github.com/google/go-cmp v0.3.1
 	github.com/grafana/grafana-plugin-sdk-go v0.4.0
 	github.com/hashicorp/go-hclog v0.8.0
