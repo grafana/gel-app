@@ -9,7 +9,7 @@ go 1.13
 require (
 	github.com/fatih/structtag v1.1.0 // indirect
 	github.com/google/go-cmp v0.3.1
-	github.com/grafana/grafana-plugin-sdk-go v0.4.1-0.20200103142710-7ad32811bfca
+	github.com/grafana/grafana-plugin-sdk-go v0.4.1-0.20200106141801-810a19341b9e
 	github.com/hashicorp/go-hclog v0.8.0
 	github.com/hashicorp/go-plugin v1.0.1
 	github.com/mattn/go-colorable v0.1.4 // indirect
