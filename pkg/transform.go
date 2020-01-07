@@ -14,14 +14,14 @@ import (
 // DataQuery takes Queries which are either GEL nodes (a.k.a expressions/transforms)
 // or are datasource requests. The transform.GrafanaAPIHandler allows callbacks
 // to grafana to fulfill datasource requests.
-func (gp *GELPlugin) DataQuery(ctx context.Context, pc backend.PluginConfig, headers map[string]string, queries []backend.DataQuery, callBack backend.TransformCallBackHandler) (*backend.DataQueryResponse, error) {
+func (gp *GELPlugin) DataQuery(ctx context.Context, req *backend.DataQueryRequest, callBack backend.TransformCallBackHandler) (*backend.DataQueryResponse, error) {
 	svc := gelpoc.Service{
 		CallBack: callBack,
 	}
 
 	// Build the pipeline from the request, checking for ordering issues (e.g. loops)
 	// and parsing graph nodes from the queries.
-	pipeline, err := svc.BuildPipeline(queries)
+	pipeline, err := svc.BuildPipeline(req.Queries)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -34,7 +34,7 @@ func (gp *GELPlugin) DataQuery(ctx context.Context, pc backend.PluginConfig, hea
 
 	// Get which queries have the Hide property so they those queries' results
 	// can be excluded from the response.
-	hidden, err := hiddenRefIDs(queries)
+	hidden, err := hiddenRefIDs(req.Queries)
 	if err != nil {
 		return nil, status.Error((codes.Internal), err.Error())
 	}

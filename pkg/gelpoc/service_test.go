@@ -89,7 +89,7 @@ func newMockTransformCallBack(df ...*dataframe.Frame) *mockTransformCallBack {
 	}
 }
 
-func (m *mockTransformCallBack) DataQuery(ctx context.Context, pc backend.PluginConfig, headers map[string]string, queries []backend.DataQuery) (*backend.DataQueryResponse, error) {
+func (m *mockTransformCallBack) DataQuery(ctx context.Context, req *backend.DataQueryRequest) (*backend.DataQueryResponse, error) {
 	return m.DataQueryFn()
 }
 

@@ -2,14 +2,14 @@ module github.com/grafana/gel-app
 
 replace github.com/apache/arrow/go/arrow => github.com/apache/arrow/go/arrow v0.0.0-20190716210558-5f564424c71c
 
-// replace github.com/grafana/grafana-plugin-sdk-go => ../grafana-plugin-sdk-go
+//replace github.com/grafana/grafana-plugin-sdk-go => ../grafana-plugin-sdk-go
 
 go 1.13
 
 require (
 	github.com/fatih/structtag v1.1.0 // indirect
 	github.com/google/go-cmp v0.3.1
-	github.com/grafana/grafana-plugin-sdk-go v0.4.1-0.20200106141801-810a19341b9e
+	github.com/grafana/grafana-plugin-sdk-go v0.4.1-0.20200107153407-ccbf1374e434
 	github.com/hashicorp/go-hclog v0.8.0
 	github.com/hashicorp/go-plugin v1.0.1
 	github.com/mattn/go-colorable v0.1.4 // indirect

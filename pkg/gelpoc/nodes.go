@@ -213,7 +213,10 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 		},
 	}
 
-	resp, err := dn.callBack.DataQuery(ctx, pc, nil, q)
+	resp, err := dn.callBack.DataQuery(ctx, &backend.DataQueryRequest{
+		PluginConfig: pc,
+		Queries:      q,
+	})
 
 	if err != nil {
 		return mathexp.Results{}, err
