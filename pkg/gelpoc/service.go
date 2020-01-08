@@ -5,18 +5,17 @@ import (
 
 	"github.com/grafana/gel-app/pkg/mathexp"
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
-	"github.com/grafana/grafana-plugin-sdk-go/datasource"
-	"github.com/grafana/grafana-plugin-sdk-go/transform"
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
 )
 
 // Service is service representation for GEL.
 type Service struct {
-	GrafanaAPI transform.GrafanaAPIHandler
+	CallBack backend.TransformCallBackHandler
 }
 
 // BuildPipeline builds a pipeline from a request.
-func (s *Service) BuildPipeline(tr datasource.TimeRange, queries []transform.Query) (DataPipeline, error) {
-	return buildPipeline(queries, tr, s.GrafanaAPI)
+func (s *Service) BuildPipeline(queries []backend.DataQuery) (DataPipeline, error) {
+	return buildPipeline(queries, s.CallBack)
 }
 
 // ExecutePipeline executes a GEL data pipeline and returns all the results

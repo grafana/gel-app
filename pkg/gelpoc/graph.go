@@ -6,8 +6,7 @@ import (
 	"fmt"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
-	"github.com/grafana/grafana-plugin-sdk-go/datasource"
-	"github.com/grafana/grafana-plugin-sdk-go/transform"
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
 
 	"gonum.org/v1/gonum/graph"
 	"gonum.org/v1/gonum/graph/simple"
@@ -55,8 +54,8 @@ const gelNodeName = "__expr__"
 
 // BuildPipeline builds a graph of the nodes, and returns the nodes in an
 // executable order
-func buildPipeline(queries []transform.Query, tr datasource.TimeRange, dsAPI transform.GrafanaAPIHandler) (DataPipeline, error) {
-	graph, err := buildDependencyGraph(queries, tr, dsAPI)
+func buildPipeline(queries []backend.DataQuery, callBack backend.TransformCallBackHandler) (DataPipeline, error) {
+	graph, err := buildDependencyGraph(queries, callBack)
 	if err != nil {
 		return nil, err
 	}
@@ -70,8 +69,8 @@ func buildPipeline(queries []transform.Query, tr datasource.TimeRange, dsAPI tra
 }
 
 // buildDependencyGraph returns a dependency graph for a set of queries.
-func buildDependencyGraph(queries []transform.Query, tr datasource.TimeRange, dsAPI transform.GrafanaAPIHandler) (*simple.DirectedGraph, error) {
-	graph, err := buildGraph(queries, tr, dsAPI)
+func buildDependencyGraph(queries []backend.DataQuery, callBack backend.TransformCallBackHandler) (*simple.DirectedGraph, error) {
+	graph, err := buildGraph(queries, callBack)
 	if err != nil {
 		return nil, err
 	}
@@ -116,18 +115,19 @@ func buildNodeRegistry(g *simple.DirectedGraph) map[string]Node {
 }
 
 // buildGraph creates a new graph populated with nodes for every query.
-func buildGraph(queries []transform.Query, tr datasource.TimeRange, dsAPI transform.GrafanaAPIHandler) (*simple.DirectedGraph, error) {
+func buildGraph(queries []backend.DataQuery, callBack backend.TransformCallBackHandler) (*simple.DirectedGraph, error) {
 	dp := simple.NewDirectedGraph()
 
 	for _, query := range queries {
 		rawQueryProp := make(map[string]interface{})
-		err := json.Unmarshal(query.ModelJSON, &rawQueryProp)
+		err := json.Unmarshal(query.JSON, &rawQueryProp)
 		if err != nil {
 			return nil, err
 		}
 		rn := &rawNode{
-			Query: rawQueryProp,
-			RefID: query.RefID,
+			Query:     rawQueryProp,
+			RefID:     query.RefID,
+			TimeRange: query.TimeRange,
 		}
 
 		dsName, err := rn.GetDatasourceName()
@@ -138,9 +138,9 @@ func buildGraph(queries []transform.Query, tr datasource.TimeRange, dsAPI transf
 		var node graph.Node
 		switch dsName {
 		case gelNodeName:
-			node, err = buildGELNode(dp, tr, rn)
+			node, err = buildGELNode(dp, rn)
 		default: // If it's not a GEL query, it's a data source query.
-			node, err = buildDSNode(dp, rn, tr, dsAPI)
+			node, err = buildDSNode(dp, rn, callBack)
 		}
 		if err != nil {
 			return nil, err

@@ -4,26 +4,24 @@ import (
 	"encoding/json"
 
 	"github.com/grafana/gel-app/pkg/gelpoc"
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
-	"github.com/grafana/grafana-plugin-sdk-go/datasource"
-	"github.com/grafana/grafana-plugin-sdk-go/transform"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-// Transform is currently the only the method called for the the plugin.
-// It takes Queries which are either GEL nodes (a.k.a expressions/transforms)
+// DataQuery takes Queries which are either GEL nodes (a.k.a expressions/transforms)
 // or are datasource requests. The transform.GrafanaAPIHandler allows callbacks
 // to grafana to fulfill datasource requests.
-func (gp *GELPlugin) Transform(ctx context.Context, tr datasource.TimeRange, queries []transform.Query, api transform.GrafanaAPIHandler) ([]transform.QueryResult, error) {
+func (gp *GELPlugin) DataQuery(ctx context.Context, req *backend.DataQueryRequest, callBack backend.TransformCallBackHandler) (*backend.DataQueryResponse, error) {
 	svc := gelpoc.Service{
-		GrafanaAPI: api,
+		CallBack: callBack,
 	}
 
 	// Build the pipeline from the request, checking for ordering issues (e.g. loops)
 	// and parsing graph nodes from the queries.
-	pipeline, err := svc.BuildPipeline(tr, queries)
+	pipeline, err := svc.BuildPipeline(req.Queries)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -36,7 +34,7 @@ func (gp *GELPlugin) Transform(ctx context.Context, tr datasource.TimeRange, que
 
 	// Get which queries have the Hide property so they those queries' results
 	// can be excluded from the response.
-	hidden, err := hiddenRefIDs(queries)
+	hidden, err := hiddenRefIDs(req.Queries)
 	if err != nil {
 		return nil, status.Error((codes.Internal), err.Error())
 	}
@@ -51,16 +49,13 @@ func (gp *GELPlugin) Transform(ctx context.Context, tr datasource.TimeRange, que
 		frames = filteredFrames
 	}
 
-	res := []transform.QueryResult{
-		{
-			DataFrames: frames,
-		},
-	}
+	return &backend.DataQueryResponse{
+		Frames: frames,
+	}, nil
 
-	return res, nil
 }
 
-func hiddenRefIDs(queries []transform.Query) (map[string]struct{}, error) {
+func hiddenRefIDs(queries []backend.DataQuery) (map[string]struct{}, error) {
 	hidden := make(map[string]struct{})
 
 	for _, query := range queries {
@@ -68,7 +63,7 @@ func hiddenRefIDs(queries []transform.Query) (map[string]struct{}, error) {
 			Hide bool `json:"hide"`
 		}{}
 
-		if err := json.Unmarshal(query.ModelJSON, &hide); err != nil {
+		if err := json.Unmarshal(query.JSON, &hide); err != nil {
 			return nil, err
 		}
 
