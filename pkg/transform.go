@@ -11,10 +11,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// DataQuery takes Queries which are either GEL nodes (a.k.a expressions/transforms)
+// TransformData takes Queries which are either GEL nodes (a.k.a expressions/transforms)
 // or are datasource requests. The transform.GrafanaAPIHandler allows callbacks
 // to grafana to fulfill datasource requests.
-func (gp *GELPlugin) DataQuery(ctx context.Context, req *backend.DataQueryRequest, callBack backend.TransformCallBackHandler) (*backend.DataQueryResponse, error) {
+func (gp *GELPlugin) TransformData(ctx context.Context, req *backend.DataQueryRequest, callBack backend.TransformCallBackHandler) (*backend.DataQueryResponse, error) {
 	svc := gelpoc.Service{
 		CallBack: callBack,
 	}

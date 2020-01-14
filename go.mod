@@ -1,6 +1,9 @@
 module github.com/grafana/gel-app
 
-replace github.com/apache/arrow/go/arrow => github.com/apache/arrow/go/arrow v0.0.0-20190716210558-5f564424c71c
+replace (
+	github.com/apache/arrow/go/arrow => github.com/apache/arrow/go/arrow v0.0.0-20190716210558-5f564424c71c
+	github.com/grafana/grafana-plugin-sdk-go => github.com/grafana/grafana-plugin-sdk-go v0.5.1-0.20200114092430-dcbac1da7f41
+)
 
 go 1.13
 
