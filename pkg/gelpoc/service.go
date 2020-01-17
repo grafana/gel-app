@@ -4,9 +4,17 @@ import (
 	"context"
 
 	"github.com/grafana/gel-app/pkg/mathexp"
-	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
+	"github.com/hashicorp/go-hclog"
 )
+
+var pluginLogger hclog.Logger
+
+// SetPluginLogger sets the package level logger for the plugin
+func SetPluginLogger(l hclog.Logger) {
+	pluginLogger = l
+}
 
 // Service is service representation for GEL.
 type Service struct {

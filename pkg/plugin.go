@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/grafana/gel-app/pkg/gelpoc"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	hclog "github.com/hashicorp/go-hclog"
 	plugin "github.com/hashicorp/go-plugin"
@@ -18,6 +19,7 @@ type GELPlugin struct {
 }
 
 func main() {
+	gelpoc.SetPluginLogger(pluginLogger)
 	err := backend.Serve(backend.ServeOpts{
 		TransformDataHandler: &GELPlugin{
 			logger: pluginLogger,
