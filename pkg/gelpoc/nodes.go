@@ -199,8 +199,10 @@ func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, callBack backend.Transfo
 func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 
 	pc := backend.PluginConfig{
-		ID:    dn.datasourceID,
 		OrgID: dn.orgID,
+		DataSourceConfig: &backend.DataSourceConfig{
+			ID: dn.datasourceID,
+		},
 	}
 
 	q := []backend.DataQuery{
