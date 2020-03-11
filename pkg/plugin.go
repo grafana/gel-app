@@ -2,28 +2,23 @@ package main
 
 import (
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
-	hclog "github.com/hashicorp/go-hclog"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 	plugin "github.com/hashicorp/go-plugin"
 )
-
-var pluginLogger = hclog.New(&hclog.LoggerOptions{
-	Name:  "gel-app",
-	Level: hclog.LevelFromString("DEBUG"),
-})
 
 // GELPlugin stores reference to plugin and logger
 type GELPlugin struct {
 	plugin.NetRPCUnsupportedPlugin
-	logger hclog.Logger
+	logger log.Logger
 }
 
 func main() {
 	err := backend.Serve(backend.ServeOpts{
 		TransformDataHandler: &GELPlugin{
-			logger: pluginLogger,
+			logger: backend.Logger,
 		},
 	})
 	if err != nil {
-		pluginLogger.Error(err.Error())
+		backend.Logger.Error(err.Error())
 	}
 }
