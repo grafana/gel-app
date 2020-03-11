@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 )
 
 var aliasToDuration = map[string]time.Duration{
@@ -114,7 +114,7 @@ func (s Series) Resample(rule string, downsampler string, upsampler string, tr b
 				return s, fmt.Errorf("Upsampling %v not implemented", upsampler)
 			}
 		} else { // downsampling
-			fVec := dataframe.NewField("", s.GetLabels(), vals).Vector
+			fVec := data.NewField("", s.GetLabels(), vals)
 			var tmp *float64
 			switch downsampler {
 			case "sum":

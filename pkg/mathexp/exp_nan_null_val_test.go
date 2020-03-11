@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -132,12 +133,10 @@ func TestNaN(t *testing.T) {
 		},
 	}
 
-	// go-cmp instead of testify assert is used to compare results here
-	// because it supports an option for NaN equality.
-	// https://github.com/stretchr/testify/pull/691#issuecomment-528457166
 	opt := cmp.Comparer(func(x, y float64) bool {
 		return (math.IsNaN(x) && math.IsNaN(y)) || x == y
 	})
+	options := append([]cmp.Option{opt}, data.FrameTestCompareOptions()...)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -147,8 +146,8 @@ func TestNaN(t *testing.T) {
 				if e != nil {
 					res, err := e.Execute(tt.vars)
 					tt.execErrIs(t, err)
-					if !cmp.Equal(res, tt.results, opt) {
-						assert.FailNow(t, tt.name, cmp.Diff(res, tt.results, opt))
+					if !cmp.Equal(res, tt.results, options...) {
+						assert.FailNow(t, tt.name, cmp.Diff(res, tt.results, options...))
 					}
 				}
 			}
@@ -399,6 +398,7 @@ func TestNullValues(t *testing.T) {
 	opt := cmp.Comparer(func(x, y float64) bool {
 		return (math.IsNaN(x) && math.IsNaN(y)) || x == y
 	})
+	options := append([]cmp.Option{opt}, data.FrameTestCompareOptions()...)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -408,7 +408,7 @@ func TestNullValues(t *testing.T) {
 				if e != nil {
 					res, err := e.Execute(tt.vars)
 					tt.execErrIs(t, err)
-					if diff := cmp.Diff(tt.results, res, opt); diff != "" {
+					if diff := cmp.Diff(tt.results, res, options...); diff != "" {
 						t.Errorf("Result mismatch (-want +got):\n%s", diff)
 					}
 				}

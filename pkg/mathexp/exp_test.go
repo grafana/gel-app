@@ -4,7 +4,7 @@ import (
 	"math"
 	"time"
 
-	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 )
 
 // Common Test Constructor Utils and Types
@@ -28,7 +28,7 @@ type noNullTP struct {
 	f float64
 }
 
-func makeSeriesNullableTime(name string, labels dataframe.Labels, points ...nullTimeTP) Series {
+func makeSeriesNullableTime(name string, labels data.Labels, points ...nullTimeTP) Series {
 	newSeries := NewSeries(name, labels, 0, true, 1, true, len(points))
 	for idx, p := range points {
 		newSeries.SetPoint(idx, p.t, p.f)
@@ -36,7 +36,7 @@ func makeSeriesNullableTime(name string, labels dataframe.Labels, points ...null
 	return newSeries
 }
 
-func makeSeries(name string, labels dataframe.Labels, points ...tp) Series {
+func makeSeries(name string, labels data.Labels, points ...tp) Series {
 	newSeries := NewSeries(name, labels, 0, false, 1, true, len(points))
 	for idx, p := range points {
 		err := newSeries.SetPoint(idx, &p.t, p.f)
@@ -47,7 +47,7 @@ func makeSeries(name string, labels dataframe.Labels, points ...tp) Series {
 	return newSeries
 }
 
-func makeNoNullSeries(name string, labels dataframe.Labels, points ...noNullTP) Series {
+func makeNoNullSeries(name string, labels data.Labels, points ...noNullTP) Series {
 	newSeries := NewSeries(name, labels, 0, false, 1, false, len(points))
 	for idx, p := range points {
 		err := newSeries.SetPoint(idx, &p.t, &p.f)
@@ -58,7 +58,7 @@ func makeNoNullSeries(name string, labels dataframe.Labels, points ...noNullTP) 
 	return newSeries
 }
 
-func makeSeriesTimeSecond(name string, labels dataframe.Labels, points ...timeSecondTP) Series {
+func makeSeriesTimeSecond(name string, labels data.Labels, points ...timeSecondTP) Series {
 	newSeries := NewSeries(name, labels, 1, false, 0, true, len(points))
 	for idx, p := range points {
 		err := newSeries.SetPoint(idx, &p.t, p.f)
@@ -69,7 +69,7 @@ func makeSeriesTimeSecond(name string, labels dataframe.Labels, points ...timeSe
 	return newSeries
 }
 
-func makeNumber(name string, labels dataframe.Labels, f *float64) Number {
+func makeNumber(name string, labels data.Labels, f *float64) Number {
 	newNumber := NewNumber(name, labels)
 	newNumber.SetValue(f)
 	return newNumber
@@ -144,7 +144,7 @@ var aSeriesbNumber = Vars{
 	},
 	"B": Results{
 		[]Value{
-			makeNumber("volt", dataframe.Labels{"id": "1"}, float64Pointer(7)),
+			makeNumber("volt", data.Labels{"id": "1"}, float64Pointer(7)),
 		},
 	},
 }
@@ -152,12 +152,12 @@ var aSeriesbNumber = Vars{
 var twoSeriesSets = Vars{
 	"A": Results{
 		[]Value{
-			makeSeriesNullableTime("temp", dataframe.Labels{"sensor": "a", "turbine": "1"}, nullTimeTP{
+			makeSeriesNullableTime("temp", data.Labels{"sensor": "a", "turbine": "1"}, nullTimeTP{
 				unixTimePointer(5, 0), float64Pointer(6),
 			}, nullTimeTP{
 				unixTimePointer(10, 0), float64Pointer(8),
 			}),
-			makeSeriesNullableTime("temp", dataframe.Labels{"sensor": "b", "turbine": "1"}, nullTimeTP{
+			makeSeriesNullableTime("temp", data.Labels{"sensor": "b", "turbine": "1"}, nullTimeTP{
 				unixTimePointer(5, 0), float64Pointer(10),
 			}, nullTimeTP{
 				unixTimePointer(10, 0), float64Pointer(16),
@@ -166,7 +166,7 @@ var twoSeriesSets = Vars{
 	},
 	"B": Results{
 		[]Value{
-			makeSeriesNullableTime("efficiency", dataframe.Labels{"turbine": "1"}, nullTimeTP{
+			makeSeriesNullableTime("efficiency", data.Labels{"turbine": "1"}, nullTimeTP{
 				unixTimePointer(5, 0), float64Pointer(.5),
 			}, nullTimeTP{
 				unixTimePointer(10, 0), float64Pointer(.2),

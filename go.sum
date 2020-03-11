@@ -44,6 +44,10 @@ github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMyw
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
 github.com/grafana/grafana-plugin-sdk-go v0.19.0 h1:qLq8tOSxZ9O7+AdduXJVU6jEOlg/2eP8UXdhAzQ81g0=
 github.com/grafana/grafana-plugin-sdk-go v0.19.0/go.mod h1:G6Ov9M+FDOZXNw8eKXINO6XzqdUvTs7huwyQp5jLTBQ=
+github.com/grafana/grafana-plugin-sdk-go v0.27.0 h1:Ocwc8i40y4ezO+xaRbqZrb6GoRfiyXon6ucaeznizKI=
+github.com/grafana/grafana-plugin-sdk-go v0.27.0/go.mod h1:G6Ov9M+FDOZXNw8eKXINO6XzqdUvTs7huwyQp5jLTBQ=
+github.com/grafana/grafana-plugin-sdk-go v0.28.0 h1:vRyaOOzpvqKhh4619Woepqe7wen4juQyKFxPFPFz1wE=
+github.com/grafana/grafana-plugin-sdk-go v0.28.0/go.mod h1:G6Ov9M+FDOZXNw8eKXINO6XzqdUvTs7huwyQp5jLTBQ=
 github.com/hashicorp/go-hclog v0.0.0-20180709165350-ff2cf002a8dd/go.mod h1:9bjs9uLqI8l75knNv3lV1kA55veR+WUPSiKIWcQHudI=
 github.com/hashicorp/go-hclog v0.8.0 h1:z3ollgGRg8RjfJH6UVBaG54R70GFd++QOkvnJH3VSBY=
 github.com/hashicorp/go-hclog v0.8.0/go.mod h1:5CU+agLiy3J7N7QjHK5d05KxGsuXiQLrjA0H7acj2lQ=

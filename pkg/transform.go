@@ -5,7 +5,7 @@ import (
 
 	"github.com/grafana/gel-app/pkg/gelpoc"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
-	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -14,7 +14,7 @@ import (
 // TransformData takes Queries which are either GEL nodes (a.k.a expressions/transforms)
 // or are datasource requests. The transform.GrafanaAPIHandler allows callbacks
 // to grafana to fulfill datasource requests.
-func (gp *GELPlugin) TransformData(ctx context.Context, req *backend.DataQueryRequest, callBack backend.TransformCallBackHandler) (*backend.DataQueryResponse, error) {
+func (gp *GELPlugin) TransformData(ctx context.Context, req *backend.QueryDataRequest, callBack backend.TransformDataCallBackHandler) (*backend.QueryDataResponse, error) {
 	svc := gelpoc.Service{
 		CallBack: callBack,
 	}
@@ -40,7 +40,7 @@ func (gp *GELPlugin) TransformData(ctx context.Context, req *backend.DataQueryRe
 	}
 
 	if len(hidden) != 0 {
-		filteredFrames := make([]*dataframe.Frame, 0, len(frames)-len(hidden))
+		filteredFrames := make([]*data.Frame, 0, len(frames)-len(hidden))
 		for _, frame := range frames {
 			if _, ok := hidden[frame.RefID]; !ok {
 				filteredFrames = append(filteredFrames, frame)
@@ -49,7 +49,7 @@ func (gp *GELPlugin) TransformData(ctx context.Context, req *backend.DataQueryRe
 		frames = filteredFrames
 	}
 
-	return &backend.DataQueryResponse{
+	return &backend.QueryDataResponse{
 		Frames: frames,
 	}, nil
 

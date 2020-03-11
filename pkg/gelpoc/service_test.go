@@ -10,15 +10,15 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/grafana/gel-app/pkg/mathexp"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
-	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"github.com/stretchr/testify/require"
 )
 
 func TestService(t *testing.T) {
 
-	dsDF := dataframe.New("test",
-		dataframe.NewField("time", nil, []*time.Time{utp(1)}),
-		dataframe.NewField("value", nil, []*float64{fp(2)}))
+	dsDF := data.NewFrame("test",
+		data.NewField("time", nil, []*time.Time{utp(1)}),
+		data.NewField("value", nil, []*float64{fp(2)}))
 
 	m := newMockTransformCallBack(dsDF)
 
@@ -41,33 +41,34 @@ func TestService(t *testing.T) {
 	res, err := s.ExecutePipeline(context.Background(), pl)
 	require.NoError(t, err)
 
-	bDF := dataframe.New("",
-		dataframe.NewField("Time", nil, []*time.Time{utp(1)}),
-		dataframe.NewField("", nil, []*float64{fp(4)}))
+	bDF := data.NewFrame("",
+		data.NewField("Time", nil, []*time.Time{utp(1)}),
+		data.NewField("", nil, []*float64{fp(4)}))
 	bDF.RefID = "B"
 
-	expect := []*dataframe.Frame{dsDF, bDF}
+	expect := []*data.Frame{dsDF, bDF}
 
-	// Service currently doesn't care about order of dataframes in the return.
-	trans := cmp.Transformer("Sort", func(in []*dataframe.Frame) []*dataframe.Frame {
-		out := append([]*dataframe.Frame(nil), in...) // Copy input to avoid mutating it
+	// Service currently doesn't care about order of datas in the return.
+	trans := cmp.Transformer("Sort", func(in []*data.Frame) []*data.Frame {
+		out := append([]*data.Frame(nil), in...) // Copy input to avoid mutating it
 		sort.SliceStable(out, func(i, j int) bool {
 			return out[i].RefID > out[j].RefID
 		})
 		return out
 	})
-	if diff := cmp.Diff(expect, res, trans); diff != "" {
+	options := append([]cmp.Option{trans}, data.FrameTestCompareOptions()...)
+	if diff := cmp.Diff(expect, res, options...); diff != "" {
 		t.Errorf("Result mismatch (-want +got):\n%s", diff)
 	}
 }
 
 type mockTransformCallBack struct {
-	DataQueryFn func() (*backend.DataQueryResponse, error)
+	DataQueryFn func() (*backend.QueryDataResponse, error)
 }
 
-func newMockTransformCallBack(df ...*dataframe.Frame) *mockTransformCallBack {
+func newMockTransformCallBack(df ...*data.Frame) *mockTransformCallBack {
 	return &mockTransformCallBack{
-		DataQueryFn: func() (res *backend.DataQueryResponse, err error) {
+		DataQueryFn: func() (res *backend.QueryDataResponse, err error) {
 			series := make([]mathexp.Series, 0, len(df))
 			for _, frame := range df {
 				s, err := mathexp.SeriesFromFrame(frame)
@@ -77,11 +78,11 @@ func newMockTransformCallBack(df ...*dataframe.Frame) *mockTransformCallBack {
 				series = append(series, s)
 			}
 
-			frames := make([]*dataframe.Frame, len(series))
+			frames := make([]*data.Frame, len(series))
 			for idx, s := range series {
 				frames[idx] = s.AsDataFrame()
 			}
-			return &backend.DataQueryResponse{
+			return &backend.QueryDataResponse{
 				Frames: frames,
 			}, nil
 
@@ -89,7 +90,7 @@ func newMockTransformCallBack(df ...*dataframe.Frame) *mockTransformCallBack {
 	}
 }
 
-func (m *mockTransformCallBack) DataQuery(ctx context.Context, req *backend.DataQueryRequest) (*backend.DataQueryResponse, error) {
+func (m *mockTransformCallBack) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
 	return m.DataQueryFn()
 }
 
