@@ -5,8 +5,7 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -91,7 +90,7 @@ func TestSeriesExpr(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("id=1", dataframe.Labels{"id": "1"}, nullTimeTP{
+					makeSeriesNullableTime("id=1", data.Labels{"id": "1"}, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(9),
 					}, nullTimeTP{
 						unixTimePointer(10, 0), float64Pointer(8),
@@ -107,7 +106,7 @@ func TestSeriesExpr(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("id=1", dataframe.Labels{"id": "1"}, nullTimeTP{
+					makeSeriesNullableTime("id=1", data.Labels{"id": "1"}, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(9),
 					}, nullTimeTP{
 						unixTimePointer(10, 0), float64Pointer(8),
@@ -123,12 +122,12 @@ func TestSeriesExpr(t *testing.T) {
 			execErrIs: assert.NoError,
 			results: Results{
 				[]Value{
-					makeSeriesNullableTime("sensor=a, turbine=1", dataframe.Labels{"sensor": "a", "turbine": "1"}, nullTimeTP{
+					makeSeriesNullableTime("sensor=a, turbine=1", data.Labels{"sensor": "a", "turbine": "1"}, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(6 * .5),
 					}, nullTimeTP{
 						unixTimePointer(10, 0), float64Pointer(8 * .2),
 					}),
-					makeSeriesNullableTime("sensor=b, turbine=1", dataframe.Labels{"sensor": "b", "turbine": "1"}, nullTimeTP{
+					makeSeriesNullableTime("sensor=b, turbine=1", data.Labels{"sensor": "b", "turbine": "1"}, nullTimeTP{
 						unixTimePointer(5, 0), float64Pointer(10 * .5),
 					}, nullTimeTP{
 						unixTimePointer(10, 0), float64Pointer(16 * .2),
@@ -144,7 +143,7 @@ func TestSeriesExpr(t *testing.T) {
 			vars: Vars{
 				"A": Results{
 					[]Value{
-						makeSeriesNullableTime("temp", dataframe.Labels{}, nullTimeTP{
+						makeSeriesNullableTime("temp", data.Labels{}, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(1),
 						}, nullTimeTP{
 							unixTimePointer(10, 0), float64Pointer(2),
@@ -153,7 +152,7 @@ func TestSeriesExpr(t *testing.T) {
 				},
 				"B": Results{
 					[]Value{
-						makeSeriesNullableTime("efficiency", dataframe.Labels{}, nullTimeTP{
+						makeSeriesNullableTime("efficiency", data.Labels{}, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(3),
 						}, nullTimeTP{
 							unixTimePointer(9, 0), float64Pointer(4),
@@ -173,6 +172,7 @@ func TestSeriesExpr(t *testing.T) {
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e, err := New(tt.expr)
@@ -180,7 +180,7 @@ func TestSeriesExpr(t *testing.T) {
 			if e != nil {
 				res, err := e.Execute(tt.vars)
 				tt.execErrIs(t, err)
-				if diff := cmp.Diff(tt.results, res, cmpopts.EquateEmpty()); diff != "" {
+				if diff := cmp.Diff(tt.results, res, data.FrameTestCompareOptions()...); diff != "" {
 					t.Errorf("Result mismatch (-want +got):\n%s", diff)
 				}
 			}
@@ -251,7 +251,7 @@ func TestSeriesAlternateFormsExpr(t *testing.T) {
 			vars: Vars{
 				"A": Results{
 					[]Value{
-						makeSeries("temp", dataframe.Labels{}, tp{
+						makeSeries("temp", data.Labels{}, tp{
 							time.Unix(5, 0), float64Pointer(1),
 						}, tp{
 							time.Unix(10, 0), float64Pointer(2),
@@ -260,7 +260,7 @@ func TestSeriesAlternateFormsExpr(t *testing.T) {
 				},
 				"B": Results{
 					[]Value{
-						makeSeriesNullableTime("efficiency", dataframe.Labels{}, nullTimeTP{
+						makeSeriesNullableTime("efficiency", data.Labels{}, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(3),
 						}, nullTimeTP{
 							unixTimePointer(10, 0), float64Pointer(4),
@@ -286,7 +286,7 @@ func TestSeriesAlternateFormsExpr(t *testing.T) {
 			vars: Vars{
 				"A": Results{
 					[]Value{
-						makeSeriesTimeSecond("temp", dataframe.Labels{}, timeSecondTP{
+						makeSeriesTimeSecond("temp", data.Labels{}, timeSecondTP{
 							float64Pointer(1), time.Unix(5, 0),
 						}, timeSecondTP{
 							float64Pointer(2), time.Unix(10, 0),
@@ -295,7 +295,7 @@ func TestSeriesAlternateFormsExpr(t *testing.T) {
 				},
 				"B": Results{
 					[]Value{
-						makeSeriesNullableTime("efficiency", dataframe.Labels{}, nullTimeTP{
+						makeSeriesNullableTime("efficiency", data.Labels{}, nullTimeTP{
 							unixTimePointer(5, 0), float64Pointer(3),
 						}, nullTimeTP{
 							unixTimePointer(10, 0), float64Pointer(4),
@@ -321,7 +321,7 @@ func TestSeriesAlternateFormsExpr(t *testing.T) {
 			vars: Vars{
 				"A": Results{
 					[]Value{
-						makeSeries("temp", dataframe.Labels{}, tp{
+						makeSeries("temp", data.Labels{}, tp{
 							time.Unix(5, 0), float64Pointer(1),
 						}, tp{
 							time.Unix(10, 0), float64Pointer(2),
@@ -330,7 +330,7 @@ func TestSeriesAlternateFormsExpr(t *testing.T) {
 				},
 				"B": Results{
 					[]Value{
-						makeNoNullSeries("efficiency", dataframe.Labels{}, noNullTP{
+						makeNoNullSeries("efficiency", data.Labels{}, noNullTP{
 							time.Unix(5, 0), 3,
 						}, noNullTP{
 							time.Unix(10, 0), 4,
@@ -374,7 +374,7 @@ func TestSeriesAlternateFormsExpr(t *testing.T) {
 			if e != nil {
 				res, err := e.Execute(tt.vars)
 				tt.execErrIs(t, err)
-				if diff := cmp.Diff(tt.results, res, cmpopts.EquateEmpty()); diff != "" {
+				if diff := cmp.Diff(tt.results, res, data.FrameTestCompareOptions()...); diff != "" {
 					t.Errorf("Result mismatch (-want +got):\n%s", diff)
 				}
 			}

@@ -128,7 +128,7 @@ type DSNode struct {
 	timeRange    backend.TimeRange
 	intervalMS   int64
 	maxDP        int64
-	callBack     backend.TransformCallBackHandler
+	callBack     backend.TransformDataCallBackHandler
 }
 
 // NodeType returns the data pipeline node type.
@@ -136,7 +136,7 @@ func (dn *DSNode) NodeType() NodeType {
 	return TypeDatasourceNode
 }
 
-func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, callBack backend.TransformCallBackHandler) (*DSNode, error) {
+func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, callBack backend.TransformDataCallBackHandler) (*DSNode, error) {
 	encodedQuery, err := json.Marshal(rn.Query)
 	if err != nil {
 		return nil, err
@@ -215,7 +215,7 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 		},
 	}
 
-	resp, err := dn.callBack.DataQuery(ctx, &backend.DataQueryRequest{
+	resp, err := dn.callBack.QueryData(ctx, &backend.QueryDataRequest{
 		PluginConfig: pc,
 		Queries:      q,
 	})

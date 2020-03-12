@@ -3,10 +3,10 @@ package mathexp
 import (
 	"fmt"
 
-	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 )
 
-func Sum(v dataframe.Vector) *float64 {
+func Sum(v *data.Field) *float64 {
 	var sum float64
 	for i := 0; i < v.Len(); i++ {
 		if f, ok := v.At(i).(*float64); ok {
@@ -16,13 +16,13 @@ func Sum(v dataframe.Vector) *float64 {
 	return &sum
 }
 
-func Avg(v dataframe.Vector) *float64 {
+func Avg(v *data.Field) *float64 {
 	sum := Sum(v)
 	f := *sum / float64(v.Len())
 	return &f
 }
 
-func Min(fv dataframe.Vector) *float64 {
+func Min(fv *data.Field) *float64 {
 	var f float64
 	for i := 0; i < fv.Len(); i++ {
 		if v, ok := fv.At(i).(*float64); ok {
@@ -34,7 +34,7 @@ func Min(fv dataframe.Vector) *float64 {
 	return &f
 }
 
-func Max(fv dataframe.Vector) *float64 {
+func Max(fv *data.Field) *float64 {
 	var f float64
 	for i := 0; i < fv.Len(); i++ {
 		if v, ok := fv.At(i).(*float64); ok {
@@ -46,7 +46,7 @@ func Max(fv dataframe.Vector) *float64 {
 	return &f
 }
 
-func Count(fv dataframe.Vector) *float64 {
+func Count(fv *data.Field) *float64 {
 	f := float64(fv.Len())
 	return &f
 }
@@ -56,7 +56,7 @@ func (s Series) Reduce(rFunc string) (Number, error) {
 	// TODO Labels....
 	number := NewNumber(fmt.Sprintf("%v_%v", rFunc, s.GetName()), nil)
 	var f *float64
-	fVec := s.Frame.Fields[1].Vector
+	fVec := s.Frame.Fields[1]
 	switch rFunc {
 	case "sum":
 		f = Sum(fVec)

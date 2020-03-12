@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/grafana/gel-app/pkg/mathexp/parse"
-	"github.com/grafana/grafana-plugin-sdk-go/dataframe"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 )
 
 // Expr holds a parsed expression
@@ -182,7 +182,7 @@ func unaryOp(op string, a float64) (r float64, err error) {
 // Union holds to Values from Two sets where their labels are compatible (TODO: define compatible).
 // This is a intermediate container for Binary operations such (e.g. A + B).
 type Union struct {
-	Labels dataframe.Labels
+	Labels data.Labels
 	A, B   Value
 }
 
@@ -197,7 +197,7 @@ func union(aResults, bResults Results) []*Union {
 	}
 	for _, a := range aResults.Values {
 		for _, b := range bResults.Values {
-			var labels dataframe.Labels
+			var labels data.Labels
 			aLabels := a.GetLabels()
 			bLabels := b.GetLabels()
 			if aLabels.Equals(bLabels) || len(aLabels) == 0 || len(bLabels) == 0 {
@@ -393,7 +393,7 @@ func binaryOp(op string, a, b float64) (r float64, err error) {
 	return
 }
 
-func biScalarNumber(name string, labels dataframe.Labels, op string, number Number, scalarVal *float64, numberFirst bool) (Number, error) {
+func biScalarNumber(name string, labels data.Labels, op string, number Number, scalarVal *float64, numberFirst bool) (Number, error) {
 	newNumber := NewNumber(name, labels)
 	f := number.GetFloat64Value()
 	if f == nil || scalarVal == nil {
@@ -414,7 +414,7 @@ func biScalarNumber(name string, labels dataframe.Labels, op string, number Numb
 	return newNumber, nil
 }
 
-func biSeriesNumber(name string, labels dataframe.Labels, op string, s Series, scalarVal *float64, seriesFirst bool) (Series, error) {
+func biSeriesNumber(name string, labels data.Labels, op string, s Series, scalarVal *float64, seriesFirst bool) (Series, error) {
 	newSeries := NewSeries(name, labels, s.TimeIdx, s.TimeIsNullable, s.ValueIdx, s.ValueIsNullabe, s.Len())
 	var err error
 	for i := 0; i < s.Len(); i++ {
@@ -440,7 +440,7 @@ func biSeriesNumber(name string, labels dataframe.Labels, op string, s Series, s
 // ... if would you like some series with your series and then get some series, or is that enough series?
 // biSeriesSeries performs a the binary operation for each value in the two series where the times
 // are equal. If there are datapoints in A or B that do not share a time, they will be dropped.
-func biSeriesSeries(name string, labels dataframe.Labels, op string, aSeries, bSeries Series) (Series, error) {
+func biSeriesSeries(name string, labels data.Labels, op string, aSeries, bSeries Series) (Series, error) {
 	bPoints := make(map[time.Time]*float64)
 	for i := 0; i < bSeries.Len(); i++ {
 		t, f := bSeries.GetPoint(i)
