@@ -1,8 +1,10 @@
-# GEL (Grafana Expression Language)
+# GEL (Grafana Expressions)
 
 GEL runs as a new type of Transform Plugin and works with Grafana master if the `expressions` flag under `feature_toggles` is set. This is only a backend plugin (front-end transform (expression) component as it is part of Grafana).
 
-This is an alpha/preview feature. It is currently subject breaking and major design changes (including the project/feature name, and code location). Enabling this feature currently allows one to bypass datasource permissions and security.
+**Warning: This is an alpha/preview feature. It is currently subject breaking and major design changes (including the project/feature name, and code location). Enabling this feature currently allows one to bypass datasource permissions and security.**
+
+GEL preforms data transformations on backend and built-in datasources such as reduction, time series resampling, and math.
 
 ## Instructions
 
