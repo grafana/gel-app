@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/google/go-cmp v0.3.1
-	github.com/grafana/grafana-plugin-sdk-go v0.33.1-0.20200402152318-a52728d05ffb
+	github.com/grafana/grafana-plugin-sdk-go v0.33.1-0.20200402181722-85f35f004d4f
 	github.com/hashicorp/go-hclog v0.8.0 // indirect
 	github.com/hashicorp/go-plugin v1.0.1
 	github.com/stretchr/testify v1.4.0
