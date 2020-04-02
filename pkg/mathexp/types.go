@@ -14,10 +14,11 @@ type Results struct {
 type Values []Value
 
 // AsDataFrames returns each value as a slice of frames.
-func (vals Values) AsDataFrames() []*data.Frame {
+func (vals Values) AsDataFrames(refID string) []*data.Frame {
 	frames := make([]*data.Frame, len(vals))
 	for i, v := range vals {
 		frames[i] = v.AsDataFrame()
+		frames[i].RefID = refID
 	}
 	return frames
 }

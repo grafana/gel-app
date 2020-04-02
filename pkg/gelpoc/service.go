@@ -27,7 +27,7 @@ func (s *Service) ExecutePipeline(ctx context.Context, pipeline DataPipeline) (m
 	}
 	for refID, val := range vars {
 		res[refID] = &backend.DataResponse{
-			Frames: val.Values.AsDataFrames(),
+			Frames: val.Values.AsDataFrames(refID),
 		}
 	}
 	return res, nil
