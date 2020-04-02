@@ -18,14 +18,19 @@ func (s *Service) BuildPipeline(queries []backend.DataQuery) (DataPipeline, erro
 	return buildPipeline(queries, s.CallBack)
 }
 
-// ExecutePipeline executes a GEL data pipeline and returns all the results
-// as a slice of *dataframe.Frame.
-func (s *Service) ExecutePipeline(ctx context.Context, pipeline DataPipeline) ([]*data.Frame, error) {
+// ExecutePipeline executes a GEL data pipeline and returns all the results.
+func (s *Service) ExecutePipeline(ctx context.Context, pipeline DataPipeline) (map[string]*backend.DataResponse, error) {
+	res := make(map[string]*backend.DataResponse)
 	vars, err := pipeline.execute(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return extractDataFrames(vars), nil
+	for refID, val := range vars {
+		res[refID] = &backend.DataResponse{
+			Frames: val.Values.AsDataFrames(),
+		}
+	}
+	return res, nil
 }
 
 func extractDataFrames(vars mathexp.Vars) []*data.Frame {
