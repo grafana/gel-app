@@ -42,10 +42,8 @@ github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5a
 github.com/google/go-cmp v0.3.1 h1:Xye71clBPdm5HgqGwUkwhbynsUJZhDbS20FvLhQ2izg=
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
-github.com/grafana/grafana-plugin-sdk-go v0.33.1-0.20200402152318-a52728d05ffb h1:LuVT7+CeIAjyylcfKT91G2EcnQjXqkOd4NPoFnojRwc=
-github.com/grafana/grafana-plugin-sdk-go v0.33.1-0.20200402152318-a52728d05ffb/go.mod h1:4rVPIvfv7SzFC0AA/8T5tmDRxIsrvDJOF9p4SrQGS1M=
-github.com/grafana/grafana-plugin-sdk-go v0.33.1-0.20200402181722-85f35f004d4f h1:q2CGaAtLbfaoQKijBu+bkKSG5jYv7Yto3XxZMl9IKVs=
-github.com/grafana/grafana-plugin-sdk-go v0.33.1-0.20200402181722-85f35f004d4f/go.mod h1:4rVPIvfv7SzFC0AA/8T5tmDRxIsrvDJOF9p4SrQGS1M=
+github.com/grafana/grafana-plugin-sdk-go v0.36.0 h1:Va+9JWLhcBu30OTF1GUPI0FpvO630aufuPol2cM4AP4=
+github.com/grafana/grafana-plugin-sdk-go v0.36.0/go.mod h1:zX/Zz/HYDAkL1NxffOZeixqPqIVVoCTWI2AuFy4J+V4=
 github.com/hashicorp/go-hclog v0.0.0-20180709165350-ff2cf002a8dd/go.mod h1:9bjs9uLqI8l75knNv3lV1kA55veR+WUPSiKIWcQHudI=
 github.com/hashicorp/go-hclog v0.8.0 h1:z3ollgGRg8RjfJH6UVBaG54R70GFd++QOkvnJH3VSBY=
 github.com/hashicorp/go-hclog v0.8.0/go.mod h1:5CU+agLiy3J7N7QjHK5d05KxGsuXiQLrjA0H7acj2lQ=
@@ -66,6 +64,7 @@ github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORN
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
+github.com/magefile/mage v1.9.0/go.mod h1:z5UZb/iS3GoOSn0JgWuiw7dxlurVYTu+/jHXqQg881A=
 github.com/mattetti/filebuffer v1.0.0 h1:ixTvQ0JjBTwWbdpDZ98lLrydo7KRi8xNRIi5RFszsbY=
 github.com/mattetti/filebuffer v1.0.0/go.mod h1:X6nyAIge2JGVmuJt2MFCqmHrb/5IHiphfHtot0s5cnI=
 github.com/mattn/go-runewidth v0.0.7 h1:Ei8KR0497xHyKJPAv59M1dkC+rOZCMBJ+t3fZ+twI54=
