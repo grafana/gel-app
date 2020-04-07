@@ -13,6 +13,16 @@ type Results struct {
 // Values is a slice of Value interfaces
 type Values []Value
 
+// AsDataFrames returns each value as a slice of frames.
+func (vals Values) AsDataFrames(refID string) []*data.Frame {
+	frames := make([]*data.Frame, len(vals))
+	for i, v := range vals {
+		frames[i] = v.AsDataFrame()
+		frames[i].RefID = refID
+	}
+	return frames
+}
+
 // Value is the interface that holds different types such as a Scalar, Series, or Number.
 // all Value implementations should be a *data.Frame
 type Value interface {

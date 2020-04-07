@@ -5,7 +5,6 @@ import (
 
 	"github.com/grafana/gel-app/pkg/gelpoc"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
-	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,7 +26,7 @@ func (gp *GELPlugin) TransformData(ctx context.Context, req *backend.QueryDataRe
 	}
 
 	// Execute the pipeline
-	frames, err := svc.ExecutePipeline(ctx, pipeline)
+	responses, err := svc.ExecutePipeline(ctx, pipeline)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
@@ -40,17 +39,17 @@ func (gp *GELPlugin) TransformData(ctx context.Context, req *backend.QueryDataRe
 	}
 
 	if len(hidden) != 0 {
-		filteredFrames := make([]*data.Frame, 0, len(frames)-len(hidden))
-		for _, frame := range frames {
-			if _, ok := hidden[frame.RefID]; !ok {
-				filteredFrames = append(filteredFrames, frame)
+		filteredRes := make(map[string]*backend.DataResponse, len(responses)-len(hidden))
+		for refID, res := range responses {
+			if _, ok := hidden[refID]; !ok {
+				filteredRes[refID] = res
 			}
 		}
-		frames = filteredFrames
+		responses = filteredRes
 	}
 
 	return &backend.QueryDataResponse{
-		Frames: frames,
+		Responses: responses,
 	}, nil
 
 }
