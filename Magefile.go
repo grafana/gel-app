@@ -53,7 +53,8 @@ func MakePluginZip() error {
 
 	zip := fmt.Sprintf("%s-%s.zip", pluginJson["id"], pluginJson["version"])
 
-	// TODO: pick final name based on the contents of plugin.json
+	// TODO: this creates a file in the folder "dist",
+	// we want it to match plugin id
 	if err := sh.RunV("zip", "-r", zip, "dist"); err != nil {
 		return err
 	}
