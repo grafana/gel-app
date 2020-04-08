@@ -2,8 +2,11 @@
   "type": "transform",
   "name": "GEL Data",
   "id": "gel",
+  
   "executable": "gel",
   "backend": true,
+
+  "version": "0.2.0",
 
   "info": {
     "author": {

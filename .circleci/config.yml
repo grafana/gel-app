@@ -6,14 +6,16 @@ jobs:
     steps:
         - checkout
         - run:
-            name: Test GEL plugin
-            command: mage coverage
-        - run:
             name: Build GEL plugin
             command: |
               mage clean
               mage copyArtifacts
               mage buildAll
+              mage makePluginZip
+              mv *.zip dist
+        - run:
+            name: Test GEL plugin
+            command: mage coverage
         - store_artifacts:
             path: dist
         - store_artifacts:
