@@ -70,6 +70,10 @@ func Zip() error {
 	}
 
 	pluginName := fmt.Sprintf("%s-%s", pluginJson["id"], pluginJson["version"])
+	return makeZip(pluginName)
+}
+
+func makeZip(pluginName string) error {
 	zipFname := fmt.Sprintf("%s.zip", pluginName)
 	log.Printf("Creating zip archive %q", zipFname)
 	f, err := os.OpenFile(zipFname, os.O_RDWR|os.O_CREATE, 0644)
