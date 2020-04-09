@@ -46,7 +46,7 @@ func CopyArtifacts() error {
 }
 
 func readPluginJSON() (map[string]interface{}, error) {
-	byteValue, err := ioutil.ReadFile(path.Join("src", "plugin.json"))
+	byteValue, err := ioutil.ReadFile(path.Join("dist", "plugin.json"))
 	if err != nil {
 		return nil, err
 	}
