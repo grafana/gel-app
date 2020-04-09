@@ -146,8 +146,8 @@ func TestNaN(t *testing.T) {
 				if e != nil {
 					res, err := e.Execute(tt.vars)
 					tt.execErrIs(t, err)
-					if !cmp.Equal(res, tt.results, options...) {
-						assert.FailNow(t, tt.name, cmp.Diff(res, tt.results, options...))
+					if diff := cmp.Diff(res, tt.results, options...); diff != "" {
+						assert.FailNow(t, tt.name, diff)
 					}
 				}
 			}

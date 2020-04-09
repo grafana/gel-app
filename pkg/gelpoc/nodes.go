@@ -225,14 +225,15 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 	}
 
 	vals := make([]mathexp.Value, 0)
-	for _, frame := range resp.Frames {
-		series, err := mathexp.SeriesFromFrame(frame)
-		if err != nil {
-			return mathexp.Results{}, err
+	for _, qr := range resp.Responses {
+		for _, frame := range qr.Frames {
+			series, err := mathexp.SeriesFromFrame(frame)
+			if err != nil {
+				return mathexp.Results{}, err
+			}
+			vals = append(vals, series)
 		}
-		vals = append(vals, series)
 	}
-
 	return mathexp.Results{
 		Values: vals,
 	}, nil

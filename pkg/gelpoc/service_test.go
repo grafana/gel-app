@@ -20,7 +20,7 @@ func TestService(t *testing.T) {
 		data.NewField("time", nil, []*time.Time{utp(1)}),
 		data.NewField("value", nil, []*float64{fp(2)}))
 
-	m := newMockTransformCallBack(dsDF)
+	m := newMockTransformCallBack("A", dsDF)
 
 	s := Service{m}
 
@@ -46,7 +46,14 @@ func TestService(t *testing.T) {
 		data.NewField("", nil, []*float64{fp(4)}))
 	bDF.RefID = "B"
 
-	expect := []*data.Frame{dsDF, bDF}
+	expect := map[string]*backend.DataResponse{
+		"A": &backend.DataResponse{
+			Frames: []*data.Frame{dsDF},
+		},
+		"B": &backend.DataResponse{
+			Frames: []*data.Frame{bDF},
+		},
+	}
 
 	// Service currently doesn't care about order of datas in the return.
 	trans := cmp.Transformer("Sort", func(in []*data.Frame) []*data.Frame {
@@ -66,7 +73,7 @@ type mockTransformCallBack struct {
 	DataQueryFn func() (*backend.QueryDataResponse, error)
 }
 
-func newMockTransformCallBack(df ...*data.Frame) *mockTransformCallBack {
+func newMockTransformCallBack(refID string, df ...*data.Frame) *mockTransformCallBack {
 	return &mockTransformCallBack{
 		DataQueryFn: func() (res *backend.QueryDataResponse, err error) {
 			series := make([]mathexp.Series, 0, len(df))
@@ -83,7 +90,11 @@ func newMockTransformCallBack(df ...*data.Frame) *mockTransformCallBack {
 				frames[idx] = s.AsDataFrame()
 			}
 			return &backend.QueryDataResponse{
-				Frames: frames,
+				Responses: map[string]*backend.DataResponse{
+					refID: &backend.DataResponse{
+						Frames: frames,
+					},
+				},
 			}, nil
 
 		},
