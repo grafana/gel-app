@@ -20,18 +20,21 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/build/utils"
 )
 
+const distDir = "dist"
+const pluginJson = "plugin.json"
+
 func CopyArtifacts() error {
-	exists, err := utils.Exists("dist")
+	exists, err := utils.Exists(distDir)
 	if err != nil {
 		return err
 	}
 	if !exists {
-		if err := os.MkdirAll("dist", 0775); err != nil {
+		if err := os.MkdirAll(distDir, 0775); err != nil {
 			return err
 		}
 	}
 
-	fpaths := []string{"src/plugin.json", "README.md"}
+	fpaths := []string{path.Join("src", pluginJson), "README.md"}
 	fis, err := ioutil.ReadDir("img")
 	if err != nil {
 		return err
@@ -41,7 +44,7 @@ func CopyArtifacts() error {
 	}
 
 	for _, fpath := range fpaths {
-		if err := utils.CopyFile(fpath, path.Join("dist", path.Base(fpath))); err != nil {
+		if err := utils.CopyFile(fpath, path.Join(distDir, path.Base(fpath))); err != nil {
 			return err
 		}
 	}
@@ -50,7 +53,7 @@ func CopyArtifacts() error {
 }
 
 func readPluginJSON() (map[string]interface{}, error) {
-	byteValue, err := ioutil.ReadFile(path.Join("dist", "plugin.json"))
+	byteValue, err := ioutil.ReadFile(path.Join(distDir, pluginJson))
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +87,7 @@ func makeZip(pluginName string) error {
 	zw := zip.NewWriter(f)
 	defer zw.Close()
 
-	if err := filepath.Walk("dist", func(srcPath string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(distDir, func(srcPath string, info os.FileInfo, err error) error {
 		if err != nil {
 			log.Printf("filepath.Walk failed for %q: %s", srcPath, err)
 			return err
@@ -98,7 +101,7 @@ func makeZip(pluginName string) error {
 		if err != nil {
 			return err
 		}
-		fh.Name = path.Join(pluginName, strings.TrimPrefix(srcPath, "dist"))
+		fh.Name = path.Join(pluginName, strings.TrimPrefix(srcPath, distDir))
 		log.Printf("Adding %q to zip archive as %q", srcPath, fh.Name)
 
 		if info.IsDir() {
