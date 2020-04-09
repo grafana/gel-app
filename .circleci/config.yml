@@ -2,15 +2,18 @@ version: 2
 jobs:
   build:
     docker:
-        - image: circleci/golang:1.13
+        - image: srclosson/grafana-plugin-ci:latest
     steps:
         - checkout
         - run:
-            name: Test GEL plugin
-            command: make test
-        - run:
             name: Build GEL plugin
-            command: make
+            command: |
+              mage clean
+              mage zip
+              mv *.zip dist/
+        - run:
+            name: Test GEL plugin
+            command: mage coverage
         - store_artifacts:
             path: dist
         - store_artifacts:
