@@ -21,10 +21,14 @@ import (
 )
 
 func CopyArtifacts() error {
-	// TODO: Only try to remove if dist exists, check error
-	_ = os.RemoveAll("dist")
-	if err := os.MkdirAll("dist", 0775); err != nil {
+	exists, err := utils.Exists("dist")
+	if err != nil {
 		return err
+	}
+	if !exists {
+		if err := os.MkdirAll("dist", 0775); err != nil {
+			return err
+		}
 	}
 
 	fpaths := []string{"src/plugin.json", "README.md"}
