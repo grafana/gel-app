@@ -19,14 +19,14 @@ func (s *Service) BuildPipeline(queries []backend.DataQuery) (DataPipeline, erro
 }
 
 // ExecutePipeline executes a GEL data pipeline and returns all the results.
-func (s *Service) ExecutePipeline(ctx context.Context, pipeline DataPipeline) (map[string]*backend.DataResponse, error) {
-	res := make(map[string]*backend.DataResponse)
+func (s *Service) ExecutePipeline(ctx context.Context, pipeline DataPipeline) (*backend.QueryDataResponse, error) {
+	res := backend.NewQueryDataResponse()
 	vars, err := pipeline.execute(ctx)
 	if err != nil {
 		return nil, err
 	}
 	for refID, val := range vars {
-		res[refID] = &backend.DataResponse{
+		res.Responses[refID] = backend.DataResponse{
 			Frames: val.Values.AsDataFrames(refID),
 		}
 	}

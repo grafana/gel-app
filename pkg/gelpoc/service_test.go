@@ -90,8 +90,8 @@ func newMockTransformCallBack(refID string, df ...*data.Frame) *mockTransformCal
 				frames[idx] = s.AsDataFrame()
 			}
 			return &backend.QueryDataResponse{
-				Responses: map[string]*backend.DataResponse{
-					refID: &backend.DataResponse{
+				Responses: map[string]backend.DataResponse{
+					refID: {
 						Frames: frames,
 					},
 				},

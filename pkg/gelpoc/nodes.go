@@ -198,15 +198,15 @@ func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, callBack backend.Transfo
 // already by in vars.
 func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Results, error) {
 
-	pc := backend.PluginConfig{
+	pc := backend.PluginContext{
 		OrgID: dn.orgID,
-		DataSourceConfig: &backend.DataSourceConfig{
+		DataSourceInstanceSettings: &backend.DataSourceInstanceSettings{
 			ID: dn.datasourceID,
 		},
 	}
 
 	q := []backend.DataQuery{
-		backend.DataQuery{
+		{
 			RefID:         dn.refID,
 			MaxDataPoints: dn.maxDP,
 			Interval:      time.Duration(int64(time.Millisecond) * dn.intervalMS),
@@ -216,7 +216,7 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 	}
 
 	resp, err := dn.callBack.QueryData(ctx, &backend.QueryDataRequest{
-		PluginConfig: pc,
+		PluginContext: pc,
 		Queries:      q,
 	})
 
