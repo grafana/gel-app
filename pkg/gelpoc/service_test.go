@@ -25,11 +25,11 @@ func TestService(t *testing.T) {
 	s := Service{m}
 
 	queries := []backend.DataQuery{
-		backend.DataQuery{
+		{
 			RefID: "A",
 			JSON:  json.RawMessage(`{ "datasource": "test", "datasourceId": 3, "orgId": 1, "intervalMs": 1000, "maxDataPoints": 1000 }`),
 		},
-		backend.DataQuery{
+		{
 			RefID: "B",
 			JSON:  json.RawMessage(`{ "datasource": "__expr__", "datasourceId": -100, "type": "math", "expression": "$A * 2" }`),
 		},
@@ -46,12 +46,14 @@ func TestService(t *testing.T) {
 		data.NewField("", nil, []*float64{fp(4)}))
 	bDF.RefID = "B"
 
-	expect := map[string]*backend.DataResponse{
-		"A": &backend.DataResponse{
-			Frames: []*data.Frame{dsDF},
-		},
-		"B": &backend.DataResponse{
-			Frames: []*data.Frame{bDF},
+	expect := &backend.QueryDataResponse{
+		Responses: backend.Responses{
+			"A": {
+				Frames: []*data.Frame{dsDF},
+			},
+			"B": {
+				Frames: []*data.Frame{bDF},
+			},
 		},
 	}
 
@@ -90,8 +92,8 @@ func newMockTransformCallBack(refID string, df ...*data.Frame) *mockTransformCal
 				frames[idx] = s.AsDataFrame()
 			}
 			return &backend.QueryDataResponse{
-				Responses: map[string]*backend.DataResponse{
-					refID: &backend.DataResponse{
+				Responses: map[string]backend.DataResponse{
+					refID: {
 						Frames: frames,
 					},
 				},

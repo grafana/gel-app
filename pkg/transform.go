@@ -39,18 +39,16 @@ func (gp *GELPlugin) TransformData(ctx context.Context, req *backend.QueryDataRe
 	}
 
 	if len(hidden) != 0 {
-		filteredRes := make(map[string]*backend.DataResponse, len(responses)-len(hidden))
-		for refID, res := range responses {
+		filteredRes := backend.NewQueryDataResponse()
+		for refID, res := range responses.Responses {
 			if _, ok := hidden[refID]; !ok {
-				filteredRes[refID] = res
+				filteredRes.Responses[refID] = res
 			}
 		}
 		responses = filteredRes
 	}
 
-	return &backend.QueryDataResponse{
-		Responses: responses,
-	}, nil
+	return responses, nil
 
 }
 
