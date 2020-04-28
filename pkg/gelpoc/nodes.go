@@ -242,6 +242,10 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 	}, nil
 }
 
+// WideToMany converts a data package wide type Frame to one or multiple Series. A series
+// is created for each value type column of wide frame.
+//
+// This might not be a good idea long term, but works now as an adapter/shim.
 func WideToMany(frame *data.Frame) ([]mathexp.Series, error) {
 	tsSchema := frame.TimeSeriesSchema()
 	if tsSchema.Type != data.TimeSeriesTypeWide {
