@@ -48,8 +48,8 @@ github.com/google/go-cmp v0.2.0/go.mod h1:oXzfMopK8JAjlY9xF4vHSVASa0yLyX7SntLO5a
 github.com/google/go-cmp v0.3.1 h1:Xye71clBPdm5HgqGwUkwhbynsUJZhDbS20FvLhQ2izg=
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
-github.com/grafana/grafana-plugin-sdk-go v0.54.0 h1:DTrS6LmEo2gUfq2OLDTraNC1+vZKT8LO+hrOXJPJ2/c=
-github.com/grafana/grafana-plugin-sdk-go v0.54.0/go.mod h1:cJqtJv4uuWOB3SAUToTMa8yQoNxEtF07CabXHwsr5fc=
+github.com/grafana/grafana-plugin-sdk-go v0.58.0 h1:VF0j7Juh7upAadETnvCWwyooLXjde8omnRW26UyuQdA=
+github.com/grafana/grafana-plugin-sdk-go v0.58.0/go.mod h1:cJqtJv4uuWOB3SAUToTMa8yQoNxEtF07CabXHwsr5fc=
 github.com/grpc-ecosystem/go-grpc-middleware v1.2.0 h1:0IKlLyQ3Hs9nDaiK5cSHAGmcQEIC8l2Ts1u6x5Dfrqg=
 github.com/grpc-ecosystem/go-grpc-middleware v1.2.0/go.mod h1:mJzapYve32yjrKlk9GbyCZHuPgZsrbyIbyKhSzOpg6s=
 github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 h1:Ovs26xHkKqVztRpIrF/92BcuyuQ/YW4NSIpoGtfXNho=

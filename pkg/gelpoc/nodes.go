@@ -8,6 +8,7 @@ import (
 
 	"github.com/grafana/gel-app/pkg/mathexp"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 
 	"gonum.org/v1/gonum/graph/simple"
 )
@@ -217,7 +218,7 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 
 	resp, err := dn.callBack.QueryData(ctx, &backend.QueryDataRequest{
 		PluginContext: pc,
-		Queries:      q,
+		Queries:       q,
 	})
 
 	if err != nil {
@@ -227,14 +228,51 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 	vals := make([]mathexp.Value, 0)
 	for _, qr := range resp.Responses {
 		for _, frame := range qr.Frames {
-			series, err := mathexp.SeriesFromFrame(frame)
+			series, err := WideToMany(frame)
 			if err != nil {
 				return mathexp.Results{}, err
 			}
-			vals = append(vals, series)
+			for _, s := range series {
+				vals = append(vals, s)
+			}
 		}
 	}
 	return mathexp.Results{
 		Values: vals,
 	}, nil
+}
+
+func WideToMany(frame *data.Frame) ([]mathexp.Series, error) {
+	tsSchema := frame.TimeSeriesSchema()
+	if tsSchema.Type != data.TimeSeriesTypeWide {
+		return nil, fmt.Errorf("input data must a wide series")
+	}
+	if len(tsSchema.ValueIndices) == 1 {
+		s, err := mathexp.SeriesFromFrame(frame)
+		if err != nil {
+			return nil, err
+		}
+		return []mathexp.Series{s}, nil
+
+	}
+	series := []mathexp.Series{}
+	for _, valIdx := range tsSchema.ValueIndices {
+		l := frame.Rows()
+		f := data.NewFrameOfFieldTypes(frame.Name, l, frame.Fields[tsSchema.TimeIndex].Type(), frame.Fields[valIdx].Type())
+		f.Fields[0].Name = frame.Fields[tsSchema.TimeIndex].Name
+		f.Fields[1].Name = frame.Fields[valIdx].Name
+		if frame.Fields[valIdx].Labels != nil {
+			f.Fields[1].Labels = frame.Fields[valIdx].Labels.Copy()
+		}
+		for i := 0; i < l; i++ {
+			f.SetRow(i, frame.Fields[tsSchema.TimeIndex].CopyAt(i), frame.Fields[valIdx].CopyAt(i))
+		}
+		s, err := mathexp.SeriesFromFrame(f)
+		if err != nil {
+			return nil, err
+		}
+		series = append(series, s)
+
+	}
+	return series, nil
 }
