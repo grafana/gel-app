@@ -37,10 +37,31 @@ func Test_union(t *testing.T) {
 			},
 		},
 		{
-			name: "equal tags keys with no matching values will result in no unions",
+			name: "equal tags keys with no matching values will result in a union when len(A) == 1 && len(B) == 1",
 			aResults: Results{
 				Values: Values{
 					makeSeriesNullableTime("a", data.Labels{"id": "1"}),
+				},
+			},
+			bResults: Results{
+				Values: Values{
+					makeSeriesNullableTime("b", data.Labels{"id": "2"}),
+				},
+			},
+			unionsAre: assert.EqualValues,
+			unions: []*Union{
+				{
+					A: makeSeriesNullableTime("a", data.Labels{"id": "1"}),
+					B: makeSeriesNullableTime("b", data.Labels{"id": "2"}),
+				},
+			},
+		},
+		{
+			name: "equal tags keys with no matching values will result in no unions when len(A) != 1 && len(B) != 1",
+			aResults: Results{
+				Values: Values{
+					makeSeriesNullableTime("a", data.Labels{"id": "1"}),
+					makeSeriesNullableTime("q", data.Labels{"id": "3"}),
 				},
 			},
 			bResults: Results{
@@ -59,10 +80,11 @@ func Test_union(t *testing.T) {
 			unions:    []*Union{},
 		},
 		{
-			name: "incompatible tags of different length with will result in no unions",
+			name: "incompatible tags of different length with will result in no unions when len(A) != 1 && len(B) != 1",
 			aResults: Results{
 				Values: Values{
 					makeSeriesNullableTime("a", data.Labels{"ID": "1"}),
+					makeSeriesNullableTime("q", data.Labels{"ID": "3"}),
 				},
 			},
 			bResults: Results{

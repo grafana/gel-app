@@ -223,6 +223,17 @@ func union(aResults, bResults Results) []*Union {
 			unions = append(unions, u)
 		}
 	}
+	if len(unions) == 0 && len(aResults.Values) == 1 && len(bResults.Values) == 1 {
+		// In the case of only 1 thing on each side of the operator, we combine them
+		// and strip the tags.
+		// This isn't ideal for understanding behavior, but will make more stuff work when
+		// combining different datasources without munging.
+		// This choice is highly questionable in the long term.
+		unions = append(unions, &Union{
+			A: aResults.Values[0],
+			B: bResults.Values[0],
+		})
+	}
 	return unions
 }
 
