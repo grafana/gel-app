@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/grafana/gel-app/pkg/gelpoc"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,7 +19,7 @@ func (gp *GELPlugin) TransformData(ctx context.Context, req *backend.QueryDataRe
 	svc := gelpoc.Service{
 		CallBack: callBack,
 	}
-
+	log.DefaultLogger.Debug(spew.Sdump(req))
 	// Build the pipeline from the request, checking for ordering issues (e.g. loops)
 	// and parsing graph nodes from the queries.
 	pipeline, err := svc.BuildPipeline(req.Queries)
