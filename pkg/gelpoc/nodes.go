@@ -22,6 +22,7 @@ type baseNode struct {
 type rawNode struct {
 	RefID     string `json:"refId"`
 	Query     map[string]interface{}
+	QueryType string
 	TimeRange backend.TimeRange
 }
 
@@ -126,6 +127,7 @@ type DSNode struct {
 	query        json.RawMessage
 	datasourceID int64
 	orgID        int64
+	queryType    string
 	timeRange    backend.TimeRange
 	intervalMS   int64
 	maxDP        int64
@@ -149,6 +151,7 @@ func buildDSNode(dp *simple.DirectedGraph, rn *rawNode, callBack backend.Transfo
 			refID: rn.RefID,
 		},
 		query:      json.RawMessage(encodedQuery),
+		queryType:  rn.QueryType,
 		intervalMS: defaultIntervalMS,
 		maxDP:      defaultMaxDP,
 		callBack:   callBack,
@@ -213,6 +216,7 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 			Interval:      time.Duration(int64(time.Millisecond) * dn.intervalMS),
 			JSON:          dn.query,
 			TimeRange:     dn.timeRange,
+			QueryType:     dn.queryType,
 		},
 	}
 

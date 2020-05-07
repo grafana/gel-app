@@ -128,6 +128,7 @@ func buildGraph(queries []backend.DataQuery, callBack backend.TransformDataCallB
 			Query:     rawQueryProp,
 			RefID:     query.RefID,
 			TimeRange: query.TimeRange,
+			QueryType: query.QueryType,
 		}
 
 		dsName, err := rn.GetDatasourceName()
