@@ -4,10 +4,8 @@
   "id": "gel",
   "executable": "gel",
   "backend": true,
-
-  "version": "0.4.0",
-
   "info": {
+    "version": "0.4.0",
     "author": {
       "name": "Grafana Project",
       "url": "https://grafana.com"
