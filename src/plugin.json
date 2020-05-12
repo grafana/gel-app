@@ -5,7 +5,7 @@
   "executable": "gel",
   "backend": true,
   "info": {
-    "version": "0.5.0",
+    "version": "0.6.0",
     "author": {
       "name": "Grafana Project",
       "url": "https://grafana.com"

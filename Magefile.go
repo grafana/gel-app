@@ -6,7 +6,6 @@ import (
 	"archive/zip"
 	"encoding/json"
 	"fmt"
-	"github.com/magefile/mage/mg"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,13 +14,15 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/magefile/mage/mg"
+
 	// mage:import
 	"github.com/grafana/grafana-plugin-sdk-go/build"
 	"github.com/grafana/grafana-plugin-sdk-go/build/utils"
 )
 
 const distDir = "dist"
-const pluginJson = "plugin.json"
+const pluginJsonFileName = "plugin.json"
 
 func CopyArtifacts() error {
 	exists, err := utils.Exists(distDir)
@@ -34,7 +35,7 @@ func CopyArtifacts() error {
 		}
 	}
 
-	fpaths := []string{path.Join("src", pluginJson), "README.md"}
+	fpaths := []string{path.Join("src", pluginJsonFileName), "README.md"}
 	fis, err := ioutil.ReadDir("img")
 	if err != nil {
 		return err
@@ -52,15 +53,26 @@ func CopyArtifacts() error {
 	return nil
 }
 
-func readPluginJSON() (map[string]interface{}, error) {
-	byteValue, err := ioutil.ReadFile(path.Join(distDir, pluginJson))
+// PluginJSON is a minimal type representation of the plugin.json file found in src/.
+type PluginJSON struct {
+	ID   string     `json:"id"`
+	Info PluginInfo `json:"info"`
+}
+
+// PluginInfo is the Info member type for PluginJSON.
+type PluginInfo struct {
+	Version string `json:"version"`
+}
+
+func readPluginJSON() (PluginJSON, error) {
+	var pj PluginJSON
+	byteValue, err := ioutil.ReadFile(path.Join(distDir, pluginJsonFileName))
 	if err != nil {
-		return nil, err
+		return pj, err
 	}
 
-	var result map[string]interface{}
-	err = json.Unmarshal([]byte(byteValue), &result)
-	return result, err
+	err = json.Unmarshal([]byte(byteValue), &pj)
+	return pj, err
 }
 
 // Zip builds the plugin zip archive.
@@ -72,7 +84,13 @@ func Zip() error {
 		return err
 	}
 
-	pluginName := fmt.Sprintf("%s-%s", pluginJson["id"], pluginJson["version"])
+	if pluginJson.ID == "" {
+		return fmt.Errorf("can not create zip file because the id property in %v is missing and is needed for the zip file name", pluginJsonFileName)
+	}
+	if pluginJson.Info.Version == "" {
+		return fmt.Errorf("can not create zip file because the info.version property in %v is missing and is needed for the zip file name", pluginJsonFileName)
+	}
+	pluginName := fmt.Sprintf("%s-%s", pluginJson.ID, pluginJson.Info.Version)
 	return makeZip(pluginName)
 }
 
