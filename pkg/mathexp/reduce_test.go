@@ -3,6 +3,7 @@ package mathexp
 import (
 	"testing"
 
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -42,7 +43,32 @@ func TestSeriesReduce(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:        "mean series with labels",
+			red:         "mean",
+			varToReduce: "A",
+			vars: Vars{
+				"A": Results{
+					[]Value{
+						makeSeriesNullableTime("temp", data.Labels{"host": "a"}, nullTimeTP{
+							unixTimePointer(5, 0), float64Pointer(2),
+						}, nullTimeTP{
+							unixTimePointer(10, 0), float64Pointer(1),
+						}),
+					},
+				},
+			},
+			errIs:     assert.NoError,
+			resultsIs: assert.Equal,
+			results: Results{
+				[]Value{
+					makeNumber("mean_", data.Labels{"host": "a"}, float64Pointer(1.5)),
+				},
+			},
+		},
 	}
+	//Vars{
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			results := Results{}
