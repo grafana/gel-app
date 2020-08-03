@@ -2,6 +2,7 @@ package mathexp
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/grafana/grafana-plugin-sdk-go/data"
 )
@@ -10,6 +11,10 @@ func Sum(v *data.Field) *float64 {
 	var sum float64
 	for i := 0; i < v.Len(); i++ {
 		if f, ok := v.At(i).(*float64); ok {
+			if f == nil {
+				nan := math.NaN()
+				return &nan
+			}
 			sum += *f
 		}
 	}
@@ -24,8 +29,16 @@ func Avg(v *data.Field) *float64 {
 
 func Min(fv *data.Field) *float64 {
 	var f float64
+	if fv.Len() == 0 {
+		nan := math.NaN()
+		return &nan
+	}
 	for i := 0; i < fv.Len(); i++ {
 		if v, ok := fv.At(i).(*float64); ok {
+			if v == nil {
+				nan := math.NaN()
+				return &nan
+			}
 			if i == 0 || *v < f {
 				f = *v
 			}
@@ -36,8 +49,16 @@ func Min(fv *data.Field) *float64 {
 
 func Max(fv *data.Field) *float64 {
 	var f float64
+	if fv.Len() == 0 {
+		nan := math.NaN()
+		return &nan
+	}
 	for i := 0; i < fv.Len(); i++ {
 		if v, ok := fv.At(i).(*float64); ok {
+			if v == nil {
+				nan := math.NaN()
+				return &nan
+			}
 			if i == 0 || *v > f {
 				f = *v
 			}
