@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var seriesWithNil = Vars{
@@ -36,17 +36,25 @@ func TestSeriesReduce(t *testing.T) {
 		red         string
 		vars        Vars
 		varToReduce string
-		errIs       assert.ErrorAssertionFunc
-		resultsIs   assert.ComparisonAssertionFunc
+		errIs       require.ErrorAssertionFunc
+		resultsIs   require.ComparisonAssertionFunc
 		results     Results
 	}{
+		{
+			name:        "foo reduction will error",
+			red:         "foo",
+			varToReduce: "A",
+			vars:        aSeriesNullableTime,
+			errIs:       require.Error,
+			resultsIs:   require.Equal,
+		},
 		{
 			name:        "sum series",
 			red:         "sum",
 			varToReduce: "A",
 			vars:        aSeriesNullableTime,
-			errIs:       assert.NoError,
-			resultsIs:   assert.Equal,
+			errIs:       require.NoError,
+			resultsIs:   require.Equal,
 			results: Results{
 				[]Value{
 					makeNumber("sum_", nil, float64Pointer(3)),
@@ -58,8 +66,8 @@ func TestSeriesReduce(t *testing.T) {
 			red:         "sum",
 			varToReduce: "A",
 			vars:        seriesWithNil,
-			errIs:       assert.NoError,
-			resultsIs:   assert.Equal,
+			errIs:       require.NoError,
+			resultsIs:   require.Equal,
 			results: Results{
 				[]Value{
 					makeNumber("sum_", nil, NaN),
@@ -71,8 +79,8 @@ func TestSeriesReduce(t *testing.T) {
 			red:         "sum",
 			varToReduce: "A",
 			vars:        seriesEmpty,
-			errIs:       assert.NoError,
-			resultsIs:   assert.Equal,
+			errIs:       require.NoError,
+			resultsIs:   require.Equal,
 			results: Results{
 				[]Value{
 					makeNumber("sum_", nil, float64Pointer(0)),
@@ -84,8 +92,8 @@ func TestSeriesReduce(t *testing.T) {
 			red:         "mean",
 			varToReduce: "A",
 			vars:        seriesWithNil,
-			errIs:       assert.NoError,
-			resultsIs:   assert.Equal,
+			errIs:       require.NoError,
+			resultsIs:   require.Equal,
 			results: Results{
 				[]Value{
 					makeNumber("mean_", nil, NaN),
@@ -97,8 +105,8 @@ func TestSeriesReduce(t *testing.T) {
 			red:         "mean",
 			varToReduce: "A",
 			vars:        seriesEmpty,
-			errIs:       assert.NoError,
-			resultsIs:   assert.Equal,
+			errIs:       require.NoError,
+			resultsIs:   require.Equal,
 			results: Results{
 				[]Value{
 					makeNumber("mean_", nil, NaN),
@@ -110,8 +118,8 @@ func TestSeriesReduce(t *testing.T) {
 			red:         "min",
 			varToReduce: "A",
 			vars:        seriesWithNil,
-			errIs:       assert.NoError,
-			resultsIs:   assert.Equal,
+			errIs:       require.NoError,
+			resultsIs:   require.Equal,
 			results: Results{
 				[]Value{
 					makeNumber("min_", nil, NaN),
@@ -123,8 +131,8 @@ func TestSeriesReduce(t *testing.T) {
 			red:         "min",
 			varToReduce: "A",
 			vars:        seriesEmpty,
-			errIs:       assert.NoError,
-			resultsIs:   assert.Equal,
+			errIs:       require.NoError,
+			resultsIs:   require.Equal,
 			results: Results{
 				[]Value{
 					makeNumber("min_", nil, NaN),
@@ -136,8 +144,8 @@ func TestSeriesReduce(t *testing.T) {
 			red:         "max",
 			varToReduce: "A",
 			vars:        seriesWithNil,
-			errIs:       assert.NoError,
-			resultsIs:   assert.Equal,
+			errIs:       require.NoError,
+			resultsIs:   require.Equal,
 			results: Results{
 				[]Value{
 					makeNumber("max_", nil, NaN),
@@ -149,8 +157,8 @@ func TestSeriesReduce(t *testing.T) {
 			red:         "max",
 			varToReduce: "A",
 			vars:        seriesEmpty,
-			errIs:       assert.NoError,
-			resultsIs:   assert.Equal,
+			errIs:       require.NoError,
+			resultsIs:   require.Equal,
 			results: Results{
 				[]Value{
 					makeNumber("max_", nil, NaN),
@@ -162,11 +170,24 @@ func TestSeriesReduce(t *testing.T) {
 			red:         "mean",
 			varToReduce: "A",
 			vars:        aSeriesNullableTime,
-			errIs:       assert.NoError,
-			resultsIs:   assert.Equal,
+			errIs:       require.NoError,
+			resultsIs:   require.Equal,
 			results: Results{
 				[]Value{
 					makeNumber("mean_", nil, float64Pointer(1.5)),
+				},
+			},
+		},
+		{
+			name:        "count empty series",
+			red:         "count",
+			varToReduce: "A",
+			vars:        seriesEmpty,
+			errIs:       require.NoError,
+			resultsIs:   require.Equal,
+			results: Results{
+				[]Value{
+					makeNumber("count_", nil, float64Pointer(0)),
 				},
 			},
 		},
@@ -185,8 +206,8 @@ func TestSeriesReduce(t *testing.T) {
 					},
 				},
 			},
-			errIs:     assert.NoError,
-			resultsIs: assert.Equal,
+			errIs:     require.NoError,
+			resultsIs: require.Equal,
 			results: Results{
 				[]Value{
 					makeNumber("mean_", data.Labels{"host": "a"}, float64Pointer(1.5)),
@@ -203,7 +224,7 @@ func TestSeriesReduce(t *testing.T) {
 				ns, err := series.Value().(*Series).Reduce(tt.red)
 				tt.errIs(t, err)
 				if err != nil {
-					t.Fail()
+					return
 				}
 				results.Values = append(results.Values, ns)
 			}
