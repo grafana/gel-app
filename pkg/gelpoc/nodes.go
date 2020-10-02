@@ -230,8 +230,27 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 	}
 
 	vals := make([]mathexp.Value, 0)
-	for _, qr := range resp.Responses {
+	for refID, qr := range resp.Responses {
+		if len(qr.Frames) == 1 {
+			frame := qr.Frames[0]
+			if frame.TimeSeriesSchema().Type == data.TimeSeriesTypeNot && isNumberTable(frame) {
+				backend.Logger.Debug("GEL datasource query (numberSet)", "query", refID)
+				numberSet, err := extractNumberSet(frame)
+				if err != nil {
+					return mathexp.Results{}, err
+				}
+				for _, n := range numberSet {
+					vals = append(vals, n)
+				}
+
+				return mathexp.Results{
+					Values: vals,
+				}, nil
+			}
+		}
+
 		for _, frame := range qr.Frames {
+			backend.Logger.Debug("GEL datasource query (seriesSet)", "query", refID)
 			series, err := WideToMany(frame)
 			if err != nil {
 				return mathexp.Results{}, err
@@ -246,6 +265,63 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 	}, nil
 }
 
+func isNumberTable(frame *data.Frame) bool {
+	if frame == nil || frame.Fields == nil {
+		return false
+	}
+	numericCount := 0
+	stringCount := 0
+	otherCount := 0
+	for _, field := range frame.Fields {
+		fType := field.Type()
+		switch {
+		case fType.Numeric():
+			numericCount++
+		case fType == data.FieldTypeString || fType == data.FieldTypeNullableString:
+			stringCount++
+		default:
+			otherCount++
+		}
+	}
+	return numericCount == 1 && otherCount == 0
+}
+
+func extractNumberSet(frame *data.Frame) ([]mathexp.Number, error) {
+	numericField := 0
+	stringFieldIdxs := []int{}
+	stringFieldNames := []string{}
+	for i, field := range frame.Fields {
+		fType := field.Type()
+		switch {
+		case fType.Numeric():
+			numericField = i
+		case fType == data.FieldTypeString || fType == data.FieldTypeNullableString:
+			stringFieldIdxs = append(stringFieldIdxs, i)
+			stringFieldNames = append(stringFieldNames, field.Name)
+		}
+	}
+	numbers := make([]mathexp.Number, frame.Rows())
+
+	for rowIdx := 0; rowIdx < frame.Rows(); rowIdx++ {
+		val, _ := frame.FloatAt(numericField, rowIdx)
+		var labels data.Labels
+		for i := 0; i < len(stringFieldIdxs); i++ {
+			if i == 0 {
+				labels = make(data.Labels)
+			}
+			key := stringFieldNames[i] // TODO check for duplicate string column names
+			val, _ := frame.ConcreteAt(stringFieldIdxs[i], rowIdx)
+			labels[key] = val.(string) // TODO check assertion / return error
+		}
+
+		n := mathexp.NewNumber("", labels)
+		n.SetValue(&val)
+		numbers[rowIdx] = n
+	}
+	return numbers, nil
+
+}
+
 // WideToMany converts a data package wide type Frame to one or multiple Series. A series
 // is created for each value type column of wide frame.
 //
@@ -253,7 +329,7 @@ func (dn *DSNode) Execute(ctx context.Context, vars mathexp.Vars) (mathexp.Resul
 func WideToMany(frame *data.Frame) ([]mathexp.Series, error) {
 	tsSchema := frame.TimeSeriesSchema()
 	if tsSchema.Type != data.TimeSeriesTypeWide {
-		return nil, fmt.Errorf("input data must a wide series")
+		return nil, fmt.Errorf("input data must be a wide series but got type %s (input refid)", tsSchema.Type)
 	}
 	if len(tsSchema.ValueIndices) == 1 {
 		s, err := mathexp.SeriesFromFrame(frame)
